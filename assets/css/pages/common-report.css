@@ -1,0 +1,417 @@
+/* ============================================================
+   common-report.css
+   CSS ທົ່ວໄປທີ່ໃຊ້ຮ່ວມກັນໃນໜ້າ report ແລະ manage ທັງໝົດ
+   ============================================================ */
+
+
+body {
+    background: #f4f6f9;
+}
+
+.report-page {
+    padding: 24px;
+    animation: fadeIn 0.4s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+/* Card */
+.card {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.03);
+}
+
+/* Search box */
+.search-box {
+    position: relative;
+}
+.search-box i {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #a0aec0;
+    font-size: 1.05rem;
+}
+.search-box input {
+    padding-left: 42px;
+    border-radius: 8px;
+    border: 1px solid #cbd5e0;
+    transition: all 0.3s ease;
+    height: 44px; /* Increased from 38px for bold desktop presence */
+    font-size: 0.96rem; /* Comfortable large text input */
+}
+.search-box input:focus {
+    box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.25);
+    border-color: #3182ce;
+    outline: none;
+}
+
+/* Filter select */
+.filter-select {
+    border-radius: 8px;
+    border: 1px solid #cbd5e0;
+    height: 44px; /* Increased from 38px */
+    font-size: 0.96rem; /* Increased from 0.9rem */
+    transition: all 0.2s;
+}
+.filter-select:focus {
+    border-color: #3182ce;
+    box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.25);
+    outline: none;
+}
+
+/* Table */
+.table thead th,
+.table thead th.py-3,
+.table thead th.px-4 {
+    background-color: #f8f9fa;
+    color: #495057;
+    font-weight: 700;
+    border-bottom: 2px solid #dee2e6;
+    font-size: 0.96rem !important; /* Increased from 0.88rem for maximum desktop readability */
+    letter-spacing: 0.3px;
+    padding: 12px 16px !important;  /* Increased padding from 10px 14px to make boxes spacious */
+}
+.table tbody tr {
+    transition: all 0.2s;
+}
+.table tbody tr:hover {
+    background-color: rgba(49, 130, 206, 0.04) !important;
+}
+.table tbody td,
+.table tbody td.py-3,
+.table tbody td.px-4 {
+    font-size: 0.96rem !important; /* Increased from 0.88rem for maximum desktop readability */
+    padding: 12px 16px !important;  /* Increased padding from 10px 14px to make boxes spacious */
+}
+/* Reduce visual bulk by overriding heavy inline bold fonts */
+.table tbody td.font-weight-bold,
+.table tbody td .font-weight-bold,
+.table tbody td .building-name,
+.table tbody td .room-number,
+.table tbody td .category-name {
+    font-weight: 500 !important;
+}
+
+/* Badge category */
+.badge-category {
+    background: rgba(102, 126, 234, 0.12);
+    color: #5a67d8;
+    font-weight: 700;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 0.88rem !important; /* Increased from 0.82rem */
+    white-space: nowrap !important;
+}
+
+/* Badge status */
+.badge-status {
+    font-weight: 700;
+    border-radius: 30px;
+    padding: 6px 14px;
+    font-size: 0.88rem !important; /* Increased from 0.82rem */
+    white-space: nowrap !important;
+}
+.badge-status.active {
+    background: rgba(72, 187, 120, 0.15);
+    color: #38a169;
+}
+.badge-status.inactive {
+    background: rgba(229, 62, 62, 0.15);
+    color: #e53e3e;
+}
+
+/* Badge rooms */
+.badge-rooms {
+    background: rgba(66, 153, 225, 0.15);
+    color: #2b6cb0;
+    font-weight: 700;
+    border-radius: 30px;
+    padding: 6px 12px;
+    font-size: 0.88rem !important; /* Increased from 0.82rem */
+}
+
+/* Premium Compact Modal Styling */
+.modal-content {
+    border-radius: 12px !important;
+    border: none !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important;
+}
+.modal-header {
+    padding: 14px 20px !important;
+    border-radius: 12px 12px 0 0 !important;
+}
+.modal-title {
+    font-size: 1.05rem !important;
+    font-weight: 600 !important;
+}
+.modal-body {
+    padding: 20px !important;
+}
+.modal-body label {
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+    color: #4a5568 !important;
+    margin-bottom: 6px !important;
+}
+.modal-body .form-control {
+    height: 38px !important;
+    font-size: 0.85rem !important;
+    border-radius: 6px !important;
+    border: 1px solid #cbd5e0 !important;
+    padding: 8px 12px !important;
+}
+.modal-body .form-control:focus {
+    border-color: #3182ce !important;
+    box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.15) !important;
+}
+.modal-footer {
+    padding: 12px 20px !important;
+    border-radius: 0 0 12px 12px !important;
+}
+.modal-footer .btn {
+    padding: 6px 16px !important;
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+    border-radius: 6px !important;
+}
+
+/* Responsive - Tablet and Mobile */
+@media (max-width: 767.98px) {
+    .report-page {
+        padding: 10px;
+    }
+    .card {
+        border-radius: 8px;
+    }
+    /* Target high-specificity table selectors to successfully override desktop styles */
+    .table thead th,
+    .table thead th.py-3,
+    .table thead th.px-4 {
+        padding: 6px 4px !important;
+        font-size: 0.65rem !important;
+        white-space: nowrap !important; /* Prevent header wrapping */
+    }
+    .table tbody td,
+    .table tbody td.py-3,
+    .table tbody td.px-4 {
+        padding: 6px 4px !important;
+        font-size: 0.68rem !important;
+        white-space: nowrap !important; /* Prevent body data wrapping */
+    }
+    /* Override specific class names inside tables to keep text uniform and clean */
+    .table tbody td.font-weight-bold,
+    .table tbody td .font-weight-bold,
+    .table tbody td .building-name,
+    .table tbody td .room-number,
+    .table tbody td .category-name,
+    .table tbody td .building-val,
+    .table tbody td .floor-val,
+    .table tbody td .room-number-val,
+    .table tbody td .remark-val,
+    .table tbody td .floor-name,
+    .table tbody td .floor-remark,
+    .table tbody td .brand-model-val,
+    .table tbody td .date-val,
+    .table tbody td .category-val {
+        font-size: 0.68rem !important;
+        font-weight: 500 !important;
+    }
+    /* Compress badges on mobile */
+    .badge-category, .badge-status, .badge-qty, .badge-room-type, .badge-rooms {
+        font-size: 0.60rem !important;
+        padding: 2px 5px !important;
+    }
+    /* Compact Search Box and dropdowns on mobile */
+    .search-box input, .filter-select, #pageSizeSelect {
+        height: 32px !important;
+        font-size: 0.75rem !important;
+    }
+    #paginationStatus {
+        font-size: 0.72rem !important;
+    }
+    .modal-dialog {
+        margin: 12px !important;
+    }
+    .modal-header {
+        padding: 12px 16px !important;
+    }
+    .modal-title {
+        font-size: 0.9rem !important;
+    }
+    .modal-body {
+        padding: 16px !important;
+    }
+    .modal-body label {
+        font-size: 0.75rem !important;
+        margin-bottom: 4px !important;
+    }
+    .modal-body .form-control {
+        height: 34px !important;
+        font-size: 0.75rem !important;
+        padding: 6px 10px !important;
+    }
+    .modal-footer {
+        padding: 10px 16px !important;
+    }
+    .modal-footer .btn {
+        padding: 5px 12px !important;
+        font-size: 0.75rem !important;
+    }
+
+    /* Header Responsive Layout */
+    .report-page > .d-flex.flex-wrap.justify-content-between.align-items-center {
+        margin-bottom: 12px !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 8px !important;
+    }
+    .report-page h4,
+    .report-page h4.fw-bold.text-dark,
+    .report-page h5,
+    .report-page h3 {
+        font-size: 0.92rem !important; /* Make title text even smaller for compact mobile displays */
+        margin-bottom: 0px !important;
+        white-space: nowrap !important; /* Prevent header wrapping */
+    }
+    .report-page h4 i,
+    .report-page h4.fw-bold.text-dark i,
+    .report-page h5 i,
+    .report-page h3 i {
+        font-size: 1rem !important;
+        margin-right: 4px !important;
+    }
+    /* Add Buttons Responsive Sizing */
+    .report-page .btn-add-category,
+    .report-page .btn-add-asset,
+    .report-page .btn-add-building,
+    .report-page .btn-add-floor,
+    .report-page .btn-add-room,
+    .report-page .btn-add-room-type,
+    .report-page .btn-primary.px-4.py-2 {
+        padding: 4px 10px !important; /* Extremely small, elegant padding */
+        font-size: 0.72rem !important;  /* Make button text smaller */
+        border-radius: 6px !important;
+        width: auto !important; /* Keep it compact, do not stretch */
+        display: inline-block !important;
+        text-align: center !important;
+        box-shadow: 0 1px 3px rgba(0, 123, 255, 0.1) !important;
+    }
+    /* Set first container (title) inside header to full width on mobile */
+    .report-page > .d-flex.flex-wrap.justify-content-between.align-items-center > div:first-child {
+        width: 100% !important;
+    }
+    /* Align last container (button) inside header to the right hand side on mobile */
+    .report-page > .d-flex.flex-wrap.justify-content-between.align-items-center > div:last-child {
+        width: 100% !important;
+        display: flex !important;
+        justify-content: flex-end !important;
+    }
+    /* Compact Search Box and card sub-header statistics on mobile */
+    .report-page .card .p-3.border-bottom {
+        padding: 8px 12px !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 6px !important;
+    }
+    /* Force card header elements to always align to the left and be block layout on mobile */
+    .report-page .card .p-3.border-bottom > div:first-child,
+    .report-page .card .p-3.border-bottom > div:last-child {
+        width: 100% !important;
+        display: block !important;
+        text-align: left !important;
+        justify-content: flex-start !important;
+    }
+    .report-page .card .p-3.border-bottom .text-muted.small {
+        font-size: 0.75rem !important;
+        width: 100% !important;
+    }
+    .report-page .card .p-3.border-bottom .search-box {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+}
+
+/* Style for action buttons to show only icons without background boxes */
+.btn-action,
+table td:last-child .btn,
+table td:last-child button,
+.btn-view-details,
+.btn-edit,
+.btn-delete {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 4px 6px !important;
+    font-size: 1.15rem !important;
+    transition: all 0.2s ease !important;
+    min-width: auto !important;
+    height: auto !important;
+    line-height: 1 !important;
+}
+
+/* Edit / Update / Info colors */
+.btn-action.btn-warning,
+.btn-action.btn-outline-info,
+table td:last-child .btn-warning,
+table td:last-child .btn-outline-info,
+table td:last-child button.btn-warning,
+.btn-edit {
+    color: #ff9f43 !important;
+}
+.btn-action.btn-warning:hover,
+.btn-action.btn-outline-info:hover,
+table td:last-child .btn-warning:hover,
+table td:last-child .btn-outline-info:hover,
+.btn-edit:hover {
+    color: #ff9f43 !important;
+    opacity: 0.8;
+    transform: scale(1.2);
+}
+
+/* Delete / Trash icon color */
+.btn-action.btn-danger,
+.btn-action.btn-outline-danger,
+table td:last-child .btn-danger,
+table td:last-child .btn-outline-danger,
+table td:last-child button.btn-danger,
+.btn-delete {
+    color: #ea5455 !important;
+}
+.btn-action.btn-danger:hover,
+.btn-action.btn-outline-danger:hover,
+table td:last-child .btn-danger:hover,
+table td:last-child .btn-outline-danger:hover,
+.btn-delete:hover {
+    color: #ea5455 !important;
+    opacity: 0.8;
+    transform: scale(1.2);
+}
+
+/* View / Print / Eye / Info icon color */
+.btn-action.btn-info,
+.btn-action.btn-outline-primary,
+table td:last-child .btn-info,
+table td:last-child .btn-outline-primary,
+table td:last-child button.btn-info,
+table td:last-child .text-white.btn-info,
+table td:last-child button.text-white,
+.btn-view-details {
+    color: #00cfe8 !important;
+}
+.btn-action.btn-info:hover,
+.btn-action.btn-outline-primary:hover,
+table td:last-child .btn-info:hover,
+table td:last-child .btn-outline-primary:hover,
+table td:last-child .text-white.btn-info:hover,
+table td:last-child button.text-white:hover,
+.btn-view-details:hover {
+    color: #00cfe8 !important;
+    opacity: 0.8;
+    transform: scale(1.2);
+}

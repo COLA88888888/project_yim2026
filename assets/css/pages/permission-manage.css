@@ -1,0 +1,325 @@
+/* ============================================================
+   permission-manage.css
+   CSS ສະເພາະໜ້າ permission_manage.php
+   ============================================================ */
+
+* { font-family: 'Noto Sans Lao Looped', 'Phetsarath OT', sans-serif; }
+
+body {
+    background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+    min-height: 100vh;
+    color: #2d3748;
+    animation: pageFadeIn 0.7s cubic-bezier(0.25, 1, 0.5, 1) both;
+}
+@keyframes pageFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.card-custom {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    animation: cardSlideUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.header-gradient {
+    background: linear-gradient(135deg, #3182ce 0%, #2b6cb0 100%);
+    color: white;
+    border-radius: 16px 16px 0 0;
+    padding: 1.5rem;
+}
+
+.search-box {
+    position: relative;
+}
+.search-box i {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #a0aec0;
+}
+.search-box input {
+    padding-left: 45px;
+    border-radius: 30px;
+    border: 1px solid #e2e8f0;
+    transition: all 0.3s ease;
+}
+.search-box input:focus {
+    box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.25);
+    border-color: #3182ce;
+}
+
+.table-custom {
+    margin-bottom: 0;
+}
+.table-custom th {
+    background-color: #f7fafc;
+    color: #4a5568;
+    font-weight: 600;
+    border-bottom-width: 1px;
+    text-transform: uppercase;
+    font-size: 0.92rem;
+    letter-spacing: 0.5px;
+    padding: 1rem;
+}
+.table-custom td {
+    padding: 1rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #edf2f7;
+}
+
+/* Toggle Switch */
+.switch-custom {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 26px;
+}
+.switch-custom input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.slider-custom {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #cbd5e0;
+    transition: .4s;
+    border-radius: 34px;
+}
+.slider-custom:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+input:checked + .slider-custom { background-color: #48bb78; }
+input:focus + .slider-custom { box-shadow: 0 0 1px #48bb78; }
+input:checked + .slider-custom:before { transform: translateX(24px); }
+
+/* Avatar */
+.avatar-circle {
+    width: 40px;
+    height: 40px;
+    background-color: #ebf8ff;
+    color: #3182ce;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.1rem;
+    border: 2px solid #ebf8ff;
+}
+
+/* Pulse button */
+.pulse-btn { position: relative; overflow: hidden; }
+.pulse-btn:after {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 5px; height: 5px;
+    background: rgba(255,255,255,.5);
+    opacity: 0;
+    border-radius: 100%;
+    transform: scale(1,1) translate(-50%);
+    transform-origin: 50% 50%;
+}
+@keyframes ripple {
+    0%   { transform: scale(0,0); opacity: 1; }
+    20%  { transform: scale(25,25); opacity: 1; }
+    100% { opacity: 0; transform: scale(40,40); }
+}
+
+/* Empty state */
+.empty-state { padding: 3rem; text-align: center; color: #a0aec0; }
+.empty-state i { font-size: 3.5rem; margin-bottom: 1rem; color: #cbd5e0; }
+
+/* Pagination Styles */
+.pagination .page-link {
+    border-radius: 6px !important;
+    margin: 0 2px;
+    color: #4a5568;
+    border: 1px solid #e2e8f0;
+    padding: 5px 10px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+.pagination .page-item.active .page-link {
+    background-color: #3182ce !important;
+    border-color: #3182ce !important;
+    color: white !important;
+    box-shadow: 0 4px 6px rgba(49, 130, 206, 0.2);
+}
+.pagination .page-link:hover {
+    background-color: #edf2f7;
+    color: #2b6cb0;
+}
+.pagination .page-item.disabled .page-link {
+    color: #a0aec0;
+    background-color: #f7fafc;
+    border-color: #e2e8f0;
+}
+
+@media (max-width: 767.98px) {
+    .card-footer {
+        padding: 6px 8px !important;
+        flex-direction: column !important;
+        gap: 6px !important;
+        align-items: center !important;
+        text-align: center !important;
+    }
+    .pagination .page-link {
+        padding: 3px 6px !important;
+        font-size: 0.65rem !important;
+        margin: 0 1px;
+    }
+    .container-fluid {
+        padding: 8px 10px !important;
+    }
+    .container-fluid .d-flex.flex-wrap.justify-content-between.align-items-center {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 2px !important;
+        margin-bottom: 8px !important;
+    }
+    .container-fluid h4.fw-bold.text-dark {
+        font-size: 0.95rem !important;
+        margin-bottom: 0px !important;
+    }
+    .container-fluid p.text-muted.small {
+        font-size: 0.65rem !important;
+    }
+    .container-fluid .d-flex.flex-wrap.justify-content-between.align-items-center > div {
+        width: 100% !important;
+    }
+
+    /* Search Box & Controls Header Mobile Compression */
+    .card .p-3.border-bottom {
+        padding: 8px 10px !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 6px !important;
+    }
+    .card .p-3.border-bottom .search-box {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+    .search-box input {
+        height: 30px !important;
+        font-size: 0.72rem !important;
+        padding-left: 28px !important;
+        padding-right: 10px !important;
+        border-radius: 15px !important;
+    }
+    .search-box i {
+        left: 10px !important;
+        font-size: 0.75rem !important;
+    }
+    .card .p-3.border-bottom .text-muted.small {
+        font-size: 0.68rem !important;
+        width: 100% !important;
+        text-align: left !important;
+        margin-top: 2px !important;
+    }
+
+    /* Main Table Mobile Compression */
+    .table-custom th {
+        font-size: 0.65rem !important;
+        padding: 6px 4px !important;
+        white-space: nowrap !important;
+    }
+    .table-custom td {
+        font-size: 0.68rem !important;
+        padding: 6px 4px !important;
+        white-space: nowrap !important;
+        height: auto !important;
+    }
+    .avatar-circle {
+        width: 26px !important;
+        height: 26px !important;
+        font-size: 0.7rem !important;
+        border-width: 1px !important;
+    }
+    .staff-row .fw-bold.text-dark {
+        font-size: 0.68rem !important;
+        font-weight: 600 !important;
+    }
+    .staff-row code,
+    .staff-row .badge {
+        font-size: 0.60rem !important;
+        padding: 1px 4px !important;
+    }
+    .staff-row .btn-sm {
+        padding: 3px 8px !important;
+        font-size: 0.65rem !important;
+        border-radius: 12px !important;
+    }
+
+    /* Restrict Address column on narrow screens to look extremely clean */
+    .table-custom th:nth-child(3),
+    .table-custom td:nth-child(3) {
+        max-width: 110px !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        font-size: 0.62rem !important;
+    }
+
+    /* Permission Modal Table Mobile Compression */
+    #permTable th {
+        font-size: 0.7rem !important;
+        padding: 4px 2px !important;
+        white-space: nowrap !important;
+        }
+    #permTable td {
+        font-size: 0.68rem !important;
+        padding: 4px 2px !important;
+    }
+    #permTable .fw-bold {
+        font-size: 0.68rem !important;
+        font-weight: 500 !important;
+    }
+    #permTable .fw-bold i {
+        font-size: 0.72rem !important;
+        margin-right: 2px !important;
+    }
+
+    /* Switch Custom Responsive Sizing */
+    .switch-custom {
+        width: 32px !important;
+        height: 16px !important;
+    }
+    .slider-custom:before {
+        height: 10px !important;
+        width: 10px !important;
+        left: 3px !important;
+        bottom: 3px !important;
+    }
+    input:checked + .slider-custom:before {
+        transform: translateX(16px) !important;
+    }
+}
+
+@keyframes cardSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(24px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+

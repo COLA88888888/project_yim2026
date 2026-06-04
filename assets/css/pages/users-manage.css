@@ -1,0 +1,207 @@
+/* ============================================================
+   users-manage.css
+   CSS ສະເພາະໜ້າ users_manage.php
+   ============================================================ */
+
+
+* { font-family: 'Noto Sans Lao Looped', 'Phetsarath OT', sans-serif; }
+
+body {
+    background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+    min-height: 100vh;
+    animation: pageFadeIn 0.7s cubic-bezier(0.25, 1, 0.5, 1) both;
+}
+@keyframes pageFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.cursor-pointer { cursor: pointer; }
+.table thead th { white-space: nowrap; }
+
+#permUsersWrap { display: none; }
+
+.search-box {
+    position: relative;
+}
+.search-box i {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #a0aec0;
+}
+.search-box input {
+    padding-left: 40px;
+    border-radius: 30px;
+    border: 1px solid #e2e8f0;
+    transition: all 0.3s ease;
+}
+.search-box input:focus {
+    box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.25);
+    border-color: #3182ce;
+    outline: none;
+}
+
+@media (max-width: 767.98px) {
+    .container-fluid {
+        padding: 10px !important;
+    }
+    .container-fluid .d-flex.flex-wrap.justify-content-between.align-items-center {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 8px !important;
+        margin-bottom: 12px !important;
+    }
+    .container-fluid h5.fw-bold.text-dark {
+        font-size: 1.05rem !important;
+        margin-bottom: 0px !important;
+        width: 100% !important;
+    }
+    .container-fluid .d-flex.flex-wrap.gap-2 {
+        width: 100% !important;
+        display: flex !important;
+        justify-content: flex-end !important;
+    }
+    .container-fluid .btn-success {
+        padding: 4px 10px !important; /* Extremely small, elegant padding */
+        font-size: 0.72rem !important;  /* Make button text smaller */
+        width: auto !important; /* Keep it compact, do not stretch */
+        display: inline-block !important;
+        text-align: center !important;
+    }
+    
+    .card-footer {
+        padding: 6px 8px !important;
+        flex-direction: column !important;
+        gap: 6px !important;
+        align-items: center !important;
+        text-align: center !important;
+    }
+    .pagination .page-link {
+        padding: 3px 6px !important;
+        font-size: 0.65rem !important;
+        margin: 0 1px;
+    }
+}
+
+/* Pagination Styles */
+.pagination .page-link {
+    border-radius: 6px !important;
+    margin: 0 2px;
+    color: #4a5568;
+    border: 1px solid #e2e8f0;
+    padding: 5px 10px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+.pagination .page-item.active .page-link {
+    background-color: #0d6efd !important;
+    border-color: #0d6efd !important;
+    color: white !important;
+    box-shadow: 0 4px 6px rgba(13, 110, 253, 0.2);
+}
+.pagination .page-link:hover {
+    background-color: #edf2f7;
+    color: #0b5ed7;
+}
+.pagination .page-item.disabled .page-link {
+    color: #a0aec0;
+    background-color: #f7fafc;
+    border-color: #e2e8f0;
+}
+
+/* Style for action buttons to show only icons without background boxes */
+.btn-action,
+table td:last-child .btn,
+table td:last-child button,
+.btn-view-details,
+.btn-edit,
+.btn-delete {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 4px 6px !important;
+    font-size: 1.15rem !important;
+    transition: all 0.2s ease !important;
+    min-width: auto !important;
+    height: auto !important;
+    line-height: 1 !important;
+}
+
+/* Edit / Update / Info colors */
+.btn-action.btn-warning,
+.btn-action.btn-outline-info,
+table td:last-child .btn-warning,
+table td:last-child .btn-outline-info,
+table td:last-child button.btn-warning,
+.btn-edit {
+    color: #ff9f43 !important;
+}
+.btn-action.btn-warning:hover,
+.btn-action.btn-outline-info:hover,
+table td:last-child .btn-warning:hover,
+table td:last-child .btn-outline-info:hover,
+.btn-edit:hover {
+    color: #ff9f43 !important;
+    opacity: 0.8;
+    transform: scale(1.2);
+}
+
+/* Delete / Trash icon color */
+.btn-action.btn-danger,
+.btn-action.btn-outline-danger,
+table td:last-child .btn-danger,
+table td:last-child .btn-outline-danger,
+table td:last-child button.btn-danger,
+.btn-delete {
+    color: #ea5455 !important;
+}
+.btn-action.btn-danger:hover,
+.btn-action.btn-outline-danger:hover,
+table td:last-child .btn-danger:hover,
+table td:last-child .btn-outline-danger:hover,
+.btn-delete:hover {
+    color: #ea5455 !important;
+    opacity: 0.8;
+    transform: scale(1.2);
+}
+
+/* View / Print / Eye / Info icon color */
+.btn-action.btn-info,
+.btn-action.btn-outline-primary,
+table td:last-child .btn-info,
+table td:last-child .btn-outline-primary,
+table td:last-child button.btn-info,
+table td:last-child .text-white.btn-info,
+table td:last-child button.text-white,
+.btn-view-details {
+    color: #00cfe8 !important;
+}
+.btn-action.btn-info:hover,
+.btn-action.btn-outline-primary:hover,
+table td:last-child .btn-info:hover,
+table td:last-child .btn-outline-primary:hover,
+table td:last-child .text-white.btn-info:hover,
+table td:last-child button.text-white:hover,
+.btn-view-details:hover {
+    color: #00cfe8 !important;
+    opacity: 0.8;
+    transform: scale(1.2);
+}
+
+/* Table slide-up animation */
+.card-custom {
+    animation: cardSlideUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes cardSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(24px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+

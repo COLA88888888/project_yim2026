@@ -1,0 +1,294 @@
+/* ===== BCT School Login Page Custom Styles ===== */
+*:not(.fas):not(.far):not(.fab):not(.fa) { font-family: 'Noto Sans Lao Looped', sans-serif !important; }
+.fas, .far, .fab, .fa { font-family: "Font Awesome 5 Free" !important; font-weight: 900 !important; }
+:root {
+    --primary-blue: #007bff;
+    --blue-hover: #0069d9;
+}
+body {
+    font-family: 'Noto Sans Lao Looped', sans-serif !important;
+    margin: 0;
+    background-color: #f8f9fa;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+}
+.hero-bg-accent {
+    display: none;
+}
+.hero-bg {
+    background: url('../../../assets/img/logo/gym_bg.png');
+    background-size: cover;
+    background-position: center;
+    height: 82vh;
+    width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    clip-path: polygon(0 0, 100% 0, 100% 88%, 50% 98%, 0 88%);
+    z-index: 2;
+}
+.hero-bg::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 3;
+}
+.login-wrapper {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 10;
+    padding: 20px;
+}
+.login-card {
+    width: 100%;
+    max-width: 420px;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 35px 40px;
+    padding-top: 75px; /* space for protruding logo */
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    margin-top: 5vh;
+    position: relative; /* Anchor for absolute logo */
+}
+.lang-switcher {
+    position: absolute;
+    top: 25px;
+    right: 25px;
+    display: flex;
+    gap: 12px;
+    z-index: 2000;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 8px 15px;
+    border-radius: 50px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255,255,255,0.5);
+}
+.lang-item {
+    text-decoration: none !important;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.3s;
+    opacity: 0.6;
+    padding: 2px;
+}
+.lang-item:hover, .lang-item.active {
+    opacity: 1;
+    transform: scale(1.1);
+}
+.lang-flag {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid #ddd;
+}
+.lang-text {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #444;
+}
+.login-header {
+    text-align: center;
+    margin-bottom: 35px;
+}
+.hotel-logo-wrapper {
+    position: absolute;
+    top: -60px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 120px;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: visible;
+}
+.hotel-logo-wrapper img {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 4px solid #fff;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+}
+.login-header h2 {
+    color: var(--primary-blue);
+    font-weight: 700;
+    font-size: 1.6rem;
+    margin-bottom: 5px;
+}
+.login-header p {
+    color: #888;
+    font-size: 0.9rem;
+}
+.form-label {
+    font-weight: 500;
+    font-size: 0.95rem;
+    margin-bottom: 8px;
+    color: #444;
+}
+.form-control {
+    border-radius: 10px;
+    padding: 14px 15px;
+    border: 1px solid #dee2e6;
+    font-size: 1.1rem;
+    width: 100%;
+    display: block;
+    background-color: #f0f7ff;
+    transition: all 0.3s;
+    box-sizing: border-box;
+    height: 48px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    padding: 10px 15px;
+    transition: all 0.3s;
+}
+.form-control:focus {
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15);
+}
+.password-container {
+    position: relative;
+}
+.password-toggle {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #888;
+}
+.btn-login {
+    background-color: var(--primary-blue);
+    color: #fff;
+    height: 48px;
+    border-radius: 8px;
+    font-weight: 700;
+    width: 100%;
+    margin-top: 20px;
+    transition: all 0.3s;
+    border: none;
+}
+.btn-login:hover {
+    background-color: var(--blue-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
+}
+
+@media (max-width: 576px) {
+    body {
+        overflow: hidden;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    .hero-bg, .hero-bg-accent {
+        height: 45vh !important;
+    }
+    .login-wrapper {
+        padding: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex: 1;
+    }
+    .login-card {
+        padding: 20px 20px;
+        padding-top: 55px !important; /* space for mobile protruding logo */
+        width: 95%;
+        max-width: 320px;
+        margin-top: 2vh;
+        margin-bottom: 50px; /* Leave space for absolute footer */
+        border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    }
+    .login-header {
+        margin-bottom: 12px !important;
+    }
+    .login-header h3 {
+        font-size: 1.15rem !important;
+        margin-bottom: 2px !important;
+    }
+    .login-header h5 {
+        font-size: 0.85rem !important;
+        margin-bottom: 2px !important;
+    }
+    .login-header p {
+        font-size: 0.8rem !important;
+        margin-bottom: 5px !important;
+    }
+    .form-group {
+        margin-bottom: 10px !important;
+    }
+    .form-label {
+        font-size: 0.85rem !important;
+        margin-bottom: 4px !important;
+    }
+    .form-control {
+        height: 42px !important;
+        font-size: 0.95rem !important;
+        padding: 8px 12px 8px 40px !important;
+    }
+    .btn-login {
+        height: 42px !important;
+        font-size: 0.95rem !important;
+        margin-top: 10px !important;
+    }
+    .hotel-logo-wrapper {
+        width: 90px !important;
+        height: 90px !important;
+        top: -45px !important;
+    }
+    .hotel-logo-wrapper img {
+        width: 90px !important;
+        height: 90px !important;
+        border-width: 3px !important;
+    }
+    .footer-info {
+        position: absolute;
+        bottom: 8px;
+        font-size: 0.75rem;
+        padding: 0;
+    }
+}
+.remember-me {
+    margin-top: 15px;
+    display: flex;
+    align-items: center;
+    font-size: 0.9rem;
+    color: #666;
+}
+.remember-me input {
+    margin-right: 10px;
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary-blue);
+}
+.footer-info {
+    position: absolute;
+    bottom: 15px;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    color: #666;
+    font-size: 0.85rem;
+    z-index: 20;
+    margin: 0;
+    padding: 0;
+}

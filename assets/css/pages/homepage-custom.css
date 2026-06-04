@@ -1,0 +1,317 @@
+/* ===== BCT School Homepage Custom Dashboard Styles ===== */
+.dashboard-page {
+    animation: fadeIn 0.7s cubic-bezier(0.25, 1, 0.5, 1) both;
+    will-change: opacity, transform;
+}
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+/* Desktop (computer, default viewport) sizing refinements */
+.stat-cards-row-custom {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+}
+.stat-card-custom {
+    position: relative;
+    border-radius: 12px;
+    padding: 14px 16px;
+    color: #fff;
+    overflow: hidden;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.05) !important;
+    text-decoration: none !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 105px;
+    border: 1px solid rgba(255,255,255,0.12) !important;
+    transition: all 0.4s ease !important;
+}
+.stat-card-custom:hover {
+    color: #fff !important;
+    text-decoration: none !important;
+    transform: none !important;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12) !important;
+    filter: brightness(1.08) !important;
+}
+.stat-card-custom:active {
+    transform: none !important;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.05) !important;
+}
+.stat-card-custom.gc-blue {
+    background: linear-gradient(135deg, #244886 0%, #3a6fb3 100%);
+}
+.stat-card-custom.gc-indigo {
+    background: linear-gradient(135deg, #f2994a 0%, #f2c94c 100%);
+}
+.stat-card-custom.gc-green {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+}
+.stat-card-custom.gc-red {
+    background: linear-gradient(135deg, #cb2d3e 0%, #ef473a 100%);
+}
+.stat-card-custom.gc-purple {
+    background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+}
+.stat-card-custom.gc-cyan {
+    background: linear-gradient(135deg, #2193b0 0%, #6dd5ed 100%);
+}
+.stat-card-custom.gc-orange {
+    background: linear-gradient(135deg, #ff9966 0%, #ff5e62 100%);
+}
+.stat-card-custom.gc-teal {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+}
+.stat-card-custom.gc-pink {
+    background: linear-gradient(135deg, #ec008c 0%, #fc6767 100%);
+}
+.stat-card-custom.gc-darkblue {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+}
+.stat-card-top-custom {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+.stat-card-label-custom {
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    opacity: 0.9;
+    margin-bottom: 6px;
+}
+.stat-card-value-custom {
+    font-size: 1.65rem;
+    font-weight: 800;
+    line-height: 1;
+}
+.stat-card-unit-custom {
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+.stat-card-icon-custom {
+    font-size: 1.8rem;
+    opacity: 0.25;
+}
+.stat-card-footer-custom {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    opacity: 0.85;
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255,255,255,0.2);
+}
+.table-custom {
+    font-size: 0.82rem;
+}
+.table-custom th {
+    background-color: #f8f9fa;
+    color: #495057;
+    font-weight: 700;
+}
+.table-custom th, .table-custom td {
+    padding: 10px 14px !important;
+    vertical-align: middle !important;
+}
+
+/* Media Queries for Responsiveness */
+@media (max-width: 1400px) {
+    .stat-cards-row-custom {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
+    .stat-card-custom {
+        padding: 12px 14px;
+        min-height: 95px;
+    }
+    .stat-card-value-custom {
+        font-size: 1.5rem;
+    }
+    .stat-card-unit-custom {
+        font-size: 0.8rem;
+    }
+    .stat-card-label-custom {
+        font-size: 0.78rem;
+        margin-bottom: 4px;
+    }
+    .stat-card-icon-custom {
+        font-size: 1.6rem;
+    }
+    .stat-card-footer-custom {
+        font-size: 0.65rem;
+        margin-top: 8px;
+        padding-top: 8px;
+    }
+}
+@media (max-width: 991px) {
+    .stat-cards-row-custom {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+@media (max-width: 576px) {
+    .dashboard-page {
+        padding: 12px 10px;
+    }
+    .dashboard-page h4 {
+        font-size: 1.15rem !important;
+    }
+    .dashboard-page p.small {
+        font-size: 0.7rem !important;
+    }
+    .stat-cards-row-custom {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+    .stat-card-custom {
+        padding: 10px 10px;
+        min-height: 80px;
+        border-radius: 10px;
+    }
+    .stat-card-label-custom {
+        font-size: 0.7rem;
+        margin-bottom: 3px;
+    }
+    .stat-card-value-custom {
+        font-size: 1.25rem;
+    }
+    .stat-card-unit-custom {
+        font-size: 0.72rem;
+    }
+    .stat-card-icon-custom {
+        font-size: 1.3rem;
+    }
+    .stat-card-footer-custom {
+        font-size: 0.6rem;
+        margin-top: 6px;
+        padding-top: 6px;
+        gap: 4px;
+    }
+    .table-custom {
+        font-size: 0.75rem;
+    }
+    .table-custom th, .table-custom td {
+        padding: 6px 8px !important;
+    }
+    .table-custom th {
+        font-size: 0.72rem;
+    }
+    .badge {
+        font-size: 0.65rem !important;
+        padding: 4px 8px !important;
+    }
+}
+
+/* ===== Premium Charts & Analytics Styling ===== */
+.chart-card-custom {
+    background: #ffffff !important;
+    border: 1px solid rgba(0, 0, 0, 0.05) !important;
+    border-radius: 14px !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.02), 0 2px 5px rgba(0, 0, 0, 0.01) !important;
+    overflow: hidden;
+    transition: transform 0.25s ease, box-shadow 0.25s ease !important;
+}
+.chart-card-custom:hover {
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05), 0 3px 8px rgba(0, 0, 0, 0.02) !important;
+}
+.card-header-custom {
+    background-color: #ffffff;
+    border-bottom: 1px solid #f0f4f8;
+    padding: 16px 20px;
+}
+.chart-card-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #2d3748;
+    margin: 0;
+    font-family: 'Noto Sans Lao Looped', sans-serif;
+}
+.chart-badge-custom {
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background-color: #edf2f7;
+    color: #4a5568;
+    font-family: 'Noto Sans Lao Looped', sans-serif;
+}
+.chart-container-custom {
+    position: relative;
+    height: 260px;
+    width: 100%;
+}
+.chart-container-custom.doughnut-container {
+    height: 210px;
+    margin-top: 10px;
+}
+.chart-explanation-custom {
+    font-family: 'Noto Sans Lao Looped', sans-serif;
+}
+.explanation-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #2d3748;
+    margin-bottom: 8px;
+    font-family: 'Noto Sans Lao Looped', sans-serif;
+}
+.explanation-text {
+    font-size: 0.82rem;
+    color: #4a5568;
+    line-height: 1.6;
+    font-family: 'Noto Sans Lao Looped', sans-serif;
+}
+.explanation-list {
+    font-size: 0.82rem;
+    color: #4a5568;
+    padding-left: 20px;
+    margin-bottom: 0;
+    font-family: 'Noto Sans Lao Looped', sans-serif;
+}
+.explanation-list li {
+    margin-bottom: 6px;
+    line-height: 1.5;
+}
+.condition-stats-custom {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    font-family: 'Noto Sans Lao Looped', sans-serif;
+}
+.stat-item-custom {
+    display: flex;
+    align-items: center;
+    font-size: 0.82rem;
+    color: #4a5568;
+}
+.stat-item-custom .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+.stat-item-custom .dot.dot-good {
+    background-color: #10b981;
+}
+.stat-item-custom .dot.dot-broken {
+    background-color: #ef4444;
+}
+.stat-item-custom .label {
+    margin-right: 6px;
+    font-weight: 600;
+}
+.stat-item-custom .value {
+    margin-left: auto;
+}
+.card-footer-explanation-custom {
+    background-color: #fffaf0;
+    border-radius: 10px;
+    padding: 14px;
+    border: 1px solid #feebc8;
+    font-family: 'Noto Sans Lao Looped', sans-serif;
+}
+

@@ -1,0 +1,3 @@
+﻿user_id,fname,lname,gender,dob,tel,address,status,username,password,permissions,profile_img,created_at,remark
+5,KHOLA,SYNONTHA,ຊາຍ,2026-05-22,"020 95321848","ບ້ານ ໂນນສະຫວ່າງ ເມືອງ ວຽງຄຳ ແຂວງ ວຽງຄຳ",ພະນັກງານ,khola,$2y$10$.lTOs3FCe9WbbW7Td7xxsuXK4X1A8G9ti/YGrShkY9EH41fmPdgnS,"[""users""]",default.png,"2026-05-22 19:24:19",
+6,admin,system,ຊາຍ,2026-05-22,02099999999,"BCT College",ຜູ້ບໍລິຫານ,admin,$2y$10$.lTOs3FCe9WbbW7Td7xxsuXK4X1A8G9ti/YGrShkY9EH41fmPdgnS,[],default.png,"2026-05-22 19:39:59","fallback admin"
