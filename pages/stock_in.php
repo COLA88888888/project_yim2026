@@ -65,7 +65,11 @@ if ($result) {
                 <h5 class="fw-bold text-dark mb-3 border-bottom pb-2">
                     <i class="fas fa-cart-plus text-primary me-1"></i> ເລືອກສິນຄ້າ
                 </h5>
-                
+                <div class="mb-3">
+                    <label class="form-label fw-bold"><i class="fas fa-barcode me-1 text-primary"></i> ຍິງບາໂຄ້ດສິນຄ້າ (Barcode)</label>
+                    <input type="text" id="barcodeInput" class="form-control" placeholder="ຍິງບາໂຄ້ດຢູ່ບ່ອນນີ້..." style="font-weight: bold; font-size: 1.1rem; border-color: #3f51b5;" autofocus>
+                </div>
+
                 <div class="mb-3">
                     <label class="form-label fw-bold">ເລືອກສິນຄ້າ</label>
                     <select id="productSelect" class="form-control" style="font-weight: bold;">
@@ -181,6 +185,46 @@ $(document).ready(function() {
         }
     });
 
+    // Barcode scanning input handlers
+    $('#barcodeInput').on('input', function() {
+        let barcode = $(this).val().trim();
+        if (barcode === '') return;
+        $('#productSelect option').each(function() {
+            if ($(this).data('code') == barcode) {
+                $('#productSelect').val($(this).val()).trigger('change');
+                return false; // break loop
+            }
+        });
+    });
+
+    $('#barcodeInput').on('keypress', function(e) {
+        if (e.which === 13) { // Enter key
+            e.preventDefault();
+            let barcode = $(this).val().trim();
+            if (barcode === '') return;
+
+            let found = false;
+            $('#productSelect option').each(function() {
+                if ($(this).data('code') == barcode) {
+                    $('#productSelect').val($(this).val()).trigger('change');
+                    found = true;
+                    return false; // break loop
+                }
+            });
+
+            if (found) {
+                $('#addItemBtn').trigger('click');
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'ບໍ່ພົບສິນຄ້າ',
+                    text: 'ບໍ່ພົບລະຫັດບາໂຄ້ດນີ້ໃນລະບົບສິນຄ້າ: ' + barcode
+                });
+            }
+            $(this).val('').focus();
+        }
+    });
+
     // Add Item to Cart
     $('#addItemBtn').on('click', function() {
         let opt = $('#productSelect').find('option:selected');
@@ -217,8 +261,9 @@ $(document).ready(function() {
             });
         }
 
-        // Clear select
+        // Clear select and barcode input
         $('#productSelect').val('').trigger('change');
+        $('#barcodeInput').val('').focus();
         renderCart();
     });
 
