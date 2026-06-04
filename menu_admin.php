@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 // ============================================
 // 1. ພາກເລີ່ມ SESSION ແລະ ກວດສອບການເຂົ້າສູ່ລະບົບ
 // ============================================
@@ -41,7 +41,7 @@ $profile_img_path = 'assets/img/users/' . $profile_img;
 <!-- ============================================ -->
  <html>
   <!-- ໂຫຼດຟອນພາສາລາວແບບ Local (ໃຊ້ໄດ້ໂດຍບໍ່ຕ້ອງໃຊ້ອິນເຕີເນັດ) -->
-  <link rel="stylesheet" href="assets/css/local-font.css">
+  <link rel="stylesheet" href="assets/css/local-font.css?v=<?php echo time(); ?>">
 <link rel="stylesheet" href="assets/css/pages/menu-sidebar.css?v=<?php echo time(); ?>">
 <head>
   <meta charset="utf-8">

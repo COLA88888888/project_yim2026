@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 if (!isset($base_path)) {
     $base_path = '';
 }
@@ -11,7 +11,7 @@ if (!isset($base_path)) {
     <title>ລະບົບບໍລິຫານຈັດການຍິມ & ຟິດເນັດ (Gym System)</title>
     
     <!-- Local Font: Noto Sans Lao Looped (Offline) -->
-    <link rel="stylesheet" href="<?php echo $base_path; ?>assets/css/local-font.css">
+    <link rel="stylesheet" href="<?php echo $base_path; ?>assets/css/local-font.css?v=<?php echo time(); ?>">
     
     <!-- Font Awesome -->
     <link rel="stylesheet" href="<?php echo $base_path; ?>plugins/fontawesome-free/css/all.min.css">
@@ -27,8 +27,8 @@ if (!isset($base_path)) {
     <link rel="stylesheet" href="<?php echo $base_path; ?>plugins/daterangepicker/daterangepicker.css">
 
     <style>
-      body { font-family: 'Noto Sans Lao Looped', sans-serif; }
-      * { font-family: 'Noto Sans Lao Looped', sans-serif; }
+      body { font-family: 'Noto Sans Lao', 'Noto Sans Lao Looped', sans-serif; }
+      * { font-family: 'Noto Sans Lao', 'Noto Sans Lao Looped', sans-serif; }
       
       /* Mobile header alignment override - force left alignment of card titles */
       @media (max-width: 767.98px) {

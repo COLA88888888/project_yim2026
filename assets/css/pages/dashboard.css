@@ -1,5 +1,5 @@
 /* ===== Dashboard Page Styles ===== */
-body { font-family: 'Noto Sans Lao Looped', sans-serif; background: #f0f4f8; }
+body { font-family: 'Noto Sans Lao', 'Noto Sans Lao Looped', sans-serif; background: #f0f4f8; }
 .dashboard-page { padding: 24px 20px 20px; }
 
 /* ===== Modern & Compact Stat Cards ===== */

@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 if (session_status() === PHP_SESSION_NONE) session_start();
 if (!isset($_SESSION['checked']) || $_SESSION['checked'] !== 1 || !isset($_SESSION['user_id'])) {
     echo "<script>window.top.location.href = '../index.php?expired=1';</script>";
@@ -31,7 +31,7 @@ foreach ($equipment as $e) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ອຸປະກອນເພ / ຊຳລຸດ</title>
-    <link rel="stylesheet" href="../assets/css/local-font.css">
+    <link rel="stylesheet" href="../assets/css/local-font.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="../bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="../icon/css/all.min.css">
     <script src="../plugins/jquery/jquery.min.js"></script>

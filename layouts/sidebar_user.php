@@ -93,6 +93,59 @@
         </li>
         <?php endif; ?>
 
+        <!-- ຫົວຂໍ້: ຂາຍສິນຄ້າ & ສາງ -->
+        <li class="nav-header text-uppercase" style="color: rgba(255,255,255,0.5); font-size: 0.7rem; letter-spacing: 1.5px; padding-top: 20px;">ຂາຍສິນຄ້າ & ສາງ</li>
+
+        <!-- ເມນູ: ຂາຍສິນຄ້າ (POS) -->
+        <?php if (hasPermission('sales', 'view')): ?>
+        <li class="nav-item">
+          <a href="pages/sales.php" target="frame" class="nav-link">
+            <i class="nav-icon fas fa-cash-register text-success"></i>
+            <p>ຂາຍສິນຄ້າ (POS)</p>
+          </a>
+        </li>
+        <?php endif; ?>
+
+        <!-- ເມນູ: ປະຫວັດການຂາຍ -->
+        <?php if (hasPermission('sales_history', 'view')): ?>
+        <li class="nav-item">
+          <a href="pages/sales_history.php" target="frame" class="nav-link">
+            <i class="nav-icon fas fa-history text-info"></i>
+            <p>ປະຫວັດການຂາຍ</p>
+          </a>
+        </li>
+        <?php endif; ?>
+
+        <!-- ເມນູ: ນຳເຂົ້າສິນຄ້າ -->
+        <?php if (hasPermission('stock_in', 'view')): ?>
+        <li class="nav-item">
+          <a href="pages/stock_in.php" target="frame" class="nav-link">
+            <i class="nav-icon fas fa-file-import text-warning"></i>
+            <p>ນຳເຂົ້າສິນຄ້າ</p>
+          </a>
+        </li>
+        <?php endif; ?>
+
+        <!-- ເມນູ: ຈັດການຂໍ້ມູນສິນຄ້າ -->
+        <?php if (hasPermission('products', 'view')): ?>
+        <li class="nav-item">
+          <a href="pages/products.php" target="frame" class="nav-link">
+            <i class="nav-icon fas fa-box"></i>
+            <p>ຂໍ້ມູນສິນຄ້າ</p>
+          </a>
+        </li>
+        <?php endif; ?>
+
+        <!-- ເມນູ: ຈັດການປະເພດສິນຄ້າ -->
+        <?php if (hasPermission('product_categories', 'view')): ?>
+        <li class="nav-item">
+          <a href="pages/product_categories.php" target="frame" class="nav-link">
+            <i class="nav-icon fas fa-folder"></i>
+            <p>ປະເພດສິນຄ້າ</p>
+          </a>
+        </li>
+        <?php endif; ?>
+
       </ul>
     </nav>
     <!-- /.sidebar-menu -->

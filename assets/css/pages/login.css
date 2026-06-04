@@ -1,12 +1,12 @@
 /* ===== BCT School Login Page Custom Styles ===== */
-*:not(.fas):not(.far):not(.fab):not(.fa) { font-family: 'Noto Sans Lao Looped', sans-serif !important; }
+*:not(.fas):not(.far):not(.fab):not(.fa) { font-family: 'Noto Sans Lao', 'Noto Sans Lao Looped', sans-serif !important; }
 .fas, .far, .fab, .fa { font-family: "Font Awesome 5 Free" !important; font-weight: 900 !important; }
 :root {
     --primary-blue: #007bff;
     --blue-hover: #0069d9;
 }
 body {
-    font-family: 'Noto Sans Lao Looped', sans-serif !important;
+    font-family: 'Noto Sans Lao', 'Noto Sans Lao Looped', sans-serif !important;
     margin: 0;
     background-color: #f8f9fa;
     height: 100vh;

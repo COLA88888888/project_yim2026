@@ -3,7 +3,7 @@
    CSS ສະເພາະໜ້າ permission_manage.php
    ============================================================ */
 
-* { font-family: 'Noto Sans Lao Looped', 'Phetsarath OT', sans-serif; }
+* { font-family: 'Noto Sans Lao', 'Noto Sans Lao Looped', 'Phetsarath OT', sans-serif; }
 
 body {
     background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);

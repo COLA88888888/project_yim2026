@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 session_start();
 
 // ກວດສອບວ່າເຂົ້າສູ່ລະບົບແລ້ວບໍ່
@@ -35,7 +35,7 @@ $nav_img_path = $profile_img_path;
 ?>
 <html>
     <!-- Local Font: Noto Sans Lao Looped (Works Offline) -->
-    <link rel="stylesheet" href="assets/css/local-font.css">
+    <link rel="stylesheet" href="assets/css/local-font.css?v=<?php echo time(); ?>">
 <link rel="stylesheet" href="assets/css/pages/menu-sidebar.css?v=<?php echo time(); ?>">
 <head>
 

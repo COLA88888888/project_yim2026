@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -149,7 +149,7 @@ $staffMax = !empty($staffRows) ? max(1, (float)max(array_column($staffRows, 'tot
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ລາຍງານລາຍຮັບ</title>
     <!-- Google Fonts - Noto Sans Lao Looped -->
-    <link rel="stylesheet" href="../assets/css/local-font.css">
+    <link rel="stylesheet" href="../assets/css/local-font.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="../bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="../icon/css/all.min.css">
     <script src="../plugins/jquery/jquery.min.js"></script>

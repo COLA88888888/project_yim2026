@@ -30,7 +30,7 @@ body {
 }
 
 body, div, h1, h2, h3, h4, h5, h6, p, a, span, button, input, select, textarea, label {
-  font-family: 'Noto Sans Lao Looped', 'Outfit', sans-serif;
+  font-family: 'Noto Sans Lao', 'Noto Sans Lao Looped', 'Outfit', sans-serif;
 }
 
 /* Exclude Font Awesome from font override */

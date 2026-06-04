@@ -88,6 +88,49 @@
           </a>
         </li>
 
+        <!-- ຫົວຂໍ້: ຂາຍສິນຄ້າ & ສາງ -->
+        <li class="nav-header text-uppercase" style="color: rgba(255,255,255,0.5); font-size: 0.7rem; letter-spacing: 1.5px; padding-top: 20px;">ຂາຍສິນຄ້າ & ສາງ</li>
+
+        <!-- ເມນູ: ຂາຍສິນຄ້າ (POS) -->
+        <li class="nav-item">
+          <a href="pages/sales.php" target="frame" class="nav-link">
+            <i class="nav-icon fas fa-cash-register text-success"></i>
+            <p>ຂາຍສິນຄ້າ (POS)</p>
+          </a>
+        </li>
+
+        <!-- ເມນູ: ປະຫວັດການຂາຍ -->
+        <li class="nav-item">
+          <a href="pages/sales_history.php" target="frame" class="nav-link">
+            <i class="nav-icon fas fa-history text-info"></i>
+            <p>ປະຫວັດການຂາຍ</p>
+          </a>
+        </li>
+
+        <!-- ເມນູ: ນຳເຂົ້າສິນຄ້າ -->
+        <li class="nav-item">
+          <a href="pages/stock_in.php" target="frame" class="nav-link">
+            <i class="nav-icon fas fa-file-import text-warning"></i>
+            <p>ນຳເຂົ້າສິນຄ້າ</p>
+          </a>
+        </li>
+
+        <!-- ເມນູ: ຈັດການຂໍ້ມູນສິນຄ້າ -->
+        <li class="nav-item">
+          <a href="pages/products.php" target="frame" class="nav-link">
+            <i class="nav-icon fas fa-box"></i>
+            <p>ຂໍ້ມູນສິນຄ້າ</p>
+          </a>
+        </li>
+
+        <!-- ເມນູ: ຈັດການປະເພດສິນຄ້າ -->
+        <li class="nav-item">
+          <a href="pages/product_categories.php" target="frame" class="nav-link">
+            <i class="nav-icon fas fa-folder"></i>
+            <p>ປະເພດສິນຄ້າ</p>
+          </a>
+        </li>
+
         <!-- ຫົວຂໍ້: ລາຍງານຂໍ້ມູນ -->
         <li class="nav-header text-uppercase" style="color: rgba(255,255,255,0.5); font-size: 0.7rem; letter-spacing: 1.5px; padding-top: 20px;">ລາຍງານຂໍ້ມູນ</li>
 

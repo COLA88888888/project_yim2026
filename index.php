@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 session_start();
 if (isset($_SESSION['checked'])) {
     header("Location: menu_admin.php");
@@ -18,7 +18,7 @@ $bct_bg = 'assets/img/logo/gym_bg.png?v=' . time();
     <link rel="stylesheet" href="plugins/fontawesome-free/css/all.min.css">
 
     <link rel="shortcut icon" href="<?php echo $bct_logo; ?>" type="image/x-icon">
-    <link rel="stylesheet" href="assets/css/local-font.css">
+    <link rel="stylesheet" href="assets/css/local-font.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="assets/css/pages/login.css?v=<?php echo time(); ?>">
     <style>
         .hero-bg {

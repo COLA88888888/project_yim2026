@@ -5,14 +5,14 @@
 
 /* === Font Settings === */
 *:not(.fas):not(.far):not(.fab):not(.fa) {
-    font-family: 'Noto Sans Lao Looped', sans-serif !important;
+    font-family: 'Noto Sans Lao', 'Noto Sans Lao Looped', sans-serif !important;
 }
 body {
-    font-family: 'Noto Sans Lao Looped', sans-serif !important;
+    font-family: 'Noto Sans Lao', 'Noto Sans Lao Looped', sans-serif !important;
 }
 html, body, .nav-link, .brand-text, h1, h2, h3, h4, h5, h6,
 .btn, .form-control, .card-title {
-    font-family: 'Noto Sans Lao Looped', sans-serif !important;
+    font-family: 'Noto Sans Lao', 'Noto Sans Lao Looped', sans-serif !important;
 }
 /* Keep Font Awesome Icons working */
 .fas, .far, .fab, .fa {
