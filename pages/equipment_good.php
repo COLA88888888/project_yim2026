@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 if (session_status() === PHP_SESSION_NONE) session_start();
 if (!isset($_SESSION['checked']) || $_SESSION['checked'] !== 1 || !isset($_SESSION['user_id'])) {
     echo "<script>window.top.location.href = '../index.php?expired=1';</script>";
@@ -259,7 +259,7 @@ function viewEquipment(equipmentId) {
                 $('#viewEqQty').html('<span class="badge bg-light text-dark border">' + e.quantity + ' ເຄື່ອງ</span>');
                 
                 // Format price
-                let formattedPrice = parseFloat(e.price).toLocaleString('en-US') + ' ₭';
+                let formattedPrice = parseFloat(e.price).toLocaleString('en-US') + ' ກີບ';
                 $('#viewEqPrice').text(formattedPrice);
                 
                 // Format date

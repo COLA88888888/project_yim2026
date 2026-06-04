@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -636,7 +636,7 @@ function viewEquipment(equipmentId) {
                 $('#viewEqQty').html('<span class="badge bg-light text-dark border">' + e.quantity + ' ເຄື່ອງ</span>');
                 
                 // Format price
-                let formattedPrice = parseFloat(e.price).toLocaleString('en-US') + ' ₭';
+                let formattedPrice = parseFloat(e.price).toLocaleString('en-US') + ' ກີບ';
                 $('#viewEqPrice').text(formattedPrice);
                 
                 // Format date

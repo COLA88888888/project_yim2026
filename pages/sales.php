@@ -242,7 +242,7 @@ if ($resProd) {
 
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <span class="h5 fw-bold text-dark mb-0">ຍອດຊຳລະທັງໝົດ:</span>
-                        <span class="h3 fw-bold text-success mb-0" id="cartTotalText">0 ₭</span>
+                        <span class="h3 fw-bold text-success mb-0" id="cartTotalText">0 ກີບ</span>
                     </div>
 
                     <button class="btn btn-success w-100 fw-bold py-2 shadow-sm" id="checkoutBtn" disabled onclick="checkout()">
@@ -279,7 +279,7 @@ let cart = [];
 let productsList = <?= json_encode($products) ?>;
 
 function formatCurrency(amount) {
-    return new Intl.NumberFormat('lo-LA').format(amount) + ' ₭';
+    return new Intl.NumberFormat('lo-LA').format(amount) + ' ກີບ';
 }
 
 function addToCart(product) {
@@ -347,7 +347,7 @@ function renderCart() {
                 ກະຕ່າສິນຄ້າວ່າງເປົ່າ
             </div>
         `);
-        $('#cartTotalText').text('0 ₭');
+        $('#cartTotalText').text('0 ກີບ');
         $('#checkoutBtn').prop('disabled', true);
         return;
     }

@@ -147,7 +147,7 @@ if ($result) {
                     <div class="p-3 border-top bg-light">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <span class="h5 fw-bold text-dark mb-0">ຍອດລວມຕົ້ນທຶນທັງໝົດ:</span>
-                            <span class="h4 fw-bold text-success mb-0" id="totalAmountText">0 ₭</span>
+                            <span class="h4 fw-bold text-success mb-0" id="totalAmountText">0 ກີບ</span>
                         </div>
                         <button type="button" id="saveImportBtn" class="btn btn-success w-100 fw-bold py-2 shadow-sm" disabled>
                             <i class="fas fa-save me-1"></i> ບັນທຶກການນຳເຂົ້າສິນຄ້າ
@@ -164,7 +164,7 @@ let cart = [];
 
 // Format numbers
 function formatCurrency(amount) {
-    return new Intl.NumberFormat('lo-LA').format(amount) + ' ₭';
+    return new Intl.NumberFormat('lo-LA').format(amount) + ' ກີບ';
 }
 
 $(document).on('input', '.price-input', function() {
@@ -347,7 +347,7 @@ function renderCart() {
                 </td>
             </tr>
         `);
-        $('#totalAmountText').text('0 ₭');
+        $('#totalAmountText').text('0 ກີບ');
         $('#saveImportBtn').prop('disabled', true);
         return;
     }

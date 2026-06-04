@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -395,7 +395,7 @@ $staffMax = !empty($staffRows) ? max(1, (float)max(array_column($staffRows, 'tot
                 <div class="d-flex justify-content-between align-items-center w-100">
                     <div>
                         <span class="card-title">ເງິນສົດ</span>
-                        <div class="card-value" id="cashTotal"><?= number_format($cash_total, 0, '.', ',') ?> ₭</div>
+                        <div class="card-value" id="cashTotal"><?= number_format($cash_total, 0, '.', ',') ?> ກີບ</div>
                         <?php $cash_pct = $total_revenue > 0 ? round($cash_total / $total_revenue * 100, 1) : 0; ?>
                         <div class="card-desc"><i class="fas fa-percentage me-1"></i><?= $cash_pct ?>% ຂອງທັງໝົດ</div>
                     </div>
@@ -410,7 +410,7 @@ $staffMax = !empty($staffRows) ? max(1, (float)max(array_column($staffRows, 'tot
                 <div class="d-flex justify-content-between align-items-center w-100">
                     <div>
                         <span class="card-title">ເງິນໂອນ</span>
-                        <div class="card-value" id="transferTotal"><?= number_format($transfer_total, 0, '.', ',') ?> ₭</div>
+                        <div class="card-value" id="transferTotal"><?= number_format($transfer_total, 0, '.', ',') ?> ກີບ</div>
                         <?php $transfer_pct = $total_revenue > 0 ? round($transfer_total / $total_revenue * 100, 1) : 0; ?>
                         <div class="card-desc"><i class="fas fa-percentage me-1"></i><?= $transfer_pct ?>% ຂອງທັງໝົດ</div>
                     </div>
@@ -425,7 +425,7 @@ $staffMax = !empty($staffRows) ? max(1, (float)max(array_column($staffRows, 'tot
                 <div class="d-flex justify-content-between align-items-center w-100">
                     <div>
                         <span class="card-title">ລວມເງິນທັງໝົດ</span>
-                        <div class="card-value" id="grandTotal"><?= number_format($total_revenue, 0, '.', ',') ?> ₭</div>
+                        <div class="card-value" id="grandTotal"><?= number_format($total_revenue, 0, '.', ',') ?> ກີບ</div>
                         <div class="card-desc"><i class="fas fa-list-ol me-1"></i><?= count($transactions) ?> ລາຍການ</div>
                     </div>
                     <div class="payment-card-icon-right">
@@ -480,7 +480,7 @@ $staffMax = !empty($staffRows) ? max(1, (float)max(array_column($staffRows, 'tot
                                 <?= htmlspecialchars($s['staff_name']) ?>
                             </span>
                             <span class="fw-bold" style="font-size:0.83rem;color:<?= $clr ?>;">
-                                <?= number_format((float)$s['total_revenue'],0,'.',',') ?> ₭
+                                <?= number_format((float)$s['total_revenue'],0,'.',',') ?> ກີບ
                             </span>
                         </div>
                         <div class="progress" style="height:7px;border-radius:8px;background:#f1f5f9;">
@@ -642,15 +642,15 @@ $staffMax = !empty($staffRows) ? max(1, (float)max(array_column($staffRows, 'tot
                         <tr id="summaryFooterRow" style="background-color:#f8fafc;border-top:2px solid #dee2e6;">
                             <!-- Default Footer View -->
                             <!-- <td colspan="3" class="fw-bold text-end text-muted cell-default" style="font-size:0.9rem;">
-                                <span class="me-3"><i class="fas fa-money-bill-wave text-success me-1"></i>ເງິນສົດ: <span id="footerCash" class="text-success fw-bold"><?= number_format($cash_total,0,'.',',') ?> ₭</span></span>
-                                <span class="me-3"><i class="fas fa-mobile-alt text-primary me-1"></i>ເງິນໂອນ: <span id="footerTransfer" class="text-primary fw-bold"><?= number_format($transfer_total,0,'.',',') ?> ₭</span></span>
+                                <span class="me-3"><i class="fas fa-money-bill-wave text-success me-1"></i>ເງິນສົດ: <span id="footerCash" class="text-success fw-bold"><?= number_format($cash_total,0,'.',',') ?> ກີບ</span></span>
+                                <span class="me-3"><i class="fas fa-mobile-alt text-primary me-1"></i>ເງິນໂອນ: <span id="footerTransfer" class="text-primary fw-bold"><?= number_format($transfer_total,0,'.',',') ?> ກີບ</span></span>
                             </td> -->
                             <td colspan="2" class="text-end fw-bold text-dark cell-default" style="font-size:1rem;">ລວມທັງໝົດ:</td>
 
                             <!-- Daily Tab Footer View -->
                             <!-- <td colspan="2" class="fw-bold text-end text-muted cell-daily-only d-none" style="font-size:0.9rem;">
-                                <span class="me-3"><i class="fas fa-money-bill-wave text-success me-1"></i>ເງິນສົດ: <span id="footerCashDaily" class="text-success fw-bold"><?= number_format($cash_total,0,'.',',') ?> ₭</span></span>
-                                <span class="me-3"><i class="fas fa-mobile-alt text-primary me-1"></i>ເງິນໂອນ: <span id="footerTransferDaily" class="text-primary fw-bold"><?= number_format($transfer_total,0,'.',',') ?> ₭</span></span>
+                                <span class="me-3"><i class="fas fa-money-bill-wave text-success me-1"></i>ເງິນສົດ: <span id="footerCashDaily" class="text-success fw-bold"><?= number_format($cash_total,0,'.',',') ?> ກີບ</span></span>
+                                <span class="me-3"><i class="fas fa-mobile-alt text-primary me-1"></i>ເງິນໂອນ: <span id="footerTransferDaily" class="text-primary fw-bold"><?= number_format($transfer_total,0,'.',',') ?> ກີບ</span></span>
                             </td> -->
                             <td colspan="1" class="text-end fw-bold text-dark cell-daily-only d-none" style="font-size:1rem;">ລວມທັງໝົດ:</td>
 
@@ -749,7 +749,7 @@ $(document).ready(function() {
         $('#revCount').text(filteredRows.length);
 
         // Update dynamic sums
-        var fmt = function(n) { return n.toLocaleString('en-US') + ' ₭'; };
+        var fmt = function(n) { return n.toLocaleString('en-US') + ' ກີບ'; };
         $('#totalRevenueSum').text(fmt(totalSum));
         $('#cashTotal').text(fmt(cashSum));
         $('#transferTotal').text(fmt(transferSum));
@@ -891,7 +891,7 @@ $(document).ready(function() {
                 tooltip: {
                     callbacks: {
                         label: function(c) {
-                            return c.dataset.label + ': ' + c.raw.toLocaleString('en-US') + ' ₭';
+                            return c.dataset.label + ': ' + c.raw.toLocaleString('en-US') + ' ກີບ';
                         }
                     }
                 }

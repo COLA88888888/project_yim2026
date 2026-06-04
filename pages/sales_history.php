@@ -155,7 +155,7 @@ if ($result) {
 
 <script>
 function formatCurrency(amount) {
-    return new Intl.NumberFormat('lo-LA').format(amount) + ' ₭';
+    return new Intl.NumberFormat('lo-LA').format(amount) + ' ກີບ';
 }
 
 $(document).ready(function() {

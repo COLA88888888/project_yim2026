@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -292,14 +292,14 @@ if ($pkgRes) {
                 <td style="padding: 12px 10px;" id="printPackageName">ແພັກເກດລາຍເດືອນ</td>
                 <td style="padding: 12px 10px; text-align: center;" id="printDuration">30 ມື້</td>
                 <td style="padding: 12px 10px; text-align: center;" id="printDates">01/01/2026 - 31/01/2026</td>
-                <td style="padding: 12px 10px; text-align: right; font-weight: bold;" id="printPrice">250,000 ₭</td>
+                <td style="padding: 12px 10px; text-align: right; font-weight: bold;" id="printPrice">250,000 ກີບ</td>
             </tr>
         </tbody>
     </table>
 
     <div style="float: right; width: 300px; text-align: right; font-size: 1rem; line-height: 1.8;">
         <p style="margin: 0;"><strong>ຊຳລະດ້ວຍ:</strong> <span id="printPaymentMethod">ເງິນສົດ</span></p>
-        <p style="margin: 10px 0 0 0; font-size: 1.2rem; border-top: 2px double #000; padding-top: 10px;"><strong>ຍອດລວມທັງໝົດ:</strong> <span id="printTotal" style="color: #28a745; font-weight: bold;">250,000 ₭</span></p>
+        <p style="margin: 10px 0 0 0; font-size: 1.2rem; border-top: 2px double #000; padding-top: 10px;"><strong>ຍອດລວມທັງໝົດ:</strong> <span id="printTotal" style="color: #28a745; font-weight: bold;">250,000 ກີບ</span></p>
     </div>
     
     <div style="clear: both; margin-top: 80px; text-align: center; font-size: 0.85rem; color: #666; border-top: 1px dashed #ccc; padding-top: 15px;">
@@ -625,7 +625,7 @@ function printReceipt(membershipId) {
                 let dateStr = new Date(s.created_at).toLocaleDateString('lo-LA', {day: 'numeric', month: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit'});
                 let startFormatted = new Date(s.start_date).toLocaleDateString('lo-LA');
                 let endFormatted = new Date(s.end_date).toLocaleDateString('lo-LA');
-                let priceFormatted = Number(s.price_paid).toLocaleString() + ' ₭';
+                let priceFormatted = Number(s.price_paid).toLocaleString() + ' ກີບ';
 
                 // Populate print area
                 $('#printReceiptId').text('#' + String(s.membership_id).padStart(5, '0'));

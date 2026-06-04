@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 if (session_status() === PHP_SESSION_NONE) session_start();
 if (!isset($_SESSION['checked']) || $_SESSION['checked'] !== 1 || !isset($_SESSION['user_id'])) {
     echo "<script>window.top.location.href = '../index.php?expired=1';</script>";
@@ -173,7 +173,7 @@ foreach ($rows as $r) {
                 <div class="col-sm-4">
                     <div class="stat-mini" style="background:linear-gradient(135deg,#11998e,#38ef7d);">
                         <div class="stat-label"><i class="fas fa-dollar-sign me-1"></i> ລາຍຮັບວັນນີ້</div>
-                        <div class="stat-value" id="statRevenue"><?= number_format($total_revenue, 0, '.', ',') ?> ₭</div>
+                        <div class="stat-value" id="statRevenue"><?= number_format($total_revenue, 0, '.', ',') ?> ກີບ</div>
                     </div>
                 </div>
                 <div class="col-sm-4">
@@ -255,7 +255,7 @@ foreach ($rows as $r) {
                                                 </span>
                                             <?php endif; ?>
                                         </td>
-                                        <td class="text-end fw-bold text-success"><?= number_format((float)$r['price_paid'], 0, '.', ',') ?> ₭</td>
+                                        <td class="text-end fw-bold text-success"><?= number_format((float)$r['price_paid'], 0, '.', ',') ?> ກີບ</td>
                                         <td class="text-center text-muted small"><?= htmlspecialchars($r['payment_method']) ?></td>
                                         <?php if (hasPermission('daily_checkin', 'delete')): ?>
                                         <td class="text-center">
@@ -309,7 +309,7 @@ function refreshStats() {
         if (res.success) {
             var s = res.stats;
             var rev = parseFloat(s.total_revenue || 0);
-            $('#statRevenue').text(rev.toLocaleString('en') + ' ₭');
+            $('#statRevenue').text(rev.toLocaleString('en') + ' ກີບ');
             $('#statMale').text((s.male_count || 0) + ' ຄົນ');
             $('#statFemale').text((s.female_count || 0) + ' ຄົນ');
         }
@@ -323,7 +323,7 @@ function prependRow(id, timeStr, gender, pricePaid, payMethod) {
     var genderBadge = gender === 'ຊາຍ'
         ? '<span class="badge px-3 py-2" style="background:#dbeafe;color:#1d4ed8;border-radius:12px;font-size:0.85rem;font-weight:700;"><i class="fas fa-mars me-1"></i> ຊາຍ</span>'
         : '<span class="badge px-3 py-2" style="background:#fce7f3;color:#be185d;border-radius:12px;font-size:0.85rem;font-weight:700;"><i class="fas fa-venus me-1"></i> ຍິງ</span>';
-    var priceFormatted = parseFloat(pricePaid.replace(',', '')).toLocaleString('en') + ' ₭';
+    var priceFormatted = parseFloat(pricePaid.replace(',', '')).toLocaleString('en') + ' ກີບ';
     var deleteBtn = <?= hasPermission('daily_checkin', 'delete') ? 'true' : 'false' ?> ?
         '<td class="text-center"><button class="btn btn-danger btn-sm btn-action" onclick="deleteRecord(' + id + ')" title="ລົບ"><i class="fas fa-trash-alt"></i></button></td>' : '';
     var parts = timeStr.split('|');
