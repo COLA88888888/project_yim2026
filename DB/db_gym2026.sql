@@ -278,7 +278,7 @@ CREATE TABLE `products` (
   UNIQUE KEY `product_code` (`product_code`),
   KEY `fk_products_category` (`category_id`),
   CONSTRAINT `fk_products_category` FOREIGN KEY (`category_id`) REFERENCES `product_categories` (`category_id`) ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -287,7 +287,7 @@ CREATE TABLE `products` (
 
 LOCK TABLES `products` WRITE;
 /*!40000 ALTER TABLE `products` DISABLE KEYS */;
-INSERT INTO `products` VALUES (1,'8859313500200','ນ້ຳດື່ມຫົວເສືອ (ຕຸກກາງ)',1,8000.00,12000.00,0,'ຕຸກ','prod_6a211eb920ac70.24757000.png','2026-06-04 13:31:21'),(2,'8859313500201','ນ້ຳດື່ມຫົວເສືອ (ຕຸກໃຫຍ່)',1,12000.00,18000.00,0,'ຕຸກ','prod_6a211ec4345425.98252732.png','2026-06-04 13:37:15');
+INSERT INTO `products` VALUES (1,'8859313500200','ນ້ຳດື່ມຫົວເສືອ (ຕຸກກາງ)',1,8000.00,12000.00,0,'ຕຸກ','prod_6a211eb920ac70.24757000.png','2026-06-04 13:31:21'),(2,'8859313500201','ນ້ຳດື່ມຫົວເສືອ (ຕຸກໃຫຍ່)',1,12000.00,18000.00,0,'ຕຸກ','prod_6a211ec4345425.98252732.png','2026-06-04 13:37:15'),(3,'8459780457570','CREATINE',2,200000.00,350000.00,0,'ປຸກ','prod_6a21211e2a0be2.30314595.png','2026-06-04 13:54:22'),(4,'95758087498583','WHEY',2,500000.00,800000.00,0,'ປຸກ','prod_6a2121f370c0d6.31215745.png','2026-06-04 13:57:55'),(5,'90458504534840','BAAM',2,450000.00,600000.00,0,'ປຸກ','prod_6a2122398cc703.39050120.png','2026-06-04 13:59:05');
 /*!40000 ALTER TABLE `products` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -458,4 +458,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-06-04 13:52:54
+-- Dump completed on 2026-06-04 14:01:48

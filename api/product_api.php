@@ -127,7 +127,7 @@ if ($action === 'create') {
     $categoryId = clean($conn, $_POST['category_id'] ?? '');
     $costPrice = str_replace(',', '', clean($conn, $_POST['cost_price'] ?? '0'));
     $salePrice = str_replace(',', '', clean($conn, $_POST['sale_price'] ?? ''));
-    $unit = clean($conn, $_POST['unit'] ?? 'ອັນ');
+    $unit = clean($conn, $_POST['unit'] ?? '');
 
     if ($productCode === '' || $productName === '' || $categoryId === '' || $salePrice === '') {
         jsonErr('ກະລຸນາປ້ອນຂໍ້ມູນໃຫ້ຄົບຖ້ວນ (ລະຫັດ, ຊື່ສິນຄ້າ, ປະເພດ, ແລະ ລາຄາຂາຍ)');
@@ -184,7 +184,7 @@ if ($action === 'update') {
     $categoryId = clean($conn, $_POST['category_id'] ?? '');
     $costPrice = str_replace(',', '', clean($conn, $_POST['cost_price'] ?? '0'));
     $salePrice = str_replace(',', '', clean($conn, $_POST['sale_price'] ?? ''));
-    $unit = clean($conn, $_POST['unit'] ?? 'ອັນ');
+    $unit = clean($conn, $_POST['unit'] ?? '');
 
     if ($productId === '') {
         jsonErr('ລະຫັດສິນຄ້າບໍ່ຖືກຕ້ອງ');

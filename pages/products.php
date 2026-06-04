@@ -192,11 +192,11 @@ if ($resCat) {
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">ລະຫັດສິນຄ້າ / ບາໂຄດ</label>
-                            <input type="text" name="product_code" id="product_code" class="form-control" placeholder="ເຊັ່ນ: P001, Barcode..." >
+                            <label class="form-label fw-bold">ລະຫັດສິນຄ້າ:</label>
+                            <input type="text" name="product_code" id="product_code" class="form-control" placeholder="ກະລຸນາປ້ອນລະຫັດສິນຄ້າ..." >
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">ປະເພດສິນຄ້າ</label>
+                            <label class="form-label fw-bold">ປະເພດສິນຄ້າ:</label>
                             <select name="category_id" id="category_id" class="form-control" style="font-weight: bold;">
                                 <option value="">-- ເລືອກປະເພດ --</option>
                                 <?php foreach ($categories as $c): ?>
@@ -207,24 +207,24 @@ if ($resCat) {
                     </div>
                     
                     <div class="mb-3">
-                        <label class="form-label fw-bold">ຊື່ສິນຄ້າ</label>
+                        <label class="form-label fw-bold">ຊື່ສິນຄ້າ:</label>
                         <input type="text" name="product_name" id="product_name" class="form-control" placeholder="ກະລຸນາປ້ອນຊື່ສິນຄ້າ..." >
                     </div>
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">ລາຄາຕົ້ນທຶນ</label>
-                            <input type="text" name="cost_price" id="cost_price" class="form-control price-input" placeholder="0">
+                            <label class="form-label fw-bold">ລາຄາຕົ້ນທຶນ:</label>
+                            <input type="text" name="cost_price" id="cost_price" class="form-control price-input" placeholder="ກະລຸນາປ້ອນລາຄາຕົ້ນທຶນ..." >
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">ລາຄາຂາຍ</label>
-                            <input type="text" name="sale_price" id="sale_price" class="form-control price-input" placeholder="5,000">
+                            <label class="form-label fw-bold">ລາຄາຂາຍ:</label>
+                            <input type="text" name="sale_price" id="sale_price" class="form-control price-input" placeholder="ກະລຸນາປ້ອນລາຄາຂາຍ..." >
                         </div>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label fw-bold">ໜ່ວຍນັບ</label>
-                        <input type="text" name="unit" id="unit" class="form-control" placeholder="ເຊັ່ນ: ກະປ໋ອງ, ອັນ, ຕຸກ, ຫໍ່..." value="ອັນ">
+                        <label class="form-label fw-bold">ໜ່ວຍນັບ:</label>
+                        <input type="text" name="unit" id="unit" class="form-control" placeholder="ກະລຸນາປ້ອນໜ່ວຍນັບ..." >
                     </div>
                 </div>
                 <div class="modal-footer bg-light" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
