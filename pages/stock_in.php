@@ -70,7 +70,7 @@ if ($result) {
                     <input type="text" id="barcodeInput" class="form-control" placeholder="ຍິງບາໂຄ້ດຢູ່ບ່ອນນີ້..." style="font-weight: bold; font-size: 1.1rem; border-color: #3f51b5;" autofocus>
                 </div>
 
-                <div class="mb-3">
+                <div class="mb-3" style="display: none;">
                     <label class="form-label fw-bold">ເລືອກສິນຄ້າ</label>
                     <select id="productSelect" class="form-control" style="font-weight: bold;">
                         <option value="">-- ເລືອກສິນຄ້າ --</option>
@@ -84,6 +84,11 @@ if ($result) {
                             </option>
                         <?php endforeach; ?>
                     </select>
+                </div>
+
+                <div class="mb-3" id="productNameDiv" style="display: none;">
+                    <label class="form-label fw-bold">ຊື່ສິນຄ້າ</label>
+                    <input type="text" id="selectedProductName" class="form-control bg-light" readonly style="font-weight: bold; font-size: 1.1rem; border-color: #28a745;">
                 </div>
 
                 <div class="row">
@@ -179,9 +184,13 @@ $(document).ready(function() {
             let cost = Math.round(parseFloat(opt.data('cost')) || 0);
             $('#itemCost').val(cost).trigger('input');
             $('#itemQty').val(1);
+            $('#selectedProductName').val(opt.data('name'));
+            $('#productNameDiv').slideDown(200);
         } else {
             $('#itemCost').val('');
             $('#itemQty').val(1);
+            $('#selectedProductName').val('');
+            $('#productNameDiv').slideUp(200);
         }
     });
 
