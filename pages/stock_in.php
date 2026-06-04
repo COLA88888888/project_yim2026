@@ -98,7 +98,7 @@ if ($result) {
                     </div>
                     <div class="col-md-6 mb-3">
                         <label class="form-label fw-bold">ຈຳນວນນຳເຂົ້າ:</label>
-                        <input type="number" id="itemQty" class="form-control" placeholder="1" min="1" value="1">
+                        <input type="text" id="itemQty" class="form-control qty-input" placeholder="1" value="1" style="font-weight: bold;">
                     </div>
                 </div>
 
@@ -176,6 +176,15 @@ $(document).on('input', '.price-input', function() {
     this.value = val.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 });
 
+$(document).on('input', '.qty-input', function() {
+    let val = this.value.replace(/\D/g, "");
+    if (val === '') {
+        this.value = '';
+        return;
+    }
+    this.value = val.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+});
+
 $(document).ready(function() {
     // Fill cost price when selecting product
     $('#productSelect').on('change', function() {
@@ -244,7 +253,7 @@ $(document).ready(function() {
         let code = opt.data('code');
         let name = opt.data('name');
         let cost = parseFloat($('#itemCost').val().replace(/,/g, '')) || 0;
-        let qty = parseInt($('#itemQty').val()) || 0;
+        let qty = parseInt($('#itemQty').val().replace(/,/g, '')) || 0;
         let unit = opt.data('unit');
 
         if (qty <= 0) {
@@ -357,7 +366,7 @@ function renderCart() {
                 <td><code>${item.product_code}</code></td>
                 <td class="fw-bold text-dark">${item.product_name}</td>
                 <td class="text-end">${formatCurrency(item.cost_price)}</td>
-                <td class="text-center"><span class="badge bg-light text-dark border">${item.quantity}</span></td>
+                <td class="text-center"><span class="badge bg-light text-dark border">${Number(item.quantity).toLocaleString('en-US')}</span></td>
                 <td class="text-end fw-bold">${formatCurrency(subtotal)}</td>
                 <td class="text-center">
                     <button class="btn btn-link text-danger p-0 remove-item-btn" data-index="${index}" title="ລົບອອກ">
