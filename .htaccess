@@ -1,2 +1,5 @@
 # Disable directory listing globally
 Options -Indexes
+
+# Set unique session name to prevent collision with other localhost projects
+php_value session.name GYM_SESSION_2026

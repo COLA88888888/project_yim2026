@@ -66,7 +66,7 @@ if ($result) {
                     <i class="fas fa-cart-plus text-primary me-1"></i> ເລືອກສິນຄ້າ
                 </h5>
                 <div class="mb-3">
-                    <label class="form-label fw-bold"><i class="fas fa-barcode me-1 text-primary"></i> ຍິງບາໂຄ້ດສິນຄ້າ (Barcode)</label>
+                    <label class="form-label fw-bold"><i class="fas fa-barcode me-1 text-primary"></i> ຍິງບາໂຄ້ດສິນຄ້າ...</label>
                     <input type="text" id="barcodeInput" class="form-control" placeholder="ຍິງບາໂຄ້ດຢູ່ບ່ອນນີ້..." style="font-weight: bold; font-size: 1.1rem; border-color: #3f51b5;" autofocus>
                 </div>
 
@@ -87,17 +87,17 @@ if ($result) {
                 </div>
 
                 <div class="mb-3" id="productNameDiv">
-                    <label class="form-label fw-bold">ຊື່ສິນຄ້າ</label>
-                    <input type="text" id="selectedProductName" class="form-control bg-light" readonly placeholder="ລໍຖ້າຍິງບາໂຄ້ດ..." style="font-weight: bold; font-size: 1.1rem; border-color: #28a745;">
+                    <label class="form-label fw-bold">ຊື່ສິນຄ້າ:</label>
+                    <input type="text" id="selectedProductName" class="form-control bg-light" readonly placeholder="ຊື່ສິນຄ້າ..." style="font-weight: bold; font-size: 1.1rem; border-color: #28a745;">
                 </div>
 
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold">ຕົ້ນທຶນນຳເຂົ້າ (ກີບ)</label>
+                        <label class="form-label fw-bold">ຕົ້ນທຶນນຳເຂົ້າ:</label>
                         <input type="text" id="itemCost" class="form-control bg-light price-input" readonly placeholder="0" style="font-weight: bold; color: #495057;">
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold">ຈຳນວນນຳເຂົ້າ</label>
+                        <label class="form-label fw-bold">ຈຳນວນນຳເຂົ້າ:</label>
                         <input type="number" id="itemQty" class="form-control" placeholder="1" min="1" value="1">
                     </div>
                 </div>
