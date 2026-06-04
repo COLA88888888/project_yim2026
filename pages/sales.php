@@ -8,6 +8,11 @@ if (!isset($_SESSION['checked']) || $_SESSION['checked'] !== 1 || !isset($_SESSI
 }
 require_once '../config/db.php';
 
+if (!hasPermission('sales', 'view')) {
+    echo "<script>window.top.location.href = '../index.php?expired=1';</script>";
+    exit();
+}
+
 // Fetch categories that have products
 $categories = [];
 $resCat = mysqli_query($conn, "SELECT DISTINCT c.* FROM product_categories c JOIN products p ON c.category_id = p.category_id ORDER BY c.category_id ASC");
@@ -25,6 +30,7 @@ if ($resProd) {
         $products[] = $row;
     }
 }
+$gymSettings = getSystemSettings($conn);
 ?>
 <!DOCTYPE html>
 <html lang="lo">
@@ -57,22 +63,14 @@ if ($resProd) {
             height: 100%;
         }
         .pos-product-card:hover {
-            transform: translateY(-4px);
             box-shadow: 0 8px 16px rgba(0,0,0,0.06);
             border-color: #007bff;
-        }
-        .pos-product-card img {
-            transition: transform 0.25s ease;
-        }
-        .pos-product-card:hover img {
-            transform: scale(1.06);
         }
         .pos-product-card.out-of-stock {
             opacity: 0.65;
             cursor: not-allowed;
         }
         .pos-product-card.out-of-stock:hover {
-            transform: none;
             box-shadow: none;
             border-color: rgba(0,0,0,0.06);
         }
@@ -160,8 +158,8 @@ if ($resProd) {
         }
         .qty-badge-overlay {
             position: absolute;
-            top: -6px;
-            right: -6px;
+            top: 6px;
+            right: 6px;
             background: #dc3545;
             color: #fff;
             border-radius: 50%;
@@ -260,15 +258,22 @@ if ($resProd) {
                             </div>
                             <div class="d-flex justify-content-between align-items-center mt-3 border-top pt-2">
                                 <span class="fw-bold text-success" style="font-size: 1.05rem;"><?= formatCurrency($p['sale_price']) ?></span>
-                                <?php if ($outOfStock): ?>
+                                <?php if ($p['quantity'] <= 0): ?>
                                     <span class="badge bg-danger text-white">ໝົດສະຕັອກ</span>
+                                <?php elseif ($p['quantity'] <= 10): ?>
+                                    <span class="badge bg-warning text-dark">ໃກ້ໝົດ: <?= $p['quantity'] ?></span>
                                 <?php else: ?>
-                                    <span class="badge bg-light text-dark border">ເຫຼືອ: <?= $p['quantity'] ?></span>
+                                    <span class="badge bg-primary text-white">ເຫຼືອ: <?= $p['quantity'] ?></span>
                                 <?php endif; ?>
                             </div>
                         </div>
                     </div>
                 <?php endforeach; ?>
+                <!-- No Products Message -->
+                <div id="noProductsMessage" class="col-12 text-center py-5 text-muted" style="display: none;">
+                    <i class="fas fa-box-open fa-3x mb-3 text-light d-block"></i>
+                    <span class="fw-bold" style="font-size: 1.1rem; color: #6c757d;">ບໍ່ມີສິນຄ້າທີ່ທ່ານຄົ້ນຫາ</span>
+                </div>
             </div>
         </div>
 
@@ -310,109 +315,92 @@ if ($resProd) {
 
 <!-- ===== Payment Modal ===== -->
 <div class="modal fade" id="paymentModal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
-    <div class="modal-dialog modal-dialog-centered" style="max-width:480px;" role="document">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 24px; overflow:hidden;">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:450px;" role="document">
+        <div class="modal-content border-0 shadow" style="border-radius: 8px; overflow:hidden;">
 
-            <!-- Gradient Header -->
-            <div style="background: linear-gradient(135deg,#1565c0,#0d47a1); padding:22px 26px 18px;">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h5 class="fw-bold text-white mb-0" style="font-size:1.15rem; letter-spacing:0.5px;">
-                            <i class="fas fa-cash-register me-2"></i>ຊຳລະເງິນ
-                        </h5>
-                        <div class="text-white-50 mt-1" style="font-size:0.78rem;">ກວດສອບ ແລະ ຢືນຢັນການຊຳລະ</div>
-                    </div>
-                    <button type="button" class="border-0 bg-transparent text-white opacity-75" data-dismiss="modal"
-                        style="font-size:1.8rem; line-height:1; padding:0; transition:opacity .2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.75">&times;</button>
-                </div>
-                <!-- Total amount display -->
-                <div style="background:rgba(255,255,255,0.13); border-radius:16px; padding:16px 20px; margin-top:16px; text-align:center; border:1px solid rgba(255,255,255,0.2);">
-                    <div class="text-white-50" style="font-size:0.78rem; margin-bottom:4px; letter-spacing:0.5px;">ຍອດຕ້ອງຊຳລະທັງໝົດ</div>
-                    <div class="fw-bold text-white" id="pmTotalDisplay" style="font-size:2.2rem; letter-spacing:1px; line-height:1;">0 ກີບ</div>
-                    <div class="text-white-50" id="pmItemCount" style="font-size:0.75rem; margin-top:6px;"></div>
-                </div>
+            <!-- Clean Header -->
+            <div class="modal-header bg-light border-bottom py-3">
+                <h5 class="modal-title fw-bold text-dark mb-0" style="font-size:1.1rem;">
+                    <i class="fas fa-cash-register mr-2 text-primary"></i>ຊຳລະເງິນ (Payment)
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="font-size: 1.5rem; outline: none;">
+                    <span aria-hidden="true">&times;</span>
+                </button>
             </div>
 
             <!-- Body -->
-            <div class="modal-body" style="padding:24px 26px 16px;">
+            <div class="modal-body" style="padding: 20px;">
+
+                <!-- Total Amount Display -->
+                <div class="text-center py-3 mb-4 bg-light rounded" style="border: 1px solid #dee2e6;">
+                    <div class="text-muted small mb-1">ຍອດຕ້ອງຊຳລະທັງໝົດ</div>
+                    <div class="fw-bold text-primary" id="pmTotalDisplay" style="font-size: 2rem; line-height: 1.2;">0 ກີບ</div>
+                    <div class="text-muted small mt-1" id="pmItemCount"></div>
+                </div>
 
                 <!-- ✅ ວິທີການຊຳລະ -->
                 <div class="mb-4">
-                    <div class="fw-bold text-dark mb-2" style="font-size:0.9rem;">
-                        <i class="fas fa-wallet me-2 text-primary"></i>ເລືອກວິທີຊຳລະ
-                    </div>
+                    <label class="fw-bold text-dark small mb-2"><i class="fas fa-wallet mr-2 text-primary"></i>ເລືອກວິທີຊຳລະ</label>
                     <div class="d-flex gap-2">
                         <!-- ເງິນສົດ -->
                         <button type="button" id="btnCash"
                             onclick="selectPayMethod(this,'ເງິນສົດ')"
-                            class="flex-fill py-3 rounded-3 fw-bold border-0"
-                            style="background:linear-gradient(135deg,#1565c0,#1a73e8); color:#fff; font-size:0.95rem; box-shadow:0 4px 12px rgba(21,101,192,0.35); transition:all 0.2s;">
-                            <i class="fas fa-money-bill-wave d-block mb-1" style="font-size:1.3rem;"></i>
-                            ເງິນສົດ
+                            class="flex-fill py-2.5 fw-bold btn btn-primary"
+                            style="font-size:0.95rem; border-radius: 4px; transition: all 0.15s; margin: 0;">
+                            <i class="fas fa-money-bill-wave mr-1"></i> ເງິນສົດ
                         </button>
                         <!-- ເງິນໂອນ -->
                         <button type="button" id="btnTransfer"
                             onclick="selectPayMethod(this,'ເງິນໂອນ')"
-                            class="flex-fill py-3 rounded-3 fw-bold"
-                            style="border:2px solid #dee2e6; background:#f8f9fa; color:#6c757d; font-size:0.95rem; transition:all 0.2s;">
-                            <i class="fas fa-qrcode d-block mb-1" style="font-size:1.3rem;"></i>
-                            ເງິນໂອນ
+                            class="flex-fill py-2.5 fw-bold btn btn-outline-secondary"
+                            style="font-size:0.95rem; border-radius: 4px; transition: all 0.15s; margin: 0;">
+                            <i class="fas fa-qrcode mr-1"></i> ເງິນໂອນ
                         </button>
                     </div>
                 </div>
 
                 <!-- ✅ ຮັບເງິນ (ສະແດງສະເພາະເງິນສົດ) -->
                 <div id="cashReceivedSection" class="mb-3">
-                    <div class="fw-bold text-dark mb-2" style="font-size:0.9rem;">
-                        <i class="fas fa-hand-holding-usd me-2 text-success"></i>ຈຳນວນເງິນທີ່ຮັບ (ກີບ)
-                    </div>
-                    <div class="input-group" style="border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.07);">
-                        <input type="number" id="pmReceived"
-                            class="form-control fw-bold text-center"
+                    <label class="fw-bold text-dark small mb-2"><i class="fas fa-hand-holding-usd mr-2 text-success"></i>ຈຳນວນເງິນທີ່ຮັບ (ກີບ)</label>
+                    <div class="input-group">
+                        <input type="text" id="pmReceived"
+                            class="form-control fw-bold text-center form-control-lg"
                             placeholder="0"
-                            min="0" oninput="calcChange()"
-                            style="font-size:1.5rem; border:2px solid #dee2e6; border-right:none; border-radius:12px 0 0 12px; background:#fff; height:60px;">
-                        <button class="btn fw-bold px-4" onclick="setFullAmount()"
-                            style="background:linear-gradient(135deg,#28a745,#20c997); color:#fff; border:none; border-radius:0 12px 12px 0; font-size:0.88rem; white-space:nowrap; transition:opacity 0.2s;"
-                            onmouseover="this.style.opacity=0.85" onmouseout="this.style.opacity=1">
-                            <i class="fas fa-check-double d-block mb-1" style="font-size:1rem;"></i>
-                            ເຕັມຈຳນວນ
-                        </button>
+                            oninput="calcChange()"
+                            style="font-size:1.5rem; height:50px;">
+                        <div class="input-group-append">
+                            <button class="btn btn-success fw-bold px-3" type="button" onclick="setFullAmount()" style="font-size:0.88rem;">
+                                <i class="fas fa-wallet mr-1"></i> ເຕັມຈຳນວນ
+                            </button>
+                        </div>
                     </div>
-                    <!-- Quick amount buttons -->
-                    <div class="d-flex gap-1 mt-2 flex-wrap" id="quickAmounts"></div>
                 </div>
 
                 <!-- ✅ ເງິນທອນ -->
-                <div id="changeSection" class="rounded-3 p-3" style="background:linear-gradient(135deg,#f0fdf4,#dcfce7); border:2px solid #86efac; display:none;">
+                <div id="changeSection" class="alert alert-success border-success p-3 mb-0" style="display:none; border-radius: 6px;">
                     <div class="d-flex justify-content-between align-items-center">
-                        <span class="fw-bold text-success" style="font-size:0.95rem;">
-                            <i class="fas fa-coins me-2"></i>ເງິນທອນ
-                        </span>
-                        <span class="fw-bold" id="pmChange" style="font-size:1.6rem; color:#16a34a;">0 ກີບ</span>
+                        <span class="fw-bold"><i class="fas fa-coins mr-2"></i>ເງິນທອນ</span>
+                        <span class="h4 fw-bold mb-0" id="pmChange">0 ກີບ</span>
                     </div>
                 </div>
 
                 <!-- ❌ ເງິນບໍ່ພຽງພໍ -->
-                <div id="shortSection" class="rounded-3 p-3" style="background:#fff5f5; border:2px solid #fca5a5; display:none;">
+                <div id="shortSection" class="alert alert-danger border-danger p-3 mb-0" style="display:none; border-radius: 6px;">
                     <div class="d-flex justify-content-between align-items-center">
-                        <span class="fw-bold text-danger" style="font-size:0.9rem;">
-                            <i class="fas fa-exclamation-triangle me-2"></i>ເງິນບໍ່ພຽງພໍ
-                        </span>
-                        <span class="fw-bold text-danger" id="pmShort" style="font-size:1rem;"></span>
+                        <span class="fw-bold"><i class="fas fa-exclamation-triangle mr-2"></i>ເງິນບໍ່ພຽງພໍ</span>
+                        <span class="fw-bold" id="pmShort"></span>
                     </div>
                 </div>
 
             </div>
 
             <!-- Footer -->
-            <div class="p-3 d-flex gap-2" style="background:#f8f9fa; border-top:1px solid #e9ecef; border-bottom-left-radius:24px; border-bottom-right-radius:24px;">
-                <button type="button" class="btn btn-outline-secondary flex-fill rounded-pill fw-bold py-2" data-dismiss="modal">
-                    <i class="fas fa-times me-1"></i> ຍົກເລີກ
+            <div class="modal-footer bg-light border-top py-3 d-flex justify-content-end">
+                <button type="button" class="btn btn-outline-secondary px-4 fw-bold" data-dismiss="modal" style="border-radius: 4px; margin-right: 8px;">
+                    <i class="fas fa-times mr-1"></i> ຍົກເລີກ
                 </button>
-                <button type="button" class="btn flex-fill rounded-pill fw-bold py-2" id="confirmPayBtn" onclick="confirmPayment()"
-                    style="background:linear-gradient(135deg,#28a745,#20c997); color:#fff; box-shadow:0 4px 12px rgba(40,167,69,0.35); border:none; font-size:1rem;">
-                    <i class="fas fa-check-circle me-1"></i> ຢືນຢັນຊຳລະ
+                <button type="button" class="btn btn-success px-4 fw-bold" id="confirmPayBtn" onclick="confirmPayment()" style="border-radius: 4px;">
+                    <i class="fas fa-check-circle mr-1"></i> ຢືນຢັນຊຳລະ
                 </button>
             </div>
 
@@ -433,8 +421,8 @@ if ($resProd) {
                 </button>
             </div>
             <div class="modal-body p-3" id="receiptPrintArea"></div>
-            <div class="modal-footer gap-2" style="background:#f8f9fa; border-bottom-left-radius:16px; border-bottom-right-radius:16px;">
-                <button class="btn btn-outline-secondary flex-fill rounded-pill" data-dismiss="modal">
+            <div class="modal-footer" style="background:#f8f9fa; border-bottom-left-radius:16px; border-bottom-right-radius:16px;">
+                <button class="btn btn-outline-secondary flex-fill rounded-pill" data-dismiss="modal" style="margin-right: 8px;">
                     <i class="fas fa-times me-1"></i> ປິດ
                 </button>
                 <button class="btn btn-primary flex-fill rounded-pill fw-bold" onclick="printReceipt()">
@@ -448,6 +436,7 @@ if ($resProd) {
 <script>
 let cart = [];
 let productsList = <?= json_encode($products) ?>;
+const gymSettings = <?= json_encode($gymSettings) ?>;
 
 function formatCurrency(amount) {
     return new Intl.NumberFormat('lo-LA').format(amount) + ' ກີບ';
@@ -507,6 +496,11 @@ function clearCart() {
     renderCart();
 }
 
+function removeFromCart(index) {
+    cart.splice(index, 1);
+    renderCart();
+}
+
 function calculateTotal() {
     let total = 0;
     cart.forEach(item => {
@@ -551,14 +545,22 @@ function renderCart() {
         container.append(`
             <div class="cart-item">
                 <div class="cart-item-img">${imgHtml}</div>
-                <div style="flex:1; min-width:0;">
-                    <div class="fw-bold text-dark text-truncate" style="font-size:0.88rem; line-height:1.2;">${item.product_name}</div>
-                    <div class="text-muted" style="font-size:0.78rem; margin-top:2px;">${priceNum} × ${qtyNum} = <span class="fw-bold text-success">${subtotalNum} ກີບ</span></div>
+                <div style="flex:1; min-width:0; margin-left: 6px; margin-right: 6px;">
+                    <div class="fw-bold text-dark text-truncate" style="font-size:0.88rem; line-height:1.2;" title="${item.product_name}">${item.product_name}</div>
+                    <div class="text-muted" style="font-size:0.78rem; margin-top:2px;">${priceNum} × ${qtyNum}</div>
                 </div>
-                <div class="d-flex align-items-center gap-1 flex-shrink-0">
-                    <button class="qty-btn minus" onclick="updateQty(${index}, -1)" title="ຫຼຸດ"><i class="fas fa-minus" style="font-size:0.7rem;"></i></button>
-                    <span class="fw-bold text-dark" style="font-size:1rem; min-width:26px; text-align:center;">${item.quantity}</span>
-                    <button class="qty-btn" onclick="updateQty(${index}, 1)" title="ເພີ່ມ"><i class="fas fa-plus" style="font-size:0.7rem;"></i></button>
+                <div class="d-flex align-items-center flex-shrink-0">
+                    <div class="d-flex align-items-center" style="gap: 6px;">
+                        <button class="qty-btn minus" onclick="updateQty(${index}, -1)" title="ຫຼຸດ"><i class="fas fa-minus" style="font-size:0.7rem;"></i></button>
+                        <span class="fw-bold text-dark" style="font-size:0.95rem; min-width:24px; text-align:center;">${item.quantity}</span>
+                        <button class="qty-btn" onclick="updateQty(${index}, 1)" title="ເພີ່ມ"><i class="fas fa-plus" style="font-size:0.7rem;"></i></button>
+                    </div>
+                    <div class="text-right ml-3" style="min-width: 100px;">
+                        <span class="fw-bold text-success" style="font-size:0.9rem;">${subtotalNum} ກີບ</span>
+                    </div>
+                    <button class="btn btn-link text-danger p-0 border-0 ml-3" onclick="removeFromCart(${index})" title="ລົບລາຍການ" style="font-size:1rem; outline:none; box-shadow:none;">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
                 </div>
             </div>
         `);
@@ -587,7 +589,7 @@ function checkout() {
     $('#pmItemCount').text(count + ' ລາຍການ · ' + cart.length + ' ສິນຄ້າ');
 
     // Auto-fill full amount
-    $('#pmReceived').val(total);
+    $('#pmReceived').val(new Intl.NumberFormat('en-US').format(total));
     $('#changeSection').show();
     $('#pmChange').text('0 ກີບ');
     $('#shortSection').hide();
@@ -595,44 +597,24 @@ function checkout() {
 
     currentPaymentMethod = 'ເງິນສົດ';
     // Reset button styles
-    $('#btnCash').css({ background:'linear-gradient(135deg,#1565c0,#1a73e8)', color:'#fff', border:'2px solid transparent', boxShadow:'0 4px 12px rgba(21,101,192,0.35)' });
-    $('#btnTransfer').css({ background:'#f8f9fa', color:'#6c757d', border:'2px solid #dee2e6', boxShadow:'none' });
-
-    // Quick amount buttons
-    let quickAmts = getQuickAmounts(total);
-    let qa = $('#quickAmounts').empty();
-    quickAmts.forEach(function(amt) {
-        let label = new Intl.NumberFormat('lo-LA').format(amt);
-        qa.append(`<button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3"
-            onclick="$('#pmReceived').val(${amt}); calcChange();">${label}</button>`);
-    });
+    $('#btnCash').css({ background:'#007bff', color:'#fff', border:'1px solid #007bff', boxShadow:'none' });
+    $('#btnTransfer').css({ background:'#fff', color:'#495057', border:'1px solid #ced4da', boxShadow:'none' });
 
     $('#confirmPayBtn').prop('disabled', false).html('<i class="fas fa-check-circle me-1"></i> ຢືນຢັນຊຳລະ');
     $('#paymentModal').modal('show');
     setTimeout(function() { $('#pmReceived').select(); }, 400);
 }
 
-function getQuickAmounts(total) {
-    let steps = [5000,10000,20000,50000,100000,200000,500000,1000000];
-    let result = [];
-    for (let s of steps) {
-        let v = Math.ceil(total / s) * s;
-        if (!result.includes(v)) result.push(v);
-        if (result.length >= 4) break;
-    }
-    return result;
-}
-
 function selectPayMethod(btn, method) {
     currentPaymentMethod = method;
     if (method === 'ເງິນສົດ') {
-        $('#btnCash').css({ background:'linear-gradient(135deg,#1565c0,#1a73e8)', color:'#fff', border:'2px solid transparent', boxShadow:'0 4px 12px rgba(21,101,192,0.35)' });
-        $('#btnTransfer').css({ background:'#f8f9fa', color:'#6c757d', border:'2px solid #dee2e6', boxShadow:'none' });
+        $('#btnCash').css({ background:'#007bff', color:'#fff', border:'1px solid #007bff', boxShadow:'none' });
+        $('#btnTransfer').css({ background:'#fff', color:'#495057', border:'1px solid #ced4da', boxShadow:'none' });
         $('#cashReceivedSection').slideDown(200);
         calcChange();
     } else {
-        $('#btnTransfer').css({ background:'linear-gradient(135deg,#0097a7,#00bcd4)', color:'#fff', border:'2px solid transparent', boxShadow:'0 4px 12px rgba(0,188,212,0.35)' });
-        $('#btnCash').css({ background:'#f8f9fa', color:'#6c757d', border:'2px solid #dee2e6', boxShadow:'none' });
+        $('#btnTransfer').css({ background:'#28a745', color:'#fff', border:'1px solid #28a745', boxShadow:'none' });
+        $('#btnCash').css({ background:'#fff', color:'#495057', border:'1px solid #ced4da', boxShadow:'none' });
         $('#cashReceivedSection').slideUp(200);
         $('#changeSection').hide();
         $('#shortSection').hide();
@@ -641,14 +623,16 @@ function selectPayMethod(btn, method) {
 }
 
 function setFullAmount() {
-    $('#pmReceived').val(calculateTotal());
+    let total = calculateTotal();
+    $('#pmReceived').val(new Intl.NumberFormat('en-US').format(total));
     calcChange();
     $('#pmReceived').select();
 }
 
 function calcChange() {
     let total = calculateTotal();
-    let received = parseFloat($('#pmReceived').val()) || 0;
+    let rawVal = ($('#pmReceived').val() || '').replace(/[^0-9]/g, '');
+    let received = parseFloat(rawVal) || 0;
     if (received <= 0) {
         $('#changeSection').hide();
         $('#shortSection').hide();
@@ -675,7 +659,8 @@ function confirmPayment() {
     if (currentPaymentMethod === 'ເງິນໂອນ') {
         received = total; change = 0;
     } else {
-        received = parseFloat($('#pmReceived').val()) || 0;
+        let rawVal = ($('#pmReceived').val() || '').replace(/[^0-9]/g, '');
+        received = parseFloat(rawVal) || 0;
         if (received < total) {
             Swal.fire({ icon:'warning', title:'ເງິນບໍ່ພຽງພໍ', text:'ກະລຸນາໃສ່ຈຳນວນເງິນທີ່ຮັບໃຫ້ຄົບ' });
             return;
@@ -753,8 +738,10 @@ function loadReceipt(saleId, receivedAmt, changeAmt, payMethod) {
                 let html = `
                     <div class="print-receipt-container">
                         <div class="receipt-header">
-                            <h4 class="receipt-logo">GYM &amp; FITNESS</h4>
-                            <p class="receipt-address">ບ້ານ ໂພນສະຫວ່າງ, ມ. ຈັນທະບູລີ, ນະຄອນຫຼວງວຽງຈັນ</p>
+                            <div class="mb-1">
+                                <img src="${gymSettings.logo_path}" alt="${gymSettings.gym_name}" style="max-height: 70px; width: auto; display: inline-block;">
+                            </div>
+                            <p class="receipt-address">${gymSettings.address}</p>
                             <h5 class="receipt-title">ໃບບິນຮັບເງິນ / RECEIPT</h5>
                         </div>
                         <div class="receipt-divider"></div>
@@ -794,6 +781,11 @@ function loadReceipt(saleId, receivedAmt, changeAmt, payMethod) {
                 $('#receiptPrintArea').html(html);
                 $('#receiptModal').modal('show');
 
+                // Automatically trigger receipt print once modal is rendered
+                setTimeout(function() {
+                    printReceipt();
+                }, 600);
+
                 $('#receiptModal').off('hidden.bs.modal').on('hidden.bs.modal', function() {
                     location.reload();
                 });
@@ -805,38 +797,45 @@ function loadReceipt(saleId, receivedAmt, changeAmt, payMethod) {
 function printReceipt() {
     let printContents = document.getElementById('receiptPrintArea').innerHTML;
     
-    let printWindow = window.open('', '_blank', 'width=380,height=600');
-    printWindow.document.write('<html><head><title>ພິມໃບບິນຮັບເງິນ</title>');
+    // Remove any existing print frame
+    $('#receiptPrintFrame').remove();
+    
+    // Create a hidden iframe
+    let $iframe = $('<iframe id="receiptPrintFrame" style="position: absolute; width: 0; height: 0; border: none;"></iframe>');
+    $('body').append($iframe);
+    
+    let iframeDoc = $iframe[0].contentDocument || $iframe[0].contentWindow.document;
+    
+    iframeDoc.open();
+    iframeDoc.write('<html><head><title>ພິມໃບບິນຮັບເງິນ</title>');
     // Set base href to resolve local relative font files
-    printWindow.document.write('<base href="' + window.location.origin + window.location.pathname + '">');
-    printWindow.document.write('<link rel="stylesheet" href="../assets/css/local-font.css">');
-    printWindow.document.write('<style>');
-    printWindow.document.write('@media print { @page { size: 80mm auto; margin: 0; } body { margin: 0; padding: 4mm; } }');
-    printWindow.document.write('body { font-family: "Noto Sans Lao", "Noto Sans Lao Looped", Arial, sans-serif; width: 72mm; margin: 0 auto; color: #000; background: #fff; font-size: 11px; line-height: 1.3; }');
-    printWindow.document.write('.text-center { text-align: center; } .text-start { text-align: left; } .text-end { text-align: right; }');
-    printWindow.document.write('.receipt-header { text-align: center; margin-bottom: 8px; }');
-    printWindow.document.write('.receipt-logo { font-size: 16px; font-weight: bold; margin: 0 0 2px 0; color: #111; }');
-    printWindow.document.write('.receipt-address { font-size: 9px; color: #666; margin: 0 0 4px 0; }');
-    printWindow.document.write('.receipt-title { font-size: 12px; font-weight: bold; margin: 6px 0; text-transform: uppercase; color: #28a745; }');
-    printWindow.document.write('.receipt-divider { border-top: 1px dashed #000; margin: 8px 0; }');
-    printWindow.document.write('.receipt-meta { font-size: 9.5px; margin-bottom: 6px; } .receipt-meta div { margin-bottom: 3px; }');
-    printWindow.document.write('.receipt-table { width: 100%; border-collapse: collapse; margin: 4px 0; }');
-    printWindow.document.write('.receipt-table th { font-weight: bold; border-bottom: 1px solid #000; padding: 4px 0; font-size: 10px; }');
-    printWindow.document.write('.receipt-table td { padding: 5px 0; font-size: 10.5px; vertical-align: top; }');
-    printWindow.document.write('.receipt-total-section { font-size: 11px; margin: 6px 0; } .receipt-total-row { display: flex; justify-content: space-between; padding: 2px 0; }');
-    printWindow.document.write('.receipt-total-row.grand-total { font-size: 13px; font-weight: bold; margin-top: 4px; border-top: 1px dashed #000; padding-top: 4px; }');
-    printWindow.document.write('.receipt-footer { text-align: center; margin-top: 12px; font-size: 9.5px; font-weight: bold; }');
-    printWindow.document.write('</style></head><body>');
-    printWindow.document.write(printContents);
-    printWindow.document.write('</body></html>');
+    iframeDoc.write('<base href="' + window.location.origin + window.location.pathname + '">');
+    iframeDoc.write('<link rel="stylesheet" href="../assets/css/local-font.css">');
+    iframeDoc.write('<style>');
+    iframeDoc.write('@media print { @page { size: 80mm auto; margin: 0; } body { margin: 0; padding: 4mm; } }');
+    iframeDoc.write('body { font-family: "Noto Sans Lao", "Noto Sans Lao Looped", Arial, sans-serif; width: 72mm; margin: 0 auto; color: #000; background: #fff; font-size: 11px; line-height: 1.3; }');
+    iframeDoc.write('.text-center { text-align: center; } .text-start { text-align: left; } .text-end { text-align: right; }');
+    iframeDoc.write('.receipt-header { text-align: center; margin-bottom: 8px; }');
+    iframeDoc.write('.receipt-logo { font-size: 16px; font-weight: bold; margin: 0 0 2px 0; color: #111; }');
+    iframeDoc.write('.receipt-address { font-size: 9px; color: #666; margin: 0 0 4px 0; }');
+    iframeDoc.write('.receipt-title { font-size: 12px; font-weight: bold; margin: 6px 0; text-transform: uppercase; color: #28a745; }');
+    iframeDoc.write('.receipt-divider { border-top: 1px dashed #000; margin: 8px 0; }');
+    iframeDoc.write('.receipt-meta { font-size: 9.5px; margin-bottom: 6px; } .receipt-meta div { margin-bottom: 3px; }');
+    iframeDoc.write('.receipt-table { width: 100%; border-collapse: collapse; margin: 4px 0; }');
+    iframeDoc.write('.receipt-table th { font-weight: bold; border-bottom: 1px solid #000; padding: 4px 0; font-size: 10px; }');
+    iframeDoc.write('.receipt-table td { padding: 5px 0; font-size: 10.5px; vertical-align: top; }');
+    iframeDoc.write('.receipt-total-section { font-size: 11px; margin: 6px 0; } .receipt-total-row { display: flex; justify-content: space-between; padding: 2px 0; }');
+    iframeDoc.write('.receipt-total-row.grand-total { font-size: 13px; font-weight: bold; margin-top: 4px; border-top: 1px dashed #000; padding-top: 4px; }');
+    iframeDoc.write('.receipt-footer { text-align: center; margin-top: 12px; font-size: 9.5px; font-weight: bold; }');
+    iframeDoc.write('</style></head><body>');
+    iframeDoc.write(printContents);
+    iframeDoc.write('</body></html>');
+    iframeDoc.close();
     
-    printWindow.document.close();
-    
-    // Wait for fonts to load
+    // Wait for fonts/assets to load inside the iframe
     setTimeout(function() {
-        printWindow.focus();
-        printWindow.print();
-        printWindow.close();
+        $iframe[0].contentWindow.focus();
+        $iframe[0].contentWindow.print();
     }, 500);
 }
 
@@ -850,20 +849,18 @@ $(document).ready(function() {
 
             // Find exact barcode match
             let product = productsList.find(p => p.product_code == query);
+            
+            // If not found, try to find exact name match
+            if (!product) {
+                product = productsList.find(p => p.product_name && p.product_name.toLowerCase() === query.toLowerCase());
+            }
+
             if (product) {
                 addToCart(product);
                 $(this).val('');
                 // Reset search grid filter to show all products
                 $('.product-card-container').show();
-            } else {
-                // If it is numeric (looks like a barcode), show error
-                if (/^\d+$/.test(query)) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'ບໍ່ພົບສິນຄ້າ',
-                        text: 'ບໍ່ພົບລະຫັດບາໂຄ້ດນີ້ໃນລະບົບສິນຄ້າ: ' + query
-                    });
-                }
+                $('#noProductsMessage').hide();
             }
         }
     });
@@ -874,30 +871,79 @@ $(document).ready(function() {
         $(this).addClass('active');
         
         let cat = $(this).data('category');
+        let visibleCount = 0;
         if (cat === 'all') {
             $('.product-card-container').show();
+            visibleCount = $('.product-card-container').length;
         } else {
             $('.product-card-container').hide();
-            $(`.product-card-container[data-category="${cat}"]`).show();
+            let matched = $(`.product-card-container[data-category="${cat}"]`);
+            matched.show();
+            visibleCount = matched.length;
+        }
+
+        if (visibleCount === 0) {
+            $('#noProductsMessage').show();
+        } else {
+            $('#noProductsMessage').hide();
         }
         $('#searchInput').val(''); // clear search when switching categories
     });
 
     // POS Search bar
     $('#searchInput').on('input', function() {
-        let query = $(this).val().toLowerCase().trim();
+        let rawQuery = $(this).val().trim();
+        let query = rawQuery.toLowerCase();
+        
+        // If it matches a product code (barcode) exactly, add to cart immediately!
+        let exactProduct = productsList.find(p => p.product_code == rawQuery);
+        if (exactProduct) {
+            addToCart(exactProduct);
+            $(this).val('');
+            $('.product-card-container').show();
+            $('#noProductsMessage').hide();
+            return;
+        }
+
         $('.pos-category-tab').removeClass('active');
         $('.pos-category-tab[data-category="all"]').addClass('active'); // reset category tab to all
         
+        let visibleCount = 0;
         $('.product-card-container').each(function() {
-            let name = $(this).data('name');
-            let code = $(this).data('code');
+            let name = String($(this).attr('data-name') || '');
+            let code = String($(this).attr('data-code') || '');
             if (name.indexOf(query) > -1 || code.indexOf(query) > -1) {
                 $(this).show();
+                visibleCount++;
             } else {
                 $(this).hide();
             }
         });
+
+        if (visibleCount === 0) {
+            $('#noProductsMessage').show();
+        } else {
+            $('#noProductsMessage').hide();
+        }
+    });
+
+    // Format payment received with commas as the user types
+    $(document).on('input', '#pmReceived', function(e) {
+        let cursorPosition = this.selectionStart;
+        let originalLength = this.value.length;
+        let rawValue = this.value.replace(/[^0-9]/g, '');
+        if (rawValue === '') {
+            this.value = '';
+            calcChange();
+            return;
+        }
+        let formattedValue = new Intl.NumberFormat('en-US').format(parseInt(rawValue, 10));
+        this.value = formattedValue;
+        let lengthDifference = formattedValue.length - originalLength;
+        let newCursorPosition = cursorPosition + lengthDifference;
+        if (newCursorPosition < 0) newCursorPosition = 0;
+        this.setSelectionRange(newCursorPosition, newCursorPosition);
+        calcChange();
     });
 
     // Payment modal: allow Enter key in pmReceived to confirm

@@ -45,6 +45,7 @@ if ($pkgRes) {
         $packages[] = $row;
     }
 }
+$gymSettings = getSystemSettings($conn);
 ?>
 <!DOCTYPE html>
 <html lang="lo">
@@ -263,8 +264,10 @@ if ($pkgRes) {
 <div id="printArea" style="display: none;">
     <div class="print-receipt-container">
         <div class="receipt-header">
-            <h4 class="receipt-logo">GYM & FITNESS</h4>
-            <p class="receipt-address">ບ້ານ ໂພນສະຫວ່າງ, ມ. ຈັນທະບູລີ, ນະຄອນຫຼວງວຽງຈັນ</p>
+            <div class="mb-1">
+                <img src="<?= htmlspecialchars($gymSettings['logo_path']) ?>" alt="<?= htmlspecialchars($gymSettings['gym_name']) ?>" style="max-height: 70px; width: auto; display: inline-block;">
+            </div>
+            <p class="receipt-address"><?= htmlspecialchars($gymSettings['address']) ?></p>
             <h5 class="receipt-title">ໃບບິນຮັບເງິນ / RECEIPT</h5>
         </div>
         <div class="receipt-divider"></div>

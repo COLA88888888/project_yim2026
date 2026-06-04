@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 // ============================================
 // 1. ພາກເລີ່ມ SESSION ແລະ ກວດສອບການເຂົ້າສູ່ລະບົບ
 // ============================================
@@ -96,17 +96,16 @@ $profile_img_path = 'assets/img/users/' . $profile_img;
       <li class="nav-item dropdown" id="notification-dropdown">
         <a class="nav-link" data-toggle="dropdown" href="#" style="color: #495057; font-size: 1.1rem; padding: 0.5rem 0.8rem; position: relative;">
           <i class="far fa-bell"></i>
-          <span class="badge badge-warning navbar-badge" id="noti-count" style="display: none; position: absolute; top: 4px; right: 2px; font-size: 0.6rem; padding: 2px 4px; border-radius: 50%;">0</span>
+          <span class="badge navbar-badge" id="noti-count" style="display: none; position: absolute; top: 4px; right: 2px; font-size: 0.6rem; padding: 2px 4.5px; border-radius: 50%; background-color: #ef4444; color: #fff;">0</span>
         </a>
         <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right" style="border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); border: 1px solid #e9ecef; width: 320px;">
           <span class="dropdown-item dropdown-header font-weight-bold text-dark border-bottom" id="noti-header">ບໍ່ມີການແຈ້ງເຕືອນ</span>
           <div id="noti-items" style="max-height: 300px; overflow-y: auto;">
             <!-- Loaded via AJAX -->
           </div>
-          <div class="dropdown-divider"></div>
-          <a href="pages/subscriptions_manage.php" target="frame" class="dropdown-item dropdown-footer text-center text-primary font-weight-bold py-2" style="font-size: 0.85rem;">
-            ເບິ່ງການລົງທະບຽນທັງໝົດ
-          </a>
+          <div class="text-center text-muted py-2 bg-light" style="font-size: 0.8rem; cursor: default;">
+            ລະບົບກວດສອບອັດຕະໂນມັດ
+          </div>
         </div>
       </li>
 
@@ -148,7 +147,13 @@ $profile_img_path = 'assets/img/users/' . $profile_img;
   <!-- /.navbar -->
 
   <!-- ແຖບເມນູທາງຊ້າຍ (Main Sidebar) -->
-  <?php include 'layouts/sidebar_admin.php'; ?>
+  <?php 
+  if (isset($_SESSION['status']) && $_SESSION['status'] === 'ຜູ້ບໍລິຫານ') {
+      include 'layouts/sidebar_admin.php'; 
+  } else {
+      include 'layouts/sidebar_user.php'; 
+  }
+  ?>
 
   <!-- Content Wrapper. Contains page content -->
   <div class="content-wrapper">
@@ -281,7 +286,7 @@ $profile_img_path = 'assets/img/users/' . $profile_img;
       }
     });
 
-    // ===== Load & Manage Expiration Notifications =====
+    // ===== Load & Manage Expiration & Stock Notifications =====
     function loadNotifications() {
       $.getJSON('api/notifications_api.php', function(res) {
         if (res.success) {
@@ -295,40 +300,59 @@ $profile_img_path = 'assets/img/users/' . $profile_img;
           
           if (count > 0) {
             $badge.text(count).show();
-            $header.text('ມີ ' + count + ' ການແຈ້ງເຕືອນສະມາຊິກ');
+            $header.text('ມີ ' + count + ' ການແຈ້ງເຕືອນ');
             
             list.forEach(function(item) {
-              var icon = 'fa-exclamation-triangle text-warning';
-              var textClass = 'text-warning';
-              var statusText = '';
-              var formattedDate = new Date(item.end_date).toLocaleDateString('lo-LA', {day: 'numeric', month: 'numeric', year: 'numeric'});
-              
-              if (item.days_left < 0) {
-                icon = 'fa-times-circle text-danger';
-                textClass = 'text-danger';
-                statusText = 'ໝົດອາຍຸແລ້ວ ' + Math.abs(item.days_left) + ' ມື້ (' + formattedDate + ')';
-              } else if (item.days_left === 0) {
-                icon = 'fa-exclamation-circle text-danger';
-                textClass = 'text-danger';
-                statusText = 'ໝົດອາຍຸມື້ນີ້ (' + formattedDate + ')';
-              } else {
-                statusText = 'ເຫຼືອ ' + item.days_left + ' ມື້ (ໝົດອາຍຸ ' + formattedDate + ')';
+              var html = '';
+              if (item.type === 'membership') {
+                var icon = 'fa-exclamation-triangle text-warning';
+                var textClass = 'text-warning';
+                var statusText = '';
+                var formattedDate = new Date(item.end_date).toLocaleDateString('lo-LA', {day: 'numeric', month: 'numeric', year: 'numeric'});
+                
+                if (item.days_left < 0) {
+                  icon = 'fa-times-circle text-danger';
+                  textClass = 'text-danger';
+                  statusText = 'ໝົດອາຍຸແລ້ວ ' + Math.abs(item.days_left) + ' ມື້ (' + formattedDate + ')';
+                } else if (item.days_left === 0) {
+                  icon = 'fa-exclamation-circle text-danger';
+                  textClass = 'text-danger';
+                  statusText = 'ໝົດອາຍຸມື້ນີ້ (' + formattedDate + ')';
+                } else {
+                  statusText = 'ເຫຼືອ ' + item.days_left + ' ມື້ (ໝົດອາຍຸ ' + formattedDate + ')';
+                }
+                
+                html = '<a href="pages/subscriptions_manage.php?search=' + encodeURIComponent(item.member_code) + '" target="frame" class="dropdown-item py-3 border-bottom" style="white-space: normal; display: flex; align-items: start; gap: 10px;">'
+                  + '<i class="fas ' + icon + ' mt-1" style="font-size: 1.1rem; flex-shrink: 0;"></i>'
+                  + '<div>'
+                  + '<span class="d-block font-weight-bold text-dark" style="font-size: 0.88rem; line-height: 1.2;">' + htmlEncode(item.fname) + ' ' + htmlEncode(item.lname) + ' (' + htmlEncode(item.member_code) + ')</span>'
+                  + '<span class="d-block text-muted mt-1" style="font-size: 0.78rem; line-height: 1.3;">ແພັກເກດ: ' + htmlEncode(item.package_name) + '</span>'
+                  + '<span class="d-block font-weight-bold ' + textClass + ' mt-1" style="font-size: 0.78rem; line-height: 1.2;">' + statusText + '</span>'
+                  + '</div>'
+                  + '</a>';
+              } else if (item.type === 'low_stock') {
+                html = '<a href="pages/products.php" target="frame" class="dropdown-item py-3 border-bottom" style="white-space: normal; display: flex; align-items: start; gap: 10px;">'
+                  + '<i class="fas fa-boxes text-warning mt-1" style="font-size: 1.1rem; flex-shrink: 0;"></i>'
+                  + '<div>'
+                  + '<span class="d-block font-weight-bold text-dark" style="font-size: 0.88rem; line-height: 1.2;">' + htmlEncode(item.product_name) + ' (' + htmlEncode(item.product_code) + ')</span>'
+                  + '<span class="d-block text-warning font-weight-bold mt-1" style="font-size: 0.78rem; line-height: 1.2;">ສິນຄ້າໃກ້ໝົດ! ເຫຼືອພຽງ: ' + item.quantity + '</span>'
+                  + '</div>'
+                  + '</a>';
+              } else if (item.type === 'out_of_stock') {
+                html = '<a href="pages/products.php" target="frame" class="dropdown-item py-3 border-bottom" style="white-space: normal; display: flex; align-items: start; gap: 10px;">'
+                  + '<i class="fas fa-ban text-danger mt-1" style="font-size: 1.1rem; flex-shrink: 0;"></i>'
+                  + '<div>'
+                  + '<span class="d-block font-weight-bold text-dark" style="font-size: 0.88rem; line-height: 1.2;">' + htmlEncode(item.product_name) + ' (' + htmlEncode(item.product_code) + ')</span>'
+                  + '<span class="d-block text-danger font-weight-bold mt-1" style="font-size: 0.78rem; line-height: 1.2;">ສິນຄ້າໝົດແລ້ວ!</span>'
+                  + '</div>'
+                  + '</a>';
               }
-              
-              var html = '<a href="pages/subscriptions_manage.php?search=' + encodeURIComponent(item.member_code) + '" target="frame" class="dropdown-item py-3 border-bottom" style="white-space: normal; display: flex; align-items: start; gap: 10px;">'
-                + '<i class="fas ' + icon + ' mt-1" style="font-size: 1.1rem; flex-shrink: 0;"></i>'
-                + '<div>'
-                + '<span class="d-block font-weight-bold text-dark" style="font-size: 0.88rem; line-height: 1.2;">' + htmlEncode(item.fname) + ' ' + htmlEncode(item.lname) + ' (' + htmlEncode(item.member_code) + ')</span>'
-                + '<span class="d-block text-muted mt-1" style="font-size: 0.78rem; line-height: 1.3;">ແພັກເກດ: ' + htmlEncode(item.package_name) + '</span>'
-                + '<span class="d-block font-weight-bold ' + textClass + ' mt-1" style="font-size: 0.78rem; line-height: 1.2;">' + statusText + '</span>'
-                + '</div>'
-                + '</a>';
               $itemsContainer.append(html);
             });
           } else {
             $badge.hide();
-            $header.text('ບໍ່ມີການແຈ້ງເຕືອນໝົດອາຍຸ');
-            $itemsContainer.append('<div class="text-center py-4 text-muted"><i class="far fa-bell-slash fa-2x mb-2 d-block"></i>ບໍ່ມີສະມາຊິກໝົດອາຍຸໃນມໍ່ໆນີ້</div>');
+            $header.text('ບໍ່ມີການແຈ້ງເຕືອນ');
+            $itemsContainer.append('<div class="text-center py-4 text-muted"><i class="far fa-bell-slash fa-2x mb-2 d-block"></i>ບໍ່ມີການແຈ້ງເຕືອນໃນເວລານີ້</div>');
           }
         }
       }).fail(function() {

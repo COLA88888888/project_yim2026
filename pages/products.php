@@ -8,6 +8,11 @@ if (!isset($_SESSION['checked']) || $_SESSION['checked'] !== 1 || !isset($_SESSI
 }
 require_once '../config/db.php';
 
+if (!hasPermission('products', 'view')) {
+    echo "<script>window.top.location.href = '../index.php?expired=1';</script>";
+    exit();
+}
+
 // Fetch products
 $products = [];
 $sql = "SELECT p.*, c.category_name, c.category_code 

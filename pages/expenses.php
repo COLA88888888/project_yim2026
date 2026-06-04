@@ -8,6 +8,11 @@ if (!isset($_SESSION['checked']) || $_SESSION['checked'] !== 1 || !isset($_SESSI
 }
 require_once '../config/db.php';
 
+if (!hasPermission('expenses', 'view')) {
+    echo "<script>window.top.location.href = '../index.php?expired=1';</script>";
+    exit();
+}
+
 // Calculate top summary statistics for general expenses
 $exp_today = mysqli_fetch_row(mysqli_query($conn, "SELECT SUM(amount) FROM expenses WHERE expense_date = CURDATE()"))[0] ?? 0;
 $exp_month = mysqli_fetch_row(mysqli_query($conn, "SELECT SUM(amount) FROM expenses WHERE MONTH(expense_date) = MONTH(CURDATE()) AND YEAR(expense_date) = YEAR(CURDATE())"))[0] ?? 0;
@@ -88,6 +93,10 @@ $exp_all = mysqli_fetch_row(mysqli_query($conn, "SELECT SUM(amount) FROM expense
             padding-right: 8px !important;
             padding-left: 8px !important;
             margin-bottom: 16px !important;
+        }
+        .btn-action {
+            border-radius: 8px;
+            padding: 5px 10px;
         }
     </style>
 </head>
@@ -237,7 +246,9 @@ $exp_all = mysqli_fetch_row(mysqli_query($conn, "SELECT SUM(amount) FROM expense
         <div class="modal-content shadow-lg" style="border-radius: 16px; border: none;">
             <div class="modal-header border-bottom-0 pb-0">
                 <h5 class="modal-title fw-bold text-dark" id="modalTitle">ເພີ່ມລາຍຈ່າຍໃໝ່</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="font-size: 1.5rem; outline: none;">
+                    <span aria-hidden="true">&times;</span>
+                </button>
             </div>
             <form id="expenseForm">
                 <input type="hidden" name="action" id="formAction" value="create">
@@ -255,11 +266,6 @@ $exp_all = mysqli_fetch_row(mysqli_query($conn, "SELECT SUM(amount) FROM expense
                         <label class="form-label fw-bold text-muted small">ປະເພດລາຍຈ່າຍ <span class="text-danger">*</span></label>
                         <select name="category" id="formCategory" class="form-control form-control-lg rounded-3" style="font-size:0.95rem;" required>
                             <option value="">-- ເລືອກປະເພດລາຍຈ່າຍ --</option>
-                            <option value="ຄ່ານ້ຳ/ຄ່າໄຟ">ຄ່ານ້ຳ/ຄ່າໄຟ (Utilities)</option>
-                            <option value="ຄ່າເຊົ່າສະຖານທີ່">ຄ່າເຊົ່າສະຖານທີ່ (Rent)</option>
-                            <option value="ເງິນເດືອນພະນັກງານ">ເງິນເດືອນພະນັກງານ (Salaries)</option>
-                            <option value="ຄ່າບຳລຸງຮັກສາອຸປະກອນ">ຄ່າບຳລຸງຮັກສາອຸປະກອນ (Maintenance)</option>
-                            <option value="ອື່ນໆ">ອື່ນໆ (Others)</option>
                         </select>
                     </div>
                     <div class="mb-3">
@@ -272,7 +278,7 @@ $exp_all = mysqli_fetch_row(mysqli_query($conn, "SELECT SUM(amount) FROM expense
                     </div>
                 </div>
                 <div class="modal-footer border-top-0 pt-0 justify-content-end gap-2">
-                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">ຍົກເລີກ</button>
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-dismiss="modal">ຍົກເລີກ</button>
                     <button type="submit" class="btn btn-danger rounded-pill px-4 shadow-sm" id="btnSubmit">
                         <i class="fas fa-save me-1"></i> ບັນທຶກ
                     </button>
@@ -338,6 +344,7 @@ $(document).ready(function() {
 
     // Fetch initial list
     fetchExpenses();
+    loadExpenseCategories();
     
     // Form submission
     $('#expenseForm').on('submit', function(e) {
@@ -475,12 +482,12 @@ function showPage(page) {
                 <td class="text-muted small">${exp.notes || '-'}</td>
                 <td class="text-center"><span class="badge bg-light text-dark border">${staffName}</span></td>
                 <td class="text-center">
-                    <div class="d-flex justify-content-center gap-2">
-                        <button class="btn btn-outline-primary btn-sm rounded-pill px-3" onclick="openEditModal(${exp.expense_id})">
-                            <i class="fas fa-edit me-1"></i> ແກ້ໄຂ
+                    <div class="d-flex justify-content-center gap-1">
+                        <button class="btn btn-warning btn-sm btn-action" onclick="openEditModal(${exp.expense_id})" title="ແກ້ໄຂ">
+                            <i class="fas fa-edit"></i>
                         </button>
-                        <button class="btn btn-outline-danger btn-sm rounded-pill px-3" onclick="deleteExpense(${exp.expense_id})">
-                            <i class="fas fa-trash-alt me-1"></i> ລົບ
+                        <button class="btn btn-danger btn-sm btn-action" onclick="deleteExpense(${exp.expense_id})" title="ລົບ">
+                            <i class="fas fa-trash-alt"></i>
                         </button>
                     </div>
                 </td>
@@ -626,6 +633,24 @@ function deleteExpense(expenseId) {
                     Swal.fire({ icon: 'error', title: 'ຜິດພາດ', text: 'ບໍ່ສາມາດລົບຂໍ້ມູນໄດ້' });
                 }
             });
+        }
+    });
+}
+
+function loadExpenseCategories() {
+    $.ajax({
+        url: '../api/expense_category_api.php',
+        type: 'GET',
+        data: { action: 'list' },
+        dataType: 'json',
+        success: function(res) {
+            if (res.success) {
+                let select = $('#formCategory');
+                select.html('<option value="">-- ເລືອກປະເພດລາຍຈ່າຍ --</option>');
+                res.categories.forEach(cat => {
+                    select.append(`<option value="${cat.category_name}">${cat.category_name}</option>`);
+                });
+            }
         }
     });
 }

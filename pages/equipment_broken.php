@@ -20,10 +20,7 @@ if ($result) {
     }
 }
 
-$total_qty = 0;
-foreach ($equipment as $e) {
-    $total_qty += (int)($e['quantity'] ?? 1);
-}
+$total_qty = count($equipment);
 ?>
 <!DOCTYPE html>
 <html lang="lo">
@@ -91,37 +88,16 @@ foreach ($equipment as $e) {
         </div>
     </div>
 
-    <!-- Stat Banners -->
     <div class="row mb-4">
         <div class="col-md-4 col-sm-6 mb-3">
             <div class="stat-banner" style="background: linear-gradient(135deg,#e53e3e,#fc8181);">
                 <div class="stat-icon"><i class="fas fa-tools"></i></div>
                 <div>
-                    <div class="stat-label">ລາຍການ (ໂດດ) ທີ່ຊຳລຸດ</div>
-                    <div class="stat-num"><?= count($equipment) ?></div>
+                    <div class="stat-label">ອຸປະກອນຊຳລຸດທັງໝົດ</div>
+                    <div class="stat-num"><?= number_format($total_qty) ?> ເຄື່ອງ</div>
                 </div>
             </div>
         </div>
-        <div class="col-md-4 col-sm-6 mb-3">
-            <div class="stat-banner" style="background: linear-gradient(135deg,#dd6b20,#f6ad55);">
-                <div class="stat-icon"><i class="fas fa-boxes"></i></div>
-                <div>
-                    <div class="stat-label">ຈຳນວນທັງໝົດ (ອັນ/ເຄື່ອງ)</div>
-                    <div class="stat-num"><?= number_format($total_qty) ?></div>
-                </div>
-            </div>
-        </div>
-        <?php if (!empty($equipment)): ?>
-        <div class="col-md-4 col-sm-12 mb-3">
-            <div class="stat-banner" style="background: linear-gradient(135deg,#6b46c1,#9f7aea);">
-                <div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
-                <div>
-                    <div class="stat-label">ຕ້ອງດຳເນີນການ</div>
-                    <div class="stat-num" style="font-size:1.1rem;margin-top:4px;">ສ້ອມ / ປ່ຽນໃໝ່</div>
-                </div>
-            </div>
-        </div>
-        <?php endif; ?>
     </div>
 
     <!-- Table Card -->
@@ -157,7 +133,6 @@ foreach ($equipment as $e) {
                             <th>ລະຫັດ</th>
                             <th>ຊື່ອຸປະກອນ</th>
                             <th>ຍີ່ຫໍ້ / ລຸ້ນ</th>
-                            <th class="text-center">ຈຳນວນ</th>
                             <th class="text-end">ລາຄາຊື້</th>
                             <th class="text-center">ວັນທີຊື້</th>
                             <th>ໝາຍເຫດ</th>
@@ -179,11 +154,8 @@ foreach ($equipment as $e) {
                                 <td><code><?= htmlspecialchars($e['equipment_code']) ?></code></td>
                                 <td class="fw-bold text-danger"><?= htmlspecialchars($e['equipment_name']) ?></td>
                                 <td class="text-muted"><?= htmlspecialchars($e['brand_model'] ?: '-') ?></td>
-                                <td class="text-center">
-                                    <span class="badge bg-light text-dark border"><?= $e['quantity'] ?> ເຄື່ອງ</span>
-                                </td>
                                 <td class="text-end fw-bold"><?= formatCurrency($e['price']) ?></td>
-                                <td class="text-center text-muted"><?= $e['purchase_date'] ? date('d/m/Y', strtotime($e['purchase_date'])) : '-' ?></td>
+                                <td class="text-center text-muted"><?= ($e['purchase_date'] && $e['purchase_date'] !== '0000-00-00') ? date('d/m/Y', strtotime($e['purchase_date'])) : '-' ?></td>
                                 <td class="text-muted small"><?= htmlspecialchars($e['description'] ?: '-') ?></td>
                                 <td class="text-center">
                                     <span class="badge px-3 py-2" style="background:#fee2e2;color:#991b1b;border-radius:20px;font-size:0.82rem;font-weight:700;">
@@ -271,7 +243,7 @@ function viewEquipment(equipmentId) {
                 $('#viewEqName').text(e.equipment_name);
                 $('#viewEqBrand').text(e.brand_model || '-');
                 $('#viewEqCode').text(e.equipment_code);
-                $('#viewEqQty').html('<span class="badge bg-light text-dark border">' + e.quantity + ' ເຄື່ອງ</span>');
+
                 
                 // Format price
                 let formattedPrice = parseFloat(e.price).toLocaleString('en-US') + ' ກີບ';
@@ -279,12 +251,14 @@ function viewEquipment(equipmentId) {
                 
                 // Format date
                 let formattedDate = '-';
-                if (e.purchase_date) {
+                if (e.purchase_date && e.purchase_date !== '0000-00-00') {
                     let d = new Date(e.purchase_date);
-                    let day = ("0" + d.getDate()).slice(-2);
-                    let month = ("0" + (d.getMonth() + 1)).slice(-2);
-                    let year = d.getFullYear();
-                    formattedDate = day + '/' + month + '/' + year;
+                    if (!isNaN(d.getTime())) {
+                        let day = ("0" + d.getDate()).slice(-2);
+                        let month = ("0" + (d.getMonth() + 1)).slice(-2);
+                        let year = d.getFullYear();
+                        formattedDate = day + '/' + month + '/' + year;
+                    }
                 }
                 $('#viewEqDate').text(formattedDate);
                 
@@ -339,10 +313,7 @@ function viewEquipment(equipmentId) {
                                 <span class="text-muted d-block mb-1" style="font-size: 0.8rem;">ລະຫັດບາໂຄດ:</span>
                                 <code class="h6 fw-bold" id="viewEqCode">-</code>
                             </div>
-                            <div class="col-6 mb-2">
-                                <span class="text-muted d-block mb-1" style="font-size: 0.8rem;">ຈຳນວນ:</span>
-                                <span id="viewEqQty">-</span>
-                            </div>
+
                             <div class="col-6 mb-2">
                                 <span class="text-muted d-block mb-1" style="font-size: 0.8rem;">ລາຄາຊື້:</span>
                                 <span class="h6 fw-bold text-success" id="viewEqPrice">-</span>

@@ -1,10 +1,15 @@
-﻿<?php
+<?php
 if (session_status() === PHP_SESSION_NONE) session_start();
 if (!isset($_SESSION['checked']) || $_SESSION['checked'] !== 1 || !isset($_SESSION['user_id'])) {
     echo "<script>window.top.location.href = '../index.php?expired=1';</script>";
     exit();
 }
 require_once '../config/db.php';
+
+if (!hasPermission('members', 'view')) {
+    echo "<script>window.top.location.href = '../index.php?expired=1';</script>";
+    exit();
+}
 
 $days_threshold = (int)($_GET['days'] ?? 14);
 if ($days_threshold < 1) $days_threshold = 14;

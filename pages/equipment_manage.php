@@ -99,7 +99,6 @@ if ($result) {
                             <th class="text-center">ລະຫັດບາໂຄດ</th>
                             <th>ຊື່ອຸປະກອນ/ເຄື່ອງຫຼິ້ນ</th>
                             <th>ຍີ່ຫໍ້ - ລຸ້ນ</th>
-                            <th class="text-center">ຈຳນວນ</th>
                             <th class="text-end">ລາຄາຊື້</th>
                             <th class="text-center">ວັນທີຊື້</th>
                             <th class="text-center">ສະພາບການໃຊ້ງານ</th>
@@ -120,9 +119,8 @@ if ($result) {
                                     <td class="text-center"><code><?= htmlspecialchars($e['equipment_code']) ?></code></td>
                                     <td class="fw-bold text-dark"><?= htmlspecialchars($e['equipment_name']) ?></td>
                                     <td><?= htmlspecialchars($e['brand_model'] ?: '-') ?></td>
-                                    <td class="text-center"><span class="badge bg-light text-dark border"><?= $e['quantity'] ?> ເຄື່ອງ</span></td>
                                     <td class="text-end fw-bold"><?= formatCurrency($e['price']) ?></td>
-                                    <td class="text-center text-muted"><?= $e['purchase_date'] ? date('d/m/Y', strtotime($e['purchase_date'])) : '-' ?></td>
+                                    <td class="text-center text-muted"><?= ($e['purchase_date'] && $e['purchase_date'] !== '0000-00-00') ? date('d/m/Y', strtotime($e['purchase_date'])) : '-' ?></td>
                                     <td class="text-center">
                                         <?php if ($e['status'] === 'ດີ'): ?>
                                             <span class="badge bg-success-light text-success px-3 py-1.5" style="border-radius: 20px;"><i class="fas fa-check-circle me-1"></i>ດີ / ພ້ອມໃຊ້</span>
@@ -194,10 +192,7 @@ if ($result) {
                             <label class="form-label fw-bold">ຍີ່ຫໍ້ - ລຸ້ນ</label>
                             <input type="text" name="brand_model" id="brand_model" class="form-control" placeholder="ຕົວຢ່າງ: GymMax X1...">
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">ຈຳນວນ (ເຄື່ອງ/ອັນ)</label>
-                            <input type="number" name="quantity" id="quantity" class="form-control" value="1" min="1">
-                        </div>
+                        <input type="hidden" name="quantity" id="quantity" value="1">
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-bold">ລາຄາຊື້ (ກີບ)</label>
                             <input type="text" name="price" id="price" class="form-control price-input" placeholder="0">
@@ -267,10 +262,7 @@ if ($result) {
                                 <span class="text-muted d-block mb-1" style="font-size: 0.8rem;">ລະຫັດບາໂຄດ:</span>
                                 <code class="h6 fw-bold" id="viewEqCode">-</code>
                             </div>
-                            <div class="col-6 mb-2">
-                                <span class="text-muted d-block mb-1" style="font-size: 0.8rem;">ຈຳນວນ:</span>
-                                <span id="viewEqQty">-</span>
-                            </div>
+
                             <div class="col-6 mb-2">
                                 <span class="text-muted d-block mb-1" style="font-size: 0.8rem;">ລາຄາຊື້:</span>
                                 <span class="h6 fw-bold text-success" id="viewEqPrice">-</span>
@@ -633,20 +625,20 @@ function viewEquipment(equipmentId) {
                 $('#viewEqName').text(e.equipment_name);
                 $('#viewEqBrand').text(e.brand_model || '-');
                 $('#viewEqCode').text(e.equipment_code);
-                $('#viewEqQty').html('<span class="badge bg-light text-dark border">' + e.quantity + ' ເຄື່ອງ</span>');
-                
                 // Format price
                 let formattedPrice = parseFloat(e.price).toLocaleString('en-US') + ' ກີບ';
                 $('#viewEqPrice').text(formattedPrice);
                 
                 // Format date
                 let formattedDate = '-';
-                if (e.purchase_date) {
+                if (e.purchase_date && e.purchase_date !== '0000-00-00') {
                     let d = new Date(e.purchase_date);
-                    let day = ("0" + d.getDate()).slice(-2);
-                    let month = ("0" + (d.getMonth() + 1)).slice(-2);
-                    let year = d.getFullYear();
-                    formattedDate = day + '/' + month + '/' + year;
+                    if (!isNaN(d.getTime())) {
+                        let day = ("0" + d.getDate()).slice(-2);
+                        let month = ("0" + (d.getMonth() + 1)).slice(-2);
+                        let year = d.getFullYear();
+                        formattedDate = day + '/' + month + '/' + year;
+                    }
                 }
                 $('#viewEqDate').text(formattedDate);
                 

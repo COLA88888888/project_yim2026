@@ -8,6 +8,11 @@ if (!isset($_SESSION['checked']) || $_SESSION['checked'] !== 1 || !isset($_SESSI
 }
 require_once '../config/db.php';
 
+if (!hasPermission('stock_in', 'view')) {
+    echo "<script>window.top.location.href = '../index.php?expired=1';</script>";
+    exit();
+}
+
 // Fetch products for selection
 $products = [];
 $sql = "SELECT product_id, product_name, product_code, unit, cost_price, sale_price FROM products ORDER BY product_name ASC";

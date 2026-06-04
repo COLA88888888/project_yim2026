@@ -104,11 +104,14 @@ require_once 'layouts/header.php';
         <div>
           <div class="stat-card-label-custom">ລາຍຮັບສະມາຊິກ (ເດືອນນີ້)</div>
           <div class="stat-card-value-custom" style="font-size: 1.35rem;"><?= formatCurrency($stats['sub_revenue_month']) ?></div>
+          <div class="small mt-1 text-white-50">
+            ສົດ: <?= number_format($stats['sub_month_cash']) ?> | ໂອນ: <?= number_format($stats['sub_month_transfer']) ?>
+          </div>
         </div>
         <div class="stat-card-icon-custom"><i class="fas fa-file-invoice-dollar"></i></div>
       </div>
       <div class="stat-card-footer-custom">
-        <i class="fas fa-calendar-day"></i> ມື້ນີ້: <?= formatCurrency($stats['sub_revenue_today']) ?>
+        <i class="fas fa-calendar-day"></i> ມື້ນີ້: <?= formatCurrency($stats['sub_revenue_today']) ?> (ສົດ: <?= number_format($stats['sub_today_cash']) ?> | ໂອນ: <?= number_format($stats['sub_today_transfer']) ?>)
       </div>
     </a>
 
@@ -118,11 +121,14 @@ require_once 'layouts/header.php';
         <div>
           <div class="stat-card-label-custom">ລາຍຮັບລາຍວັນ (ເດືອນນີ້)</div>
           <div class="stat-card-value-custom" style="font-size: 1.35rem;"><?= formatCurrency($stats['daily_revenue_month']) ?></div>
+          <div class="small mt-1 text-white-50">
+            ສົດ: <?= number_format($stats['daily_month_cash']) ?> | ໂອນ: <?= number_format($stats['daily_month_transfer']) ?>
+          </div>
         </div>
         <div class="stat-card-icon-custom"><i class="fas fa-money-bill-wave"></i></div>
       </div>
       <div class="stat-card-footer-custom">
-        <i class="fas fa-calendar-day"></i> ມື້ນີ້: <?= formatCurrency($stats['daily_revenue_today']) ?>
+        <i class="fas fa-calendar-day"></i> ມື້ນີ້: <?= formatCurrency($stats['daily_revenue_today']) ?> (ສົດ: <?= number_format($stats['daily_today_cash']) ?> | ໂອນ: <?= number_format($stats['daily_today_transfer']) ?>)
       </div>
     </a>
 

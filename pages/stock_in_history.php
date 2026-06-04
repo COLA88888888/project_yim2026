@@ -8,6 +8,11 @@ if (!isset($_SESSION['checked']) || $_SESSION['checked'] !== 1 || !isset($_SESSI
 }
 require_once '../config/db.php';
 
+if (!hasPermission('stock_in', 'view')) {
+    echo "<script>window.top.location.href = '../index.php?expired=1';</script>";
+    exit();
+}
+
 // Fetch stock-in list
 $imports = [];
 $sql = "SELECT s.*, u.fname as staff_fname, u.lname as staff_lname 
@@ -305,38 +310,45 @@ function viewImportReceipt(stockInId) {
 function printReceipt() {
     let printContents = document.getElementById('receiptPrintArea').innerHTML;
     
-    let printWindow = window.open('', '_blank', 'width=380,height=600');
-    printWindow.document.write('<html><head><title>ພິມໃບບິນນຳເຂົ້າ</title>');
+    // Remove any existing print frame
+    $('#receiptPrintFrame').remove();
+    
+    // Create a hidden iframe
+    let $iframe = $('<iframe id="receiptPrintFrame" style="position: absolute; width: 0; height: 0; border: none;"></iframe>');
+    $('body').append($iframe);
+    
+    let iframeDoc = $iframe[0].contentDocument || $iframe[0].contentWindow.document;
+    
+    iframeDoc.open();
+    iframeDoc.write('<html><head><title>ພິມໃບບິນນຳເຂົ້າ</title>');
     // Set base href to resolve local relative font files
-    printWindow.document.write('<base href="' + window.location.origin + window.location.pathname + '">');
-    printWindow.document.write('<link rel="stylesheet" href="../assets/css/local-font.css">');
-    printWindow.document.write('<style>');
-    printWindow.document.write('@media print { @page { size: 80mm auto; margin: 0; } body { margin: 0; padding: 4mm; } }');
-    printWindow.document.write('body { font-family: "Noto Sans Lao", "Noto Sans Lao Looped", Arial, sans-serif; width: 72mm; margin: 0 auto; color: #000; background: #fff; font-size: 11px; line-height: 1.3; }');
-    printWindow.document.write('.text-center { text-align: center; } .text-start { text-align: left; } .text-end { text-align: right; }');
-    printWindow.document.write('.receipt-header { text-align: center; margin-bottom: 8px; }');
-    printWindow.document.write('.receipt-logo { font-size: 16px; font-weight: bold; margin: 0 0 2px 0; color: #111; }');
-    printWindow.document.write('.receipt-address { font-size: 9px; color: #666; margin: 0 0 4px 0; }');
-    printWindow.document.write('.receipt-title { font-size: 12px; font-weight: bold; margin: 6px 0; text-transform: uppercase; color: #28a745; }');
-    printWindow.document.write('.receipt-divider { border-top: 1px dashed #000; margin: 8px 0; }');
-    printWindow.document.write('.receipt-meta { font-size: 9.5px; margin-bottom: 6px; } .receipt-meta div { margin-bottom: 3px; }');
-    printWindow.document.write('.receipt-table { width: 100%; border-collapse: collapse; margin: 4px 0; }');
-    printWindow.document.write('.receipt-table th { font-weight: bold; border-bottom: 1px solid #000; padding: 4px 0; font-size: 10px; }');
-    printWindow.document.write('.receipt-table td { padding: 5px 0; font-size: 10.5px; vertical-align: top; }');
-    printWindow.document.write('.receipt-total-section { font-size: 11px; margin: 6px 0; } .receipt-total-row { display: flex; justify-content: space-between; padding: 2px 0; }');
-    printWindow.document.write('.receipt-total-row.grand-total { font-size: 13px; font-weight: bold; margin-top: 4px; border-top: 1px dashed #000; padding-top: 4px; }');
-    printWindow.document.write('.receipt-footer { text-align: center; margin-top: 12px; font-size: 9.5px; font-weight: bold; }');
-    printWindow.document.write('</style></head><body>');
-    printWindow.document.write(printContents);
-    printWindow.document.write('</body></html>');
+    iframeDoc.write('<base href="' + window.location.origin + window.location.pathname + '">');
+    iframeDoc.write('<link rel="stylesheet" href="../assets/css/local-font.css">');
+    iframeDoc.write('<style>');
+    iframeDoc.write('@media print { @page { size: 80mm auto; margin: 0; } body { margin: 0; padding: 4mm; } }');
+    iframeDoc.write('body { font-family: "Noto Sans Lao", "Noto Sans Lao Looped", Arial, sans-serif; width: 72mm; margin: 0 auto; color: #000; background: #fff; font-size: 11px; line-height: 1.3; }');
+    iframeDoc.write('.text-center { text-align: center; } .text-start { text-align: left; } .text-end { text-align: right; }');
+    iframeDoc.write('.receipt-header { text-align: center; margin-bottom: 8px; }');
+    iframeDoc.write('.receipt-logo { font-size: 16px; font-weight: bold; margin: 0 0 2px 0; color: #111; }');
+    iframeDoc.write('.receipt-address { font-size: 9px; color: #666; margin: 0 0 4px 0; }');
+    iframeDoc.write('.receipt-title { font-size: 12px; font-weight: bold; margin: 6px 0; text-transform: uppercase; color: #28a745; }');
+    iframeDoc.write('.receipt-divider { border-top: 1px dashed #000; margin: 8px 0; }');
+    iframeDoc.write('.receipt-meta { font-size: 9.5px; margin-bottom: 6px; } .receipt-meta div { margin-bottom: 3px; }');
+    iframeDoc.write('.receipt-table { width: 100%; border-collapse: collapse; margin: 4px 0; }');
+    iframeDoc.write('.receipt-table th { font-weight: bold; border-bottom: 1px solid #000; padding: 4px 0; font-size: 10px; }');
+    iframeDoc.write('.receipt-table td { padding: 5px 0; font-size: 10.5px; vertical-align: top; }');
+    iframeDoc.write('.receipt-total-section { font-size: 11px; margin: 6px 0; } .receipt-total-row { display: flex; justify-content: space-between; padding: 2px 0; }');
+    iframeDoc.write('.receipt-total-row.grand-total { font-size: 13px; font-weight: bold; margin-top: 4px; border-top: 1px dashed #000; padding-top: 4px; }');
+    iframeDoc.write('.receipt-footer { text-align: center; margin-top: 12px; font-size: 9.5px; font-weight: bold; }');
+    iframeDoc.write('</style></head><body>');
+    iframeDoc.write(printContents);
+    iframeDoc.write('</body></html>');
+    iframeDoc.close();
     
-    printWindow.document.close();
-    
-    // Wait for fonts to load
+    // Wait for fonts/assets to load inside the iframe
     setTimeout(function() {
-        printWindow.focus();
-        printWindow.print();
-        printWindow.close();
+        $iframe[0].contentWindow.focus();
+        $iframe[0].contentWindow.print();
     }, 500);
 }
 </script>

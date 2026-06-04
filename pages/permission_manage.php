@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -223,6 +223,48 @@ if ($result) {
                                 </tr>
                                 <tr data-module="users">
                                     <td class="fw-bold"><i class="fas fa-user-cog text-info me-2"></i> ຈັດການພະນັກງານ</td>
+                                    <td class="text-center"><label class="switch-custom"><input type="checkbox" class="perm-cb perm-view" value="1"><span class="slider-custom"></span></label></td>
+                                    <td class="text-center"><label class="switch-custom"><input type="checkbox" class="perm-cb perm-add" value="1"><span class="slider-custom"></span></label></td>
+                                    <td class="text-center"><label class="switch-custom"><input type="checkbox" class="perm-cb perm-edit" value="1"><span class="slider-custom"></span></label></td>
+                                    <td class="text-center"><label class="switch-custom"><input type="checkbox" class="perm-cb perm-delete" value="1"><span class="slider-custom"></span></label></td>
+                                </tr>
+                                <tr data-module="expenses">
+                                    <td class="fw-bold"><i class="fas fa-minus-circle text-danger me-2"></i> ຈັດການລາຍຈ່າຍ (Expenses)</td>
+                                    <td class="text-center"><label class="switch-custom"><input type="checkbox" class="perm-cb perm-view" value="1"><span class="slider-custom"></span></label></td>
+                                    <td class="text-center"><label class="switch-custom"><input type="checkbox" class="perm-cb perm-add" value="1"><span class="slider-custom"></span></label></td>
+                                    <td class="text-center"><label class="switch-custom"><input type="checkbox" class="perm-cb perm-edit" value="1"><span class="slider-custom"></span></label></td>
+                                    <td class="text-center"><label class="switch-custom"><input type="checkbox" class="perm-cb perm-delete" value="1"><span class="slider-custom"></span></label></td>
+                                </tr>
+                                <tr data-module="sales">
+                                    <td class="fw-bold"><i class="fas fa-cash-register text-success me-2"></i> ຂາຍສິນຄ້າ (POS)</td>
+                                    <td class="text-center"><label class="switch-custom"><input type="checkbox" class="perm-cb perm-view" value="1"><span class="slider-custom"></span></label></td>
+                                    <td class="text-center"><label class="switch-custom"><input type="checkbox" class="perm-cb perm-add" value="1"><span class="slider-custom"></span></label></td>
+                                    <td class="text-center"><label class="switch-custom"><input type="checkbox" class="perm-cb perm-edit" value="1"><span class="slider-custom"></span></label></td>
+                                    <td class="text-center"><label class="switch-custom"><input type="checkbox" class="perm-cb perm-delete" value="1"><span class="slider-custom"></span></label></td>
+                                </tr>
+                                <tr data-module="sales_history">
+                                    <td class="fw-bold"><i class="fas fa-history text-info me-2"></i> ປະຫວັດການຂາຍ (Sales History)</td>
+                                    <td class="text-center"><label class="switch-custom"><input type="checkbox" class="perm-cb perm-view" value="1"><span class="slider-custom"></span></label></td>
+                                    <td class="text-center text-muted">-</td>
+                                    <td class="text-center text-muted">-</td>
+                                    <td class="text-center"><label class="switch-custom"><input type="checkbox" class="perm-cb perm-delete" value="1"><span class="slider-custom"></span></label></td>
+                                </tr>
+                                <tr data-module="stock_in">
+                                    <td class="fw-bold"><i class="fas fa-file-import text-warning me-2"></i> ນຳເຂົ້າສິນຄ້າ (Stock In)</td>
+                                    <td class="text-center"><label class="switch-custom"><input type="checkbox" class="perm-cb perm-view" value="1"><span class="slider-custom"></span></label></td>
+                                    <td class="text-center"><label class="switch-custom"><input type="checkbox" class="perm-cb perm-add" value="1"><span class="slider-custom"></span></label></td>
+                                    <td class="text-center text-muted">-</td>
+                                    <td class="text-center"><label class="switch-custom"><input type="checkbox" class="perm-cb perm-delete" value="1"><span class="slider-custom"></span></label></td>
+                                </tr>
+                                <tr data-module="products">
+                                    <td class="fw-bold"><i class="fas fa-box text-primary me-2"></i> ຈັດການຂໍ້ມູນສິນຄ້າ (Products)</td>
+                                    <td class="text-center"><label class="switch-custom"><input type="checkbox" class="perm-cb perm-view" value="1"><span class="slider-custom"></span></label></td>
+                                    <td class="text-center"><label class="switch-custom"><input type="checkbox" class="perm-cb perm-add" value="1"><span class="slider-custom"></span></label></td>
+                                    <td class="text-center"><label class="switch-custom"><input type="checkbox" class="perm-cb perm-edit" value="1"><span class="slider-custom"></span></label></td>
+                                    <td class="text-center"><label class="switch-custom"><input type="checkbox" class="perm-cb perm-delete" value="1"><span class="slider-custom"></span></label></td>
+                                </tr>
+                                <tr data-module="product_categories">
+                                    <td class="fw-bold"><i class="fas fa-folder text-warning me-2"></i> ຈັດການປະເພດສິນຄ້າ</td>
                                     <td class="text-center"><label class="switch-custom"><input type="checkbox" class="perm-cb perm-view" value="1"><span class="slider-custom"></span></label></td>
                                     <td class="text-center"><label class="switch-custom"><input type="checkbox" class="perm-cb perm-add" value="1"><span class="slider-custom"></span></label></td>
                                     <td class="text-center"><label class="switch-custom"><input type="checkbox" class="perm-cb perm-edit" value="1"><span class="slider-custom"></span></label></td>

@@ -8,14 +8,14 @@ if (!isset($_SESSION['checked']) || $_SESSION['checked'] !== 1 || !isset($_SESSI
 }
 require_once '../config/db.php';
 
-if (!hasPermission('product_categories', 'view')) {
+if (!hasPermission('expenses', 'view')) {
     echo "<script>window.top.location.href = '../index.php?expired=1';</script>";
     exit();
 }
 
-// Fetch categories
+// Fetch expense categories
 $categories = [];
-$sql = "SELECT * FROM product_categories ORDER BY category_id ASC";
+$sql = "SELECT * FROM expense_categories ORDER BY category_id ASC";
 $result = mysqli_query($conn, $sql);
 if ($result) {
     while ($row = mysqli_fetch_assoc($result)) {
@@ -28,7 +28,7 @@ if ($result) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ຈັດການປະເພດສິນຄ້າ</title>
+    <title>ຈັດການປະເພດລາຍຈ່າຍ</title>
     <link rel="stylesheet" href="../assets/css/local-font.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="../bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="../icon/css/all.min.css">
@@ -42,6 +42,34 @@ if ($result) {
             font-family: 'Noto Sans Lao', 'Noto Sans Lao Looped', sans-serif;
             background-color: #f4f6f9;
         }
+        .card-custom {
+            border-radius: 16px;
+            border: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .table-custom th {
+            background-color: #f8f9fa;
+            color: #495057;
+            font-weight: 700;
+        }
+        .btn-action {
+            border-radius: 8px;
+            padding: 5px 10px;
+        }
+        .search-box {
+            position: relative;
+        }
+        .search-box i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+        }
+        .search-box input {
+            padding-left: 36px;
+            border-radius: 10px;
+        }
     </style>
 </head>
 <body>
@@ -50,13 +78,13 @@ if ($result) {
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
         <div>
             <h4 class="fw-bold text-dark mb-1">
-                <i class="fas fa-folder text-primary me-2"></i> ຈັດການປະເພດສິນຄ້າ
+                <i class="fas fa-tags text-danger me-2"></i> ຈັດການປະເພດລາຍຈ່າຍ
             </h4>
-            <p class="text-muted small mb-0">ກຳນົດ ແລະ ບໍລິຫານປະເພດສິນຄ້າໃນຮ້ານຄ້າ (ເຊັ່ນ ເຄື່ອງດື່ມ, ອາຫານເສີມ, ເຄື່ອງກິລາ)</p>
+            <p class="text-muted small mb-0">ກຳນົດ ແລະ ບໍລິຫານປະເພດລາຍຈ່າຍພາຍໃນຍິມ (ເຊັ່ນ ຄ່ານ້ຳ/ຄ່າໄຟ, ຄ່າເຊົ່າ, ເງິນເດືອນພະນັກງານ)</p>
         </div>
         <div>
-            <button class="btn btn-primary rounded-pill px-4 shadow-sm" onclick="openCreateModal()">
-                <i class="fas fa-plus me-1"></i> ເພີ່ມປະເພດສິນຄ້າໃໝ່
+            <button class="btn btn-danger rounded-pill px-4 shadow-sm" onclick="openCreateModal()">
+                <i class="fas fa-plus me-1"></i> ເພີ່ມປະເພດລາຍຈ່າຍໃໝ່
             </button>
         </div>
     </div>
@@ -68,39 +96,37 @@ if ($result) {
             <div class="p-3 border-bottom d-flex flex-wrap justify-content-between align-items-center gap-3">
                 <div class="d-flex align-items-center flex-wrap gap-3">
                     <div class="text-muted small">
-                        ປະເພດສິນຄ້າທັງໝົດ: <span class="fw-bold text-primary" id="categoryCount"><?= count($categories) ?></span> ລາຍການ
+                        ປະເພດລາຍຈ່າຍທັງໝົດ: <span class="fw-bold text-danger" id="categoryCount"><?= count($categories) ?></span> ລາຍການ
                     </div>
                 </div>
                 <div class="search-box flex-grow-1" style="max-width: 400px;">
                     <i class="fas fa-search"></i>
-                    <input type="text" id="searchInput" class="form-control" placeholder="ຄົ້ນຫາປະເພດສິນຄ້າ...">
+                    <input type="text" id="searchInput" class="form-control" placeholder="ຄົ້ນຫາປະເພດລາຍຈ່າຍ...">
                 </div>
             </div>
 
             <!-- Table -->
             <div class="table-responsive">
-                <table class="table table-custom table-hover align-middle">
+                <table class="table table-custom table-hover align-middle mb-0">
                     <thead>
                         <tr>
-                            <th style="width: 80px;">ID</th>
-                            <th style="width: 150px;">ລະຫັດປະເພດ</th>
-                            <th>ຊື່ປະເພດສິນຄ້າ</th>
-                            <th>ວັນທີບັນທຶກ</th>
+                            <th style="width: 150px;">ລະຫັດປະເພດລາຍຈ່າຍ</th>
+                            <th>ຊື່ປະເພດລາຍຈ່າຍ</th>
+                            <th style="width: 250px;">ວັນທີບັນທຶກ</th>
                             <th class="text-center" style="width: 150px;">ຈັດການ</th>
                         </tr>
                     </thead>
                     <tbody id="categoryTableBody">
                         <?php if (empty($categories)): ?>
                             <tr>
-                                <td colspan="5" class="text-center py-5 text-muted">
+                                <td colspan="4" class="text-center py-5 text-muted">
                                     <i class="fas fa-folder-open fa-2x mb-3 d-block"></i>
-                                    ຍັງບໍ່ມີຂໍ້ມູນປະເພດສິນຄ້າ
+                                    ຍັງບໍ່ມີຂໍ້ມູນປະເພດລາຍຈ່າຍ
                                 </td>
                             </tr>
                         <?php else: ?>
                             <?php foreach ($categories as $c): ?>
                                 <tr class="category-row">
-                                    <td><span class="badge bg-light text-dark border"><?= $c['category_id'] ?></span></td>
                                     <td><span class="badge bg-info text-white"><?= htmlspecialchars($c['category_code']) ?></span></td>
                                     <td class="fw-bold text-dark"><?= htmlspecialchars($c['category_name']) ?></td>
                                     <td class="text-muted small"><?= date('d/m/Y H:i', strtotime($c['created_at'])) ?></td>
@@ -124,33 +150,35 @@ if ($result) {
     </div>
 </div>
 
-<!-- Modal ເພີ່ມ/ແກ້ໄຂປະເພດສິນຄ້າ -->
-<div class="modal fade" id="categoryModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
+<!-- Modal ເພີ່ມ/ແກ້ໄຂປະເພດລາຍຈ່າຍ -->
+<div class="modal fade" id="categoryModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-            <div class="modal-header bg-primary text-white" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
-                <h5 class="modal-title fw-bold" id="modalTitle"><i class="fas fa-plus me-1"></i> ເພີ່ມປະເພດສິນຄ້າໃໝ່</h5>
-                <button type="button" class="close text-white border-0 bg-transparent" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true" class="h3 text-white">&times;</span>
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="modal-title fw-bold text-dark" id="modalTitle">ເພີ່ມປະເພດລາຍຈ່າຍໃໝ່</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="font-size: 1.5rem; outline: none;">
+                    <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <form id="categoryForm">
                 <input type="hidden" name="action" id="formAction" value="create">
                 <input type="hidden" name="category_id" id="formCategoryId">
                 
-                <div class="modal-body p-4">
+                <div class="modal-body pt-3">
                     <div class="mb-3">
-                        <label class="form-label fw-bold">ລະຫັດປະເພດສິນຄ້າ</label>
-                        <input type="text" name="category_code" id="category_code" class="form-control" placeholder="ຕົວຢ່າງ: CAT001..." required>
+                        <label class="form-label fw-bold text-muted small">ລະຫັດປະເພດລາຍຈ່າຍ <span class="text-danger">*</span></label>
+                        <input type="text" name="category_code" id="category_code" class="form-control form-control-lg rounded-3" placeholder="ຕົວຢ່າງ: EXP001..." style="font-size:0.95rem;" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold">ຊື່ປະເພດສິນຄ້າ</label>
-                        <input type="text" name="category_name" id="category_name" class="form-control" placeholder="ກະລຸນາປ້ອນຊື່ປະເພດສິນຄ້າ..." required>
+                        <label class="form-label fw-bold text-muted small">ຊື່ປະເພດລາຍຈ່າຍ <span class="text-danger">*</span></label>
+                        <input type="text" name="category_name" id="category_name" class="form-control form-control-lg rounded-3" placeholder="ກະລຸນາປ້ອນຊື່ປະເພດລາຍຈ່າຍ..." style="font-size:0.95rem;" required>
                     </div>
                 </div>
-                <div class="modal-footer bg-light" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
-                    <button type="submit" class="btn btn-success fw-bold px-4" id="saveBtn"><i class="fas fa-save me-1"></i> ບັນທຶກ</button>
-                    <button type="button" class="btn btn-secondary fw-bold" data-dismiss="modal">ຍົກເລີກ</button>
+                <div class="modal-footer border-top-0 pt-0 justify-content-end gap-2">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-dismiss="modal">ຍົກເລີກ</button>
+                    <button type="submit" class="btn btn-danger rounded-pill px-4 shadow-sm" id="saveBtn">
+                        <i class="fas fa-save me-1"></i> ບັນທຶກ
+                    </button>
                 </div>
             </form>
         </div>
@@ -159,16 +187,16 @@ if ($result) {
 
 <script>
 $(document).ready(function() {
-    // ============ ການສົ່ງຟອມບັນທຶກປະເພດສິນຄ້າ ============
+    // ============ ການສົ່ງຟອມບັນທຶກປະເພດລາຍຈ່າຍ ============
     $('#categoryForm').on('submit', function(e) {
         e.preventDefault();
         
         if ($('#category_code').val().trim() === '') {
-            Swal.fire({ icon: 'warning', title: 'ກະລຸນາປ້ອນລະຫັດປະເພດສິນຄ້າ', confirmButtonColor: '#007bff' });
+            Swal.fire({ icon: 'warning', title: 'ກະລຸນາປ້ອນລະຫັດປະເພດລາຍຈ່າຍ', confirmButtonColor: '#dc3545' });
             return;
         }
         if ($('#category_name').val().trim() === '') {
-            Swal.fire({ icon: 'warning', title: 'ກະລຸນາປ້ອນຊື່ປະເພດສິນຄ້າ', confirmButtonColor: '#007bff' });
+            Swal.fire({ icon: 'warning', title: 'ກະລຸນາປ້ອນຊື່ປະເພດລາຍຈ່າຍ', confirmButtonColor: '#dc3545' });
             return;
         }
         
@@ -177,7 +205,7 @@ $(document).ready(function() {
         saveBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> ກຳລັງບັນທຶກ...');
 
         $.ajax({
-            url: '../api/category_api.php',
+            url: '../api/expense_category_api.php',
             type: 'POST',
             data: formData,
             dataType: 'json',
@@ -201,7 +229,7 @@ $(document).ready(function() {
                 if (xhr.responseJSON && xhr.responseJSON.message) {
                     msg = xhr.responseJSON.message;
                 }
-                Swal.fire({ icon: 'error', title: 'ຜິດພາດ', text: msg });
+                Swal.fire({ icon: 'error', title: 'ຜິດພາດ', text: msg, confirmButtonColor: '#dc3545' });
             }
         });
     });
@@ -229,7 +257,7 @@ function openCreateModal() {
     $('#formAction').val('create');
     $('#formCategoryId').val('');
     $('#categoryForm')[0].reset();
-    $('#modalTitle').html('<i class="fas fa-plus me-1"></i> ເພີ່ມປະເພດສິນຄ້າໃໝ່');
+    $('#modalTitle').text('ເພີ່ມປະເພດລາຍຈ່າຍໃໝ່');
     $('#categoryModal').modal('show');
 }
 
@@ -237,7 +265,7 @@ function openEditModal(categoryId) {
     if (!categoryId) return;
 
     $.ajax({
-        url: '../api/category_api.php',
+        url: '../api/expense_category_api.php',
         type: 'GET',
         data: { action: 'get', category_id: categoryId },
         dataType: 'json',
@@ -249,12 +277,12 @@ function openEditModal(categoryId) {
                 $('#category_code').val(c.category_code);
                 $('#category_name').val(c.category_name);
                 
-                $('#modalTitle').html('<i class="fas fa-edit me-1"></i> ແກ້ໄຂຂໍ້ມູນປະເພດສິນຄ້າ');
+                $('#modalTitle').text('ແກ້ໄຂຂໍ້ມູນປະເພດລາຍຈ່າຍ');
                 $('#categoryModal').modal('show');
             }
         },
         error: function() {
-            Swal.fire({ icon: 'error', title: 'ຜິດພາດ', text: 'ບໍ່ສາມາດດຶງຂໍ້ມູນປະເພດສິນຄ້າໄດ້' });
+            Swal.fire({ icon: 'error', title: 'ຜິດພາດ', text: 'ບໍ່ສາມາດດຶງຂໍ້ມູນປະເພດລາຍຈ່າຍໄດ້', confirmButtonColor: '#dc3545' });
         }
     });
 }
@@ -264,17 +292,17 @@ function deleteCategory(categoryId) {
 
     Swal.fire({
         title: 'ຢືນຢັນການລົບ',
-        text: 'ທ່ານຕ້ອງການລົບປະເພດສິນຄ້ານີ້ແທ້ບໍ່?',
+        text: 'ທ່ານຕ້ອງການລົບປະເພດລາຍຈ່າຍນີ້ແທ້ບໍ່? ຂໍ້ມູນຈະບໍ່ສາມາດກູ້ຄືນໄດ້!',
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
         confirmButtonText: 'ຢືນຢັນການລົບ',
         cancelButtonText: 'ຍົກເລີກ'
     }).then((result) => {
         if (result.isConfirmed) {
             $.ajax({
-                url: '../api/category_api.php',
+                url: '../api/expense_category_api.php',
                 type: 'POST',
                 data: { action: 'delete', category_id: categoryId },
                 dataType: 'json',
@@ -291,11 +319,11 @@ function deleteCategory(categoryId) {
                     }
                 },
                 error: function(xhr) {
-                    let msg = 'ບໍ່ສາມາດລົບປະເພດສິນຄ້າໄດ້';
+                    let msg = 'ບໍ່ສາມາດລົບປະເພດລາຍຈ່າຍໄດ້';
                     if (xhr.responseJSON && xhr.responseJSON.message) {
                         msg = xhr.responseJSON.message;
                     }
-                    Swal.fire({ icon: 'error', title: 'ຜິດພາດ', text: msg });
+                    Swal.fire({ icon: 'error', title: 'ຜິດພາດ', text: msg, confirmButtonColor: '#dc3545' });
                 }
             });
         }

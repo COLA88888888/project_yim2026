@@ -93,6 +93,22 @@
         </li>
         <?php endif; ?>
 
+        <!-- ເມນູ: ຈັດການລາຍຈ່າຍ -->
+        <?php if (hasPermission('expenses', 'view')): ?>
+        <li class="nav-item">
+          <a href="pages/expenses.php" target="frame" class="nav-link">
+            <i class="nav-icon fas fa-minus-circle text-danger"></i>
+            <p>ຈັດການລາຍຈ່າຍ</p>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="pages/expense_categories.php" target="frame" class="nav-link">
+            <i class="nav-icon fas fa-tags text-danger"></i>
+            <p>ປະເພດລາຍຈ່າຍ</p>
+          </a>
+        </li>
+        <?php endif; ?>
+
         <!-- ຫົວຂໍ້: ຂາຍສິນຄ້າ & ສາງ -->
         <li class="nav-header text-uppercase" style="color: rgba(255,255,255,0.5); font-size: 0.7rem; letter-spacing: 1.5px; padding-top: 20px;">ຂາຍສິນຄ້າ & ສາງ</li>
 
@@ -152,14 +168,105 @@
         </li>
         <?php endif; ?>
 
-        <!-- ເມນູ: ຈັດການລາຍຈ່າຍ -->
-        <?php if (hasPermission('expenses', 'view')): ?>
+        <!-- ຫົວຂໍ້: ລາຍງານຂໍ້ມູນ -->
+        <?php if (hasPermission('subscriptions', 'view') || hasPermission('members', 'view') || hasPermission('equipment', 'view')): ?>
+        <li class="nav-header text-uppercase" style="color: rgba(255,255,255,0.5); font-size: 0.7rem; letter-spacing: 1.5px; padding-top: 20px;">ລາຍງານຂໍ້ມູນ</li>
+
+        <!-- ເມນູ: ລາຍງານການເງິນ (dropdown) -->
+        <?php if (hasPermission('subscriptions', 'view')): ?>
         <li class="nav-item">
-          <a href="pages/expenses.php" target="frame" class="nav-link">
-            <i class="nav-icon fas fa-minus-circle text-danger"></i>
-            <p>ຈັດການລາຍຈ່າຍ</p>
+          <a href="#" class="nav-link">
+            <i class="nav-icon fas fa-chart-line text-primary"></i>
+            <p>
+              ລາຍງານການເງິນ
+              <i class="right fas fa-angle-left"></i>
+            </p>
+          </a>
+          <ul class="nav nav-treeview">
+            <!-- ພາບລວມການເງິນ -->
+            <li class="nav-item">
+              <a href="pages/revenue_report.php?tab=overview" target="frame" class="nav-link">
+                <i class="nav-icon fas fa-columns text-primary"></i>
+                <p>ພາບລວມການເງິນ</p>
+              </a>
+            </li>
+            <!-- ຄ່າສະໝັກສະມາຊິກ -->
+            <li class="nav-item">
+              <a href="pages/revenue_report.php?tab=subscription" target="frame" class="nav-link">
+                <i class="nav-icon fas fa-file-invoice-dollar text-warning"></i>
+                <p>ຄ່າສະໝັກສະມາຊິກ</p>
+              </a>
+            </li>
+            <!-- ຄ່າລາຍວັນ -->
+            <li class="nav-item">
+              <a href="pages/revenue_report.php?tab=daily" target="frame" class="nav-link">
+                <i class="nav-icon fas fa-user-clock text-info"></i>
+                <p>ຄ່າລາຍວັນລູກຄ້າ</p>
+              </a>
+            </li>
+            <!-- ຍອດຂາຍ POS -->
+            <li class="nav-item">
+              <a href="pages/revenue_report.php?tab=pos" target="frame" class="nav-link">
+                <i class="nav-icon fas fa-cash-register text-success"></i>
+                <p>ຍອດຂາຍ POS</p>
+              </a>
+            </li>
+            <!-- ຕົ້ນທຶນນຳເຂົ້າສິນຄ້າ -->
+            <li class="nav-item">
+              <a href="pages/revenue_report.php?tab=stock_in" target="frame" class="nav-link">
+                <i class="nav-icon fas fa-file-import text-secondary"></i>
+                <p>ຕົ້ນທຶນນຳເຂົ້າສິນຄ້າ</p>
+              </a>
+            </li>
+            <!-- ລາຍຈ່າຍທົ່ວໄປ -->
+            <li class="nav-item">
+              <a href="pages/revenue_report.php?tab=expense" target="frame" class="nav-link">
+                <i class="nav-icon fas fa-minus-circle text-danger"></i>
+                <p>ລາຍຈ່າຍທົ່ວໄປ</p>
+              </a>
+            </li>
+          </ul>
+        </li>
+        <?php endif; ?>
+
+        <!-- ເມນູ: ລາຍງານສະມາຊິກຂາດການຕິດຕໍ່ -->
+        <?php if (hasPermission('members', 'view')): ?>
+        <li class="nav-item">
+          <a href="pages/inactive_members_report.php" target="frame" class="nav-link">
+            <i class="nav-icon fas fa-user-slash" style="color:#ff9f43;"></i>
+            <p>ສະມາຊິກຂາດການຕິດຕໍ່</p>
           </a>
         </li>
+        <?php endif; ?>
+
+        <!-- ເມນູ: ລາຍງານອຸປະກອນ (dropdown) -->
+        <?php if (hasPermission('equipment', 'view')): ?>
+        <li class="nav-item">
+          <a href="#" class="nav-link">
+            <i class="nav-icon fas fa-dumbbell text-warning"></i>
+            <p>
+              ລາຍງານອຸປະກອນ
+              <i class="right fas fa-angle-left"></i>
+            </p>
+          </a>
+          <ul class="nav nav-treeview">
+            <!-- ອຸປະກອນດີ -->
+            <li class="nav-item">
+              <a href="pages/equipment_good.php" target="frame" class="nav-link">
+                <i class="nav-icon fas fa-check-circle text-success"></i>
+                <p>ອຸປະກອນດີ / ໃຊ້ໄດ້</p>
+              </a>
+            </li>
+            <!-- ອຸປະກອນເພ -->
+            <li class="nav-item">
+              <a href="pages/equipment_broken.php" target="frame" class="nav-link">
+                <i class="nav-icon fas fa-tools text-danger"></i>
+                <p>ອຸປະກອນເພ / ຊຳລຸດ</p>
+              </a>
+            </li>
+          </ul>
+        </li>
+        <?php endif; ?>
         <?php endif; ?>
 
       </ul>

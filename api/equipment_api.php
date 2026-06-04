@@ -109,7 +109,7 @@ if ($action === 'create') {
     $eqCode = clean($conn, $_POST['equipment_code'] ?? '');
     $eqName = clean($conn, $_POST['equipment_name'] ?? '');
     $brandModel = clean($conn, $_POST['brand_model'] ?? '');
-    $quantity = clean($conn, $_POST['quantity'] ?? '1');
+    $quantity = 1;
     $status = clean($conn, $_POST['status'] ?? 'ດີ');
     $purchaseDate = clean($conn, $_POST['purchase_date'] ?? '');
     $price = clean($conn, $_POST['price'] ?? '0.00');
@@ -144,7 +144,7 @@ if ($action === 'create') {
         'INSERT INTO equipment (equipment_code, equipment_name, brand_model, quantity, status, purchase_date, price, description, equipment_img) 
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
     );
-    mysqli_stmt_bind_param($stmt, 'sssisddss', $eqCode, $eqName, $brandModel, $quantity, $status, $purchaseDateParam, $price, $description, $equipmentImg);
+    mysqli_stmt_bind_param($stmt, 'sssissdss', $eqCode, $eqName, $brandModel, $quantity, $status, $purchaseDateParam, $price, $description, $equipmentImg);
 
     if (!mysqli_stmt_execute($stmt)) {
         jsonErr('// ບັນທຶກອຸປະກອນບໍ່ສຳເລັດ: ' . mysqli_error($conn), 500);
@@ -162,7 +162,7 @@ if ($action === 'update') {
     $eqCode = clean($conn, $_POST['equipment_code'] ?? '');
     $eqName = clean($conn, $_POST['equipment_name'] ?? '');
     $brandModel = clean($conn, $_POST['brand_model'] ?? '');
-    $quantity = clean($conn, $_POST['quantity'] ?? '1');
+    $quantity = 1;
     $status = clean($conn, $_POST['status'] ?? 'ດີ');
     $purchaseDate = clean($conn, $_POST['purchase_date'] ?? '');
     $price = clean($conn, $_POST['price'] ?? '0.00');
@@ -219,7 +219,7 @@ if ($action === 'update') {
         $conn,
         'UPDATE equipment SET equipment_code=?, equipment_name=?, brand_model=?, quantity=?, status=?, purchase_date=?, price=?, description=?, equipment_img=? WHERE equipment_id=?'
     );
-    mysqli_stmt_bind_param($stmt, 'sssisddssi', $eqCode, $eqName, $brandModel, $quantity, $status, $purchaseDateParam, $price, $description, $equipmentImg, $equipmentId);
+    mysqli_stmt_bind_param($stmt, 'sssissdssi', $eqCode, $eqName, $brandModel, $quantity, $status, $purchaseDateParam, $price, $description, $equipmentImg, $equipmentId);
 
     if (!mysqli_stmt_execute($stmt)) {
         jsonErr('ແກ້ໄຂອຸປະກອນບໍ່ສຳເລັດ: ' . mysqli_error($conn), 500);

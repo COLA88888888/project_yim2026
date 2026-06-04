@@ -88,6 +88,22 @@
           </a>
         </li>
 
+        <!-- ເມນູ: ຈັດການລາຍຈ່າຍ -->
+        <li class="nav-item">
+          <a href="pages/expenses.php" target="frame" class="nav-link">
+            <i class="nav-icon fas fa-minus-circle text-danger"></i>
+            <p>ຈັດການລາຍຈ່າຍ</p>
+          </a>
+        </li>
+
+        <!-- ເມນູ: ປະເພດລາຍຈ່າຍ -->
+        <li class="nav-item">
+          <a href="pages/expense_categories.php" target="frame" class="nav-link">
+            <i class="nav-icon fas fa-tags text-danger"></i>
+            <p>ປະເພດລາຍຈ່າຍ</p>
+          </a>
+        </li>
+
         <!-- ຫົວຂໍ້: ຂາຍສິນຄ້າ & ສາງ -->
         <li class="nav-header text-uppercase" style="color: rgba(255,255,255,0.5); font-size: 0.7rem; letter-spacing: 1.5px; padding-top: 20px;">ຂາຍສິນຄ້າ & ສາງ</li>
 
@@ -142,28 +158,59 @@
         <!-- ຫົວຂໍ້: ລາຍງານຂໍ້ມູນ -->
         <li class="nav-header text-uppercase" style="color: rgba(255,255,255,0.5); font-size: 0.7rem; letter-spacing: 1.5px; padding-top: 20px;">ລາຍງານຂໍ້ມູນ</li>
 
-        <!-- ເມນູ: ລາຍງານການເງິນ (ລາຍຮັບ-ລາຍຈ່າຍ) -->
+        <!-- ເມນູ: ລາຍງານການເງິນ (dropdown) -->
         <li class="nav-item">
-          <a href="pages/revenue_report.php" target="frame" class="nav-link">
+          <a href="#" class="nav-link">
             <i class="nav-icon fas fa-chart-line text-primary"></i>
-            <p>ລາຍງານການເງິນ</p>
+            <p>
+              ລາຍງານການເງິນ
+              <i class="right fas fa-angle-left"></i>
+            </p>
           </a>
-        </li>
-
-        <!-- ເມນູ: ຈັດການລາຍຈ່າຍ -->
-        <li class="nav-item">
-          <a href="pages/expenses.php" target="frame" class="nav-link">
-            <i class="nav-icon fas fa-minus-circle text-danger"></i>
-            <p>ຈັດການລາຍຈ່າຍ</p>
-          </a>
-        </li>
-
-        <!-- ເມນູ: ລາຍງານລາຍຮັບລູກຄ້າລາຍວັນ -->
-        <li class="nav-item">
-          <a href="pages/revenue_report.php?tab=daily" target="frame" class="nav-link">
-            <i class="nav-icon fas fa-user-clock text-info"></i>
-            <p>ລາຍງານລາຍຮັບລາຍວັນ</p>
-          </a>
+          <ul class="nav nav-treeview">
+            <!-- ພາບລວມການເງິນ -->
+            <li class="nav-item">
+              <a href="pages/revenue_report.php?tab=overview" target="frame" class="nav-link">
+                <i class="nav-icon fas fa-columns text-primary"></i>
+                <p>ພາບລວມການເງິນ</p>
+              </a>
+            </li>
+            <!-- ຄ່າສະໝັກສະມາຊິກ -->
+            <li class="nav-item">
+              <a href="pages/revenue_report.php?tab=subscription" target="frame" class="nav-link">
+                <i class="nav-icon fas fa-file-invoice-dollar text-warning"></i>
+                <p>ຄ່າສະໝັກສະມາຊິກ</p>
+              </a>
+            </li>
+            <!-- ຄ່າລາຍວັນ -->
+            <li class="nav-item">
+              <a href="pages/revenue_report.php?tab=daily" target="frame" class="nav-link">
+                <i class="nav-icon fas fa-user-clock text-info"></i>
+                <p>ຄ່າລາຍວັນລູກຄ້າ</p>
+              </a>
+            </li>
+            <!-- ຍອດຂາຍ POS -->
+            <li class="nav-item">
+              <a href="pages/revenue_report.php?tab=pos" target="frame" class="nav-link">
+                <i class="nav-icon fas fa-cash-register text-success"></i>
+                <p>ຍອດຂາຍ POS</p>
+              </a>
+            </li>
+            <!-- ຕົ້ນທຶນນຳເຂົ້າສິນຄ້າ -->
+            <li class="nav-item">
+              <a href="pages/revenue_report.php?tab=stock_in" target="frame" class="nav-link">
+                <i class="nav-icon fas fa-file-import text-secondary"></i>
+                <p>ຕົ້ນທຶນນຳເຂົ້າສິນຄ້າ</p>
+              </a>
+            </li>
+            <!-- ລາຍຈ່າຍທົ່ວໄປ -->
+            <li class="nav-item">
+              <a href="pages/revenue_report.php?tab=expense" target="frame" class="nav-link">
+                <i class="nav-icon fas fa-minus-circle text-danger"></i>
+                <p>ລາຍຈ່າຍທົ່ວໄປ</p>
+              </a>
+            </li>
+          </ul>
         </li>
 
         <!-- ເມນູ: ລາຍງານສະມາຊິກຂາດການຕິດຕໍ່ -->
@@ -229,6 +276,15 @@
               </a>
             </li>
           </ul>
+        </li>
+
+        <!-- ຫົວຂໍ້: ຕັ້ງຄ່າລະບົບ -->
+        <li class="nav-header text-uppercase" style="color: rgba(255,255,255,0.5); font-size: 0.7rem; letter-spacing: 1.5px; padding-top: 20px;">ຕັ້ງຄ່າລະບົບ</li>
+        <li class="nav-item">
+          <a href="pages/settings.php" target="frame" class="nav-link">
+            <i class="nav-icon fas fa-cogs"></i>
+            <p>ຕັ້ງຄ່າຂໍ້ມູນຍິມ</p>
+          </a>
         </li>
       </ul>
     </nav>
