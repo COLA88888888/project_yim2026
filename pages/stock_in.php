@@ -94,7 +94,7 @@ if ($result) {
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label class="form-label fw-bold">ຕົ້ນທຶນນຳເຂົ້າ (ກີບ)</label>
-                        <input type="text" id="itemCost" class="form-control price-input" placeholder="0">
+                        <input type="text" id="itemCost" class="form-control bg-light price-input" readonly placeholder="0" style="font-weight: bold; color: #495057;">
                     </div>
                     <div class="col-md-6 mb-3">
                         <label class="form-label fw-bold">ຈຳນວນນຳເຂົ້າ</label>
