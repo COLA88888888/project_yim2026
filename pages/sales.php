@@ -291,25 +291,16 @@ if ($resProd) {
 
                 <!-- Summary & Checkout Footer -->
                 <div class="border-top p-3 bg-light" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
-                    <div class="mb-3 d-flex align-items-center justify-content-between">
-                        <span class="fw-bold text-dark">ວິທີການຊຳລະເງິນ:</span>
-                        <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                            <label class="btn btn-outline-primary active px-3 py-1 btn-sm rounded-start" style="font-weight: 600;">
-                                <input type="radio" name="payment_method" id="payCash" value="ເງິນສົດ" checked style="display: none;"> ເງິນສົດ
-                            </label>
-                            <label class="btn btn-outline-primary px-3 py-1 btn-sm rounded-end" style="font-weight: 600;">
-                                <input type="radio" name="payment_method" id="payQR" value="ໂອນຜ່ານ QR" style="display: none;"> ໂອນຜ່ານ QR
-                            </label>
-                        </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-secondary" style="font-size:0.85rem;">ຈຳນວນລາຍການ:</span>
+                        <span class="fw-bold text-dark" id="cartCountText">0 ລາຍການ</span>
                     </div>
-
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <span class="h5 fw-bold text-dark mb-0">ຍອດຊຳລະທັງໝົດ:</span>
-                        <span class="h3 fw-bold text-success mb-0" id="cartTotalText">0 ກີບ</span>
+                        <span class="h6 fw-bold text-dark mb-0">ຍອດຊຳລະທັງໝົດ:</span>
+                        <span class="h4 fw-bold text-success mb-0" id="cartTotalText">0 ກີບ</span>
                     </div>
-
-                    <button class="btn btn-success w-100 fw-bold py-2 shadow-sm" id="checkoutBtn" disabled onclick="checkout()">
-                        <i class="fas fa-check-circle me-1"></i> ຢືນຢັນການຊຳລະເງິນ
+                    <button class="btn btn-success w-100 fw-bold py-2 shadow-sm rounded-pill" id="checkoutBtn" disabled onclick="checkout()">
+                        <i class="fas fa-cash-register me-2"></i> ຊຳລະເງິນ
                     </button>
                 </div>
             </div>
@@ -317,21 +308,138 @@ if ($resProd) {
     </div>
 </div>
 
-<!-- Receipt Modal to show print layout -->
+<!-- ===== Payment Modal ===== -->
+<div class="modal fade" id="paymentModal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:480px;" role="document">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 24px; overflow:hidden;">
+
+            <!-- Gradient Header -->
+            <div style="background: linear-gradient(135deg,#1565c0,#0d47a1); padding:22px 26px 18px;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="fw-bold text-white mb-0" style="font-size:1.15rem; letter-spacing:0.5px;">
+                            <i class="fas fa-cash-register me-2"></i>ຊຳລະເງິນ
+                        </h5>
+                        <div class="text-white-50 mt-1" style="font-size:0.78rem;">ກວດສອບ ແລະ ຢືນຢັນການຊຳລະ</div>
+                    </div>
+                    <button type="button" class="border-0 bg-transparent text-white opacity-75" data-dismiss="modal"
+                        style="font-size:1.8rem; line-height:1; padding:0; transition:opacity .2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.75">&times;</button>
+                </div>
+                <!-- Total amount display -->
+                <div style="background:rgba(255,255,255,0.13); border-radius:16px; padding:16px 20px; margin-top:16px; text-align:center; border:1px solid rgba(255,255,255,0.2);">
+                    <div class="text-white-50" style="font-size:0.78rem; margin-bottom:4px; letter-spacing:0.5px;">ຍອດຕ້ອງຊຳລະທັງໝົດ</div>
+                    <div class="fw-bold text-white" id="pmTotalDisplay" style="font-size:2.2rem; letter-spacing:1px; line-height:1;">0 ກີບ</div>
+                    <div class="text-white-50" id="pmItemCount" style="font-size:0.75rem; margin-top:6px;"></div>
+                </div>
+            </div>
+
+            <!-- Body -->
+            <div class="modal-body" style="padding:24px 26px 16px;">
+
+                <!-- ✅ ວິທີການຊຳລະ -->
+                <div class="mb-4">
+                    <div class="fw-bold text-dark mb-2" style="font-size:0.9rem;">
+                        <i class="fas fa-wallet me-2 text-primary"></i>ເລືອກວິທີຊຳລະ
+                    </div>
+                    <div class="d-flex gap-2">
+                        <!-- ເງິນສົດ -->
+                        <button type="button" id="btnCash"
+                            onclick="selectPayMethod(this,'ເງິນສົດ')"
+                            class="flex-fill py-3 rounded-3 fw-bold border-0"
+                            style="background:linear-gradient(135deg,#1565c0,#1a73e8); color:#fff; font-size:0.95rem; box-shadow:0 4px 12px rgba(21,101,192,0.35); transition:all 0.2s;">
+                            <i class="fas fa-money-bill-wave d-block mb-1" style="font-size:1.3rem;"></i>
+                            ເງິນສົດ
+                        </button>
+                        <!-- ເງິນໂອນ -->
+                        <button type="button" id="btnTransfer"
+                            onclick="selectPayMethod(this,'ເງິນໂອນ')"
+                            class="flex-fill py-3 rounded-3 fw-bold"
+                            style="border:2px solid #dee2e6; background:#f8f9fa; color:#6c757d; font-size:0.95rem; transition:all 0.2s;">
+                            <i class="fas fa-qrcode d-block mb-1" style="font-size:1.3rem;"></i>
+                            ເງິນໂອນ
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ✅ ຮັບເງິນ (ສະແດງສະເພາະເງິນສົດ) -->
+                <div id="cashReceivedSection" class="mb-3">
+                    <div class="fw-bold text-dark mb-2" style="font-size:0.9rem;">
+                        <i class="fas fa-hand-holding-usd me-2 text-success"></i>ຈຳນວນເງິນທີ່ຮັບ (ກີບ)
+                    </div>
+                    <div class="input-group" style="border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.07);">
+                        <input type="number" id="pmReceived"
+                            class="form-control fw-bold text-center"
+                            placeholder="0"
+                            min="0" oninput="calcChange()"
+                            style="font-size:1.5rem; border:2px solid #dee2e6; border-right:none; border-radius:12px 0 0 12px; background:#fff; height:60px;">
+                        <button class="btn fw-bold px-4" onclick="setFullAmount()"
+                            style="background:linear-gradient(135deg,#28a745,#20c997); color:#fff; border:none; border-radius:0 12px 12px 0; font-size:0.88rem; white-space:nowrap; transition:opacity 0.2s;"
+                            onmouseover="this.style.opacity=0.85" onmouseout="this.style.opacity=1">
+                            <i class="fas fa-check-double d-block mb-1" style="font-size:1rem;"></i>
+                            ເຕັມຈຳນວນ
+                        </button>
+                    </div>
+                    <!-- Quick amount buttons -->
+                    <div class="d-flex gap-1 mt-2 flex-wrap" id="quickAmounts"></div>
+                </div>
+
+                <!-- ✅ ເງິນທອນ -->
+                <div id="changeSection" class="rounded-3 p-3" style="background:linear-gradient(135deg,#f0fdf4,#dcfce7); border:2px solid #86efac; display:none;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="fw-bold text-success" style="font-size:0.95rem;">
+                            <i class="fas fa-coins me-2"></i>ເງິນທອນ
+                        </span>
+                        <span class="fw-bold" id="pmChange" style="font-size:1.6rem; color:#16a34a;">0 ກີບ</span>
+                    </div>
+                </div>
+
+                <!-- ❌ ເງິນບໍ່ພຽງພໍ -->
+                <div id="shortSection" class="rounded-3 p-3" style="background:#fff5f5; border:2px solid #fca5a5; display:none;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="fw-bold text-danger" style="font-size:0.9rem;">
+                            <i class="fas fa-exclamation-triangle me-2"></i>ເງິນບໍ່ພຽງພໍ
+                        </span>
+                        <span class="fw-bold text-danger" id="pmShort" style="font-size:1rem;"></span>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Footer -->
+            <div class="p-3 d-flex gap-2" style="background:#f8f9fa; border-top:1px solid #e9ecef; border-bottom-left-radius:24px; border-bottom-right-radius:24px;">
+                <button type="button" class="btn btn-outline-secondary flex-fill rounded-pill fw-bold py-2" data-dismiss="modal">
+                    <i class="fas fa-times me-1"></i> ຍົກເລີກ
+                </button>
+                <button type="button" class="btn flex-fill rounded-pill fw-bold py-2" id="confirmPayBtn" onclick="confirmPayment()"
+                    style="background:linear-gradient(135deg,#28a745,#20c997); color:#fff; box-shadow:0 4px 12px rgba(40,167,69,0.35); border:none; font-size:1rem;">
+                    <i class="fas fa-check-circle me-1"></i> ຢືນຢັນຊຳລະ
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- ===== Receipt Modal ===== -->
 <div class="modal fade" id="receiptModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-sm" role="document">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-            <div class="modal-header border-bottom py-3">
-                <h5 class="modal-title fw-bold text-dark"><i class="fas fa-file-invoice text-success me-1"></i> ໃບບິນຮັບເງິນ</h5>
-                <button type="button" class="close border-0 bg-transparent" data-dismiss="modal" aria-label="Close">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow:hidden;">
+            <div class="modal-header py-3" style="background:linear-gradient(90deg,#28a745,#20c997);">
+                <h5 class="modal-title fw-bold text-white">
+                    <i class="fas fa-file-invoice me-2"></i> ໃບບິນຮັບເງິນ
+                </h5>
+                <button type="button" class="close border-0 bg-transparent text-white" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true" class="h3">&times;</span>
                 </button>
             </div>
-            <div class="modal-body p-4" id="receiptPrintArea">
-                <!-- Receipt details parsed in JS -->
-            </div>
-            <div class="modal-footer bg-light" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
-                <button class="btn btn-primary fw-bold px-4 w-100" onclick="printReceipt()"><i class="fas fa-print me-1"></i> ພິມໃບບິນ</button>
+            <div class="modal-body p-3" id="receiptPrintArea"></div>
+            <div class="modal-footer gap-2" style="background:#f8f9fa; border-bottom-left-radius:16px; border-bottom-right-radius:16px;">
+                <button class="btn btn-outline-secondary flex-fill rounded-pill" data-dismiss="modal">
+                    <i class="fas fa-times me-1"></i> ປິດ
+                </button>
+                <button class="btn btn-primary flex-fill rounded-pill fw-bold" onclick="printReceipt()">
+                    <i class="fas fa-print me-1"></i> ພິມໃບບິນ
+                </button>
             </div>
         </div>
     </div>
@@ -467,52 +575,145 @@ function renderCart() {
     $('#checkoutBtn').prop('disabled', false);
 }
 
+// ======== Payment Modal JS ========
+let currentPaymentMethod = 'ເງິນສົດ';
+
 function checkout() {
     if (cart.length === 0) return;
+    let total = calculateTotal();
+    let count = cart.reduce((s, i) => s + i.quantity, 0);
 
-    let paymentMethod = $('input[name="payment_method"]:checked').val() || 'ເງິນສົດ';
-    let totalAmount = calculateTotal();
-    let checkoutBtn = $('#checkoutBtn');
+    $('#pmTotalDisplay').text(formatCurrency(total));
+    $('#pmItemCount').text(count + ' ລາຍການ · ' + cart.length + ' ສິນຄ້າ');
 
-    checkoutBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> ກຳລັງຊຳລະເງິນ...');
+    // Auto-fill full amount
+    $('#pmReceived').val(total);
+    $('#changeSection').show();
+    $('#pmChange').text('0 ກີບ');
+    $('#shortSection').hide();
+    $('#cashReceivedSection').show();
 
+    currentPaymentMethod = 'ເງິນສົດ';
+    // Reset button styles
+    $('#btnCash').css({ background:'linear-gradient(135deg,#1565c0,#1a73e8)', color:'#fff', border:'2px solid transparent', boxShadow:'0 4px 12px rgba(21,101,192,0.35)' });
+    $('#btnTransfer').css({ background:'#f8f9fa', color:'#6c757d', border:'2px solid #dee2e6', boxShadow:'none' });
+
+    // Quick amount buttons
+    let quickAmts = getQuickAmounts(total);
+    let qa = $('#quickAmounts').empty();
+    quickAmts.forEach(function(amt) {
+        let label = new Intl.NumberFormat('lo-LA').format(amt);
+        qa.append(`<button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3"
+            onclick="$('#pmReceived').val(${amt}); calcChange();">${label}</button>`);
+    });
+
+    $('#confirmPayBtn').prop('disabled', false).html('<i class="fas fa-check-circle me-1"></i> ຢືນຢັນຊຳລະ');
+    $('#paymentModal').modal('show');
+    setTimeout(function() { $('#pmReceived').select(); }, 400);
+}
+
+function getQuickAmounts(total) {
+    let steps = [5000,10000,20000,50000,100000,200000,500000,1000000];
+    let result = [];
+    for (let s of steps) {
+        let v = Math.ceil(total / s) * s;
+        if (!result.includes(v)) result.push(v);
+        if (result.length >= 4) break;
+    }
+    return result;
+}
+
+function selectPayMethod(btn, method) {
+    currentPaymentMethod = method;
+    if (method === 'ເງິນສົດ') {
+        $('#btnCash').css({ background:'linear-gradient(135deg,#1565c0,#1a73e8)', color:'#fff', border:'2px solid transparent', boxShadow:'0 4px 12px rgba(21,101,192,0.35)' });
+        $('#btnTransfer').css({ background:'#f8f9fa', color:'#6c757d', border:'2px solid #dee2e6', boxShadow:'none' });
+        $('#cashReceivedSection').slideDown(200);
+        calcChange();
+    } else {
+        $('#btnTransfer').css({ background:'linear-gradient(135deg,#0097a7,#00bcd4)', color:'#fff', border:'2px solid transparent', boxShadow:'0 4px 12px rgba(0,188,212,0.35)' });
+        $('#btnCash').css({ background:'#f8f9fa', color:'#6c757d', border:'2px solid #dee2e6', boxShadow:'none' });
+        $('#cashReceivedSection').slideUp(200);
+        $('#changeSection').hide();
+        $('#shortSection').hide();
+        $('#confirmPayBtn').prop('disabled', false);
+    }
+}
+
+function setFullAmount() {
+    $('#pmReceived').val(calculateTotal());
+    calcChange();
+    $('#pmReceived').select();
+}
+
+function calcChange() {
+    let total = calculateTotal();
+    let received = parseFloat($('#pmReceived').val()) || 0;
+    if (received <= 0) {
+        $('#changeSection').hide();
+        $('#shortSection').hide();
+        $('#confirmPayBtn').prop('disabled', true);
+        return;
+    }
+    let change = received - total;
+    if (change >= 0) {
+        $('#changeSection').show();
+        $('#shortSection').hide();
+        $('#pmChange').text(new Intl.NumberFormat('lo-LA').format(change) + ' ກີບ');
+        $('#confirmPayBtn').prop('disabled', false);
+    } else {
+        $('#changeSection').hide();
+        $('#shortSection').show();
+        $('#pmShort').text('ຂາດ ' + new Intl.NumberFormat('lo-LA').format(Math.abs(change)) + ' ກີບ');
+        $('#confirmPayBtn').prop('disabled', true);
+    }
+}
+
+function confirmPayment() {
+    let total = calculateTotal();
+    let received, change;
+    if (currentPaymentMethod === 'ເງິນໂອນ') {
+        received = total; change = 0;
+    } else {
+        received = parseFloat($('#pmReceived').val()) || 0;
+        if (received < total) {
+            Swal.fire({ icon:'warning', title:'ເງິນບໍ່ພຽງພໍ', text:'ກະລຸນາໃສ່ຈຳນວນເງິນທີ່ຮັບໃຫ້ຄົບ' });
+            return;
+        }
+        change = received - total;
+    }
+    let btn = $('#confirmPayBtn');
+    btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> ກຳລັງດຳເນີນການ...');
     $.ajax({
         url: '../api/sales_api.php',
         type: 'POST',
         data: {
             action: 'create',
-            payment_method: paymentMethod,
-            total_amount: totalAmount,
+            payment_method: currentPaymentMethod,
+            total_amount: total,
+            received_amount: received,
+            change_amount: change,
             items: JSON.stringify(cart)
         },
         dataType: 'json',
         success: function(res) {
-            checkoutBtn.prop('disabled', false).html('<i class="fas fa-check-circle me-1"></i> ຢືນຢັນການຊຳລະເງິນ');
+            btn.prop('disabled', false).html('<i class="fas fa-check-circle me-1"></i> ຢືນຢັນຊຳລະ');
             if (res.success) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'ຂາຍສຳເລັດ',
-                    text: res.message,
-                    timer: 1000,
-                    showConfirmButton: false
-                });
-                
-                // Load receipt details into Modal
-                loadReceipt(res.sale_id);
+                $('#paymentModal').modal('hide');
+                setTimeout(function() { loadReceipt(res.sale_id, received, change, currentPaymentMethod); }, 450);
+            } else {
+                Swal.fire({ icon:'error', title:'ຜິດພາດ', text:res.message||'ເກີດຂໍ້ຜິດພາດ' });
             }
         },
         error: function(xhr) {
-            checkoutBtn.prop('disabled', false).html('<i class="fas fa-check-circle me-1"></i> ຢືນຢັນການຊຳລະເງິນ');
-            let msg = 'ເກີດຂໍ້ຜິດພາດໃນການຊຳລະເງິນ';
-            if (xhr.responseJSON && xhr.responseJSON.message) {
-                msg = xhr.responseJSON.message;
-            }
-            Swal.fire({ icon: 'error', title: 'ຜິດພາດ', text: msg });
+            btn.prop('disabled', false).html('<i class="fas fa-check-circle me-1"></i> ຢືນຢັນຊຳລະ');
+            let msg = xhr.responseJSON&&xhr.responseJSON.message ? xhr.responseJSON.message : 'ເກີດຂໍ້ຜິດພາດ';
+            Swal.fire({ icon:'error', title:'ຜິດພາດ', text:msg });
         }
     });
 }
 
-function loadReceipt(saleId) {
+function loadReceipt(saleId, receivedAmt, changeAmt, payMethod) {
     $.ajax({
         url: '../api/sales_api.php',
         type: 'GET',
@@ -523,11 +724,36 @@ function loadReceipt(saleId) {
                 let s = res.sale;
                 let items = res.items;
                 let datetime = new Date(s.sale_date).toLocaleString('lo-LA');
-                
+
+                let itemRows = '';
+                items.forEach(function(item) {
+                    let itemTotal = item.price * item.quantity;
+                    let qtyDisplay = Number(item.quantity).toLocaleString('en-US');
+                    itemRows += `<tr>
+                        <td class="text-start">${item.product_name}</td>
+                        <td class="text-center">${qtyDisplay}</td>
+                        <td class="text-end">${new Intl.NumberFormat('lo-LA').format(itemTotal)}</td>
+                    </tr>`;
+                });
+
+                let cashRows = '';
+                let pm = payMethod || s.payment_method;
+                if (pm === 'ເງິນສົດ') {
+                    cashRows = `
+                        <div class="receipt-total-row">
+                            <span>ຮັບເງິນ:</span>
+                            <span class="fw-bold">${formatCurrency(receivedAmt)}</span>
+                        </div>
+                        <div class="receipt-total-row" style="color:#16a34a; font-weight:bold;">
+                            <span>ເງິນທອນ:</span>
+                            <span>${formatCurrency(changeAmt)}</span>
+                        </div>`;
+                }
+
                 let html = `
                     <div class="print-receipt-container">
                         <div class="receipt-header">
-                            <h4 class="receipt-logo">GYM & FITNESS</h4>
+                            <h4 class="receipt-logo">GYM &amp; FITNESS</h4>
                             <p class="receipt-address">ບ້ານ ໂພນສະຫວ່າງ, ມ. ຈັນທະບູລີ, ນະຄອນຫຼວງວຽງຈັນ</p>
                             <h5 class="receipt-title">ໃບບິນຮັບເງິນ / RECEIPT</h5>
                         </div>
@@ -542,48 +768,32 @@ function loadReceipt(saleId) {
                             <thead>
                                 <tr>
                                     <th class="text-start">ລາຍການ</th>
-                                    <th class="text-center" style="width: 60px;">ຈຳນວນ</th>
-                                    <th class="text-end" style="width: 90px;">ລວມ</th>
+                                    <th class="text-center" style="width:50px;">ຈຳ</th>
+                                    <th class="text-end" style="width:90px;">ລວມ</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                `;
-                
-                items.forEach(item => {
-                    let itemTotal = item.price * item.quantity;
-                    let qtyDisplay = Number(item.quantity).toLocaleString('en-US');
-                    html += `
-                        <tr>
-                            <td class="text-start">${item.product_name}</td>
-                            <td class="text-center">${qtyDisplay}</td>
-                            <td class="text-end">${new Intl.NumberFormat('lo-LA').format(itemTotal)}</td>
-                        </tr>
-                    `;
-                });
-                
-                html += `
-                            </tbody>
+                            <tbody>${itemRows}</tbody>
                         </table>
                         <div class="receipt-divider"></div>
                         <div class="receipt-total-section">
                             <div class="receipt-total-row">
-                                <span>ຊຳລະໂດຍ:</span>
-                                <span class="fw-bold">${s.payment_method}</span>
+                                <span>ວິທີຊຳລະ:</span>
+                                <span class="fw-bold">${pm}</span>
                             </div>
                             <div class="receipt-total-row grand-total">
                                 <span>ຍອດລວມທັງໝົດ:</span>
                                 <span class="text-success">${formatCurrency(s.total_amount)}</span>
                             </div>
+                            ${cashRows}
                         </div>
                         <div class="receipt-divider"></div>
                         <p class="receipt-footer">*** ຂໍຂອບໃຈທີ່ໃຊ້ບໍລິການ ***</p>
                     </div>
                 `;
-                
+
                 $('#receiptPrintArea').html(html);
                 $('#receiptModal').modal('show');
-                
-                // Clear cart after modal closed
+
                 $('#receiptModal').off('hidden.bs.modal').on('hidden.bs.modal', function() {
                     location.reload();
                 });
@@ -690,10 +900,9 @@ $(document).ready(function() {
         });
     });
 
-    // Make Payment method toggle active label logic
-    $('input[name="payment_method"]').on('change', function() {
-        $('input[name="payment_method"]').parent().removeClass('active');
-        $(this).parent().addClass('active');
+    // Payment modal: allow Enter key in pmReceived to confirm
+    $(document).on('keypress', '#pmReceived', function(e) {
+        if (e.which === 13) confirmPayment();
     });
 });
 </script>
