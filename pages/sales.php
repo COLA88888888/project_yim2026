@@ -98,10 +98,12 @@ if ($resProd) {
             background-color: #fff;
             border-radius: 16px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            height: calc(100vh - 130px);
+            height: calc(100vh - 100px);
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            position: sticky;
+            top: 10px;
         }
         .cart-items-container {
             flex-grow: 1;
@@ -194,11 +196,18 @@ if ($resProd) {
                     ?>
                     <div class="col-6 col-sm-4 col-md-4 px-1 mb-2 product-card-container" data-category="<?= $p['category_id'] ?>" data-name="<?= htmlspecialchars(strtolower($p['product_name'])) ?>" data-code="<?= htmlspecialchars(strtolower($p['product_code'])) ?>">
                         <div class="pos-product-card <?= $cardClass ?>" onclick="<?= $outOfStock ? 'void(0)' : 'addToCartById(' . $p['product_id'] . ')' ?>">
-                            <div class="mb-2 text-center rounded d-flex align-items-center justify-content-center shadow-sm" style="height: 110px; overflow: hidden; background-color: #fafafa; border: 1px solid #f0f0f0;">
-                                <?php if (!empty($p['image']) && file_exists('../uploads/products/' . $p['image'])): ?>
-                                    <img src="../uploads/products/<?= htmlspecialchars($p['image']) ?>" alt="product" style="width: 100%; height: 100%; object-fit: contain;">
+                            <div class="mb-2 text-center rounded d-flex align-items-center justify-content-center" style="height: 110px; overflow: hidden; background-color: #f8f9fa; border-radius: 8px;">
+                                <?php if (!empty($p['image'])): ?>
+                                    <img src="../uploads/products/<?= htmlspecialchars($p['image']) ?>" alt="<?= htmlspecialchars($p['product_name']) ?>" style="width: 100%; height: 100%; object-fit: contain;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                    <div style="display:none; width:100%; height:100%; align-items:center; justify-content:center; flex-direction:column; color:#adb5bd;">
+                                        <i class="fas fa-box fa-2x mb-1"></i>
+                                        <small style="font-size:9px;"><?= htmlspecialchars($p['product_code']) ?></small>
+                                    </div>
                                 <?php else: ?>
-                                    <i class="fas fa-image text-muted fa-2x"></i>
+                                    <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; flex-direction:column; color:#adb5bd;">
+                                        <i class="fas fa-box fa-2x mb-1"></i>
+                                        <small style="font-size:9px;"><?= htmlspecialchars($p['product_code']) ?></small>
+                                    </div>
                                 <?php endif; ?>
                             </div>
                             <div>
