@@ -142,11 +142,19 @@
         <!-- ຫົວຂໍ້: ລາຍງານຂໍ້ມູນ -->
         <li class="nav-header text-uppercase" style="color: rgba(255,255,255,0.5); font-size: 0.7rem; letter-spacing: 1.5px; padding-top: 20px;">ລາຍງານຂໍ້ມູນ</li>
 
-        <!-- ເມນູ: ລາຍງານລາຍຮັບ -->
+        <!-- ເມນູ: ລາຍງານການເງິນ (ລາຍຮັບ-ລາຍຈ່າຍ) -->
         <li class="nav-item">
           <a href="pages/revenue_report.php" target="frame" class="nav-link">
-            <i class="nav-icon fas fa-chart-bar text-primary"></i>
-            <p>ລາຍງານລາຍຮັບ</p>
+            <i class="nav-icon fas fa-chart-line text-primary"></i>
+            <p>ລາຍງານການເງິນ</p>
+          </a>
+        </li>
+
+        <!-- ເມນູ: ຈັດການລາຍຈ່າຍ -->
+        <li class="nav-item">
+          <a href="pages/expenses.php" target="frame" class="nav-link">
+            <i class="nav-icon fas fa-minus-circle text-danger"></i>
+            <p>ຈັດການລາຍຈ່າຍ</p>
           </a>
         </li>
 

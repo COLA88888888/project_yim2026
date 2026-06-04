@@ -16,139 +16,194 @@ if (!hasPermission('subscriptions', 'view')) {
 
 $startDate = $_GET['start_date'] ?? '';
 $endDate = $_GET['end_date'] ?? '';
-$activeTab = $_GET['tab'] ?? 'subscription';
-if (!in_array($activeTab, ['subscription', 'daily'])) {
-    $activeTab = 'subscription';
+$activeTab = $_GET['tab'] ?? 'overview';
+if (!in_array($activeTab, ['overview', 'subscription', 'daily', 'pos', 'stock_in', 'expense'])) {
+    $activeTab = 'overview';
 }
 
-// Build Where Clause for Subscriptions (memberships)
+// 1. Build Where Clauses for all data models depending on the date filters
 $whereClauseSub = "";
-if ($startDate !== '' && $endDate !== '') {
-    $whereClauseSub = "WHERE DATE(ms.created_at) >= '$startDate' AND DATE(ms.created_at) <= '$endDate'";
-} elseif ($startDate !== '') {
-    $whereClauseSub = "WHERE DATE(ms.created_at) >= '$startDate'";
-} elseif ($endDate !== '') {
-    $whereClauseSub = "WHERE DATE(ms.created_at) <= '$endDate'";
-}
-
-// Build Where Clause for Daily Check-ins
 $whereClauseDaily = "";
+$whereClauseSales = "";
+$whereClauseStock = "";
+$whereClauseExp = "";
+
 if ($startDate !== '' && $endDate !== '') {
+    $whereClauseSub   = "WHERE DATE(ms.created_at) >= '$startDate' AND DATE(ms.created_at) <= '$endDate'";
     $whereClauseDaily = "WHERE DATE(checkin_date) >= '$startDate' AND DATE(checkin_date) <= '$endDate'";
+    $whereClauseSales = "WHERE DATE(s.sale_date) >= '$startDate' AND DATE(s.sale_date) <= '$endDate'";
+    $whereClauseStock = "WHERE DATE(st.stock_in_date) >= '$startDate' AND DATE(st.stock_in_date) <= '$endDate'";
+    $whereClauseExp   = "WHERE e.expense_date >= '$startDate' AND e.expense_date <= '$endDate'";
 } elseif ($startDate !== '') {
+    $whereClauseSub   = "WHERE DATE(ms.created_at) >= '$startDate'";
     $whereClauseDaily = "WHERE DATE(checkin_date) >= '$startDate'";
+    $whereClauseSales = "WHERE DATE(s.sale_date) >= '$startDate'";
+    $whereClauseStock = "WHERE DATE(st.stock_in_date) >= '$startDate'";
+    $whereClauseExp   = "WHERE e.expense_date >= '$startDate'";
 } elseif ($endDate !== '') {
+    $whereClauseSub   = "WHERE DATE(ms.created_at) <= '$endDate'";
     $whereClauseDaily = "WHERE DATE(checkin_date) <= '$endDate'";
+    $whereClauseSales = "WHERE DATE(s.sale_date) <= '$endDate'";
+    $whereClauseStock = "WHERE DATE(st.stock_in_date) <= '$endDate'";
+    $whereClauseExp   = "WHERE e.expense_date <= '$endDate'";
 }
 
-$transactions = [];
-$total_revenue = 0;
-
-// 1. Fetch Subscription Revenues
-$sqlSub = "SELECT ms.*, mb.fname, mb.lname, mb.member_code, p.package_name
-           FROM memberships ms
-           LEFT JOIN members mb ON ms.member_id = mb.member_id
-           LEFT JOIN packages p ON ms.package_id = p.package_id
-           $whereClauseSub
-           ORDER BY ms.membership_id DESC";
-$resultSub = mysqli_query($conn, $sqlSub);
-if ($resultSub) {
-    while ($row = mysqli_fetch_assoc($resultSub)) {
-        $row['type'] = 'subscription';
-        $row['datetime'] = $row['created_at'];
-        $transactions[] = $row;
-        $total_revenue += (float)$row['price_paid'];
+// 2. Fetch Data Lists
+// --- Subscriptions ---
+$subscriptionsList = [];
+$subRevenueSum = 0;
+$subRes = mysqli_query($conn, "SELECT ms.*, mb.fname, mb.lname, mb.member_code, p.package_name 
+                               FROM memberships ms 
+                               LEFT JOIN members mb ON ms.member_id = mb.member_id 
+                               LEFT JOIN packages p ON ms.package_id = p.package_id 
+                               $whereClauseSub 
+                               ORDER BY ms.membership_id DESC");
+if ($subRes) {
+    while ($row = mysqli_fetch_assoc($subRes)) {
+        $subscriptionsList[] = $row;
+        $subRevenueSum += (float)$row['price_paid'];
     }
 }
 
-// 2. Fetch Daily Check-in Revenues
-$sqlDaily = "SELECT d.*, u.fname AS staff_fname, u.lname AS staff_lname
-             FROM daily_checkins d
-             LEFT JOIN users u ON d.user_id = u.user_id
-             $whereClauseDaily
-             ORDER BY d.id DESC";
-$resultDaily = mysqli_query($conn, $sqlDaily);
-if ($resultDaily) {
-    while ($row = mysqli_fetch_assoc($resultDaily)) {
-        $row['type'] = 'daily';
-        $row['datetime'] = $row['created_at'];
-        $transactions[] = $row;
-        $total_revenue += (float)$row['price_paid'];
+// --- Daily Check-ins ---
+$dailyList = [];
+$dailyRevenueSum = 0;
+$dailyRes = mysqli_query($conn, "SELECT d.*, u.fname AS staff_fname, u.lname AS staff_lname 
+                                 FROM daily_checkins d 
+                                 LEFT JOIN users u ON d.user_id = u.user_id 
+                                 $whereClauseDaily 
+                                 ORDER BY d.id DESC");
+if ($dailyRes) {
+    while ($row = mysqli_fetch_assoc($dailyRes)) {
+        $dailyList[] = $row;
+        $dailyRevenueSum += (float)$row['price_paid'];
     }
 }
 
-// Sort combined transactions chronologically descending
-usort($transactions, function($a, $b) {
-    return strcmp($b['datetime'] ?? '', $a['datetime'] ?? '');
-});
+// --- POS Sales ---
+$salesList = [];
+$salesRevenueSum = 0;
+$salesRes = mysqli_query($conn, "SELECT s.*, u.fname AS staff_fname, u.lname AS staff_lname 
+                                 FROM sales s 
+                                 LEFT JOIN users u ON s.user_id = u.user_id 
+                                 $whereClauseSales 
+                                 ORDER BY s.sale_id DESC");
+if ($salesRes) {
+    while ($row = mysqli_fetch_assoc($salesRes)) {
+        $salesList[] = $row;
+        $salesRevenueSum += (float)$row['total_amount'];
+    }
+}
 
-// Stats cards (Total sums including both subscriptions and daily checkins)
-// 1. Today
-$sub_today = mysqli_fetch_row(mysqli_query($conn, "SELECT SUM(price_paid) FROM memberships WHERE DATE(created_at) = CURDATE()"))[0] ?? 0;
-$daily_today = mysqli_fetch_row(mysqli_query($conn, "SELECT SUM(price_paid) FROM daily_checkins WHERE checkin_date = CURDATE()"))[0] ?? 0;
-$revenue_today = (float)$sub_today + (float)$daily_today;
+// --- Stock Imports ---
+$stockList = [];
+$stockExpenseSum = 0;
+$stockRes = mysqli_query($conn, "SELECT st.*, u.fname AS staff_fname, u.lname AS staff_lname 
+                                 FROM stock_in st 
+                                 LEFT JOIN users u ON st.user_id = u.user_id 
+                                 $whereClauseStock 
+                                 ORDER BY st.stock_in_id DESC");
+if ($stockRes) {
+    while ($row = mysqli_fetch_assoc($stockRes)) {
+        $stockList[] = $row;
+        $stockExpenseSum += (float)$row['total_amount'];
+    }
+}
 
-// 2. Month
-$sub_month = mysqli_fetch_row(mysqli_query($conn, "SELECT SUM(price_paid) FROM memberships WHERE MONTH(created_at) = MONTH(CURDATE()) AND YEAR(created_at) = YEAR(CURDATE())"))[0] ?? 0;
-$daily_month = mysqli_fetch_row(mysqli_query($conn, "SELECT SUM(price_paid) FROM daily_checkins WHERE MONTH(checkin_date) = MONTH(CURDATE()) AND YEAR(checkin_date) = YEAR(CURDATE())"))[0] ?? 0;
-$revenue_month = (float)$sub_month + (float)$daily_month;
+// --- General Expenses ---
+$expensesList = [];
+$generalExpenseSum = 0;
+$expRes = mysqli_query($conn, "SELECT e.*, u.fname AS staff_fname, u.lname AS staff_lname 
+                               FROM expenses e 
+                               LEFT JOIN users u ON e.user_id = u.user_id 
+                               $whereClauseExp 
+                               ORDER BY e.expense_date DESC, e.expense_id DESC");
+if ($expRes) {
+    while ($row = mysqli_fetch_assoc($expRes)) {
+        $expensesList[] = $row;
+        $generalExpenseSum += (float)$row['amount'];
+    }
+}
 
-// 3. All time
-$sub_all = mysqli_fetch_row(mysqli_query($conn, "SELECT SUM(price_paid) FROM memberships"))[0] ?? 0;
-$daily_all = mysqli_fetch_row(mysqli_query($conn, "SELECT SUM(price_paid) FROM daily_checkins"))[0] ?? 0;
-$revenue_all = (float)$sub_all + (float)$daily_all;
+// 3. Consolidated Totals
+$totalRevenue = $subRevenueSum + $dailyRevenueSum + $salesRevenueSum;
+$totalExpenses = $stockExpenseSum + $generalExpenseSum;
+$netIncome = $totalRevenue - $totalExpenses;
 
-// Initial values based on active tab
-$initial_today = ($activeTab === 'daily') ? (float)$daily_today : (float)$sub_today;
-$initial_month = ($activeTab === 'daily') ? (float)$daily_month : (float)$sub_month;
-$initial_all = ($activeTab === 'daily') ? (float)$daily_all : (float)$sub_all;
-
-// Payment method breakdown (calculated from combined list within filtered range)
-$cash_total     = 0;
+// Cash/Transfer break downs for revenue sources
+$cash_total = 0;
 $transfer_total = 0;
-foreach ($transactions as $t) {
-    $pm = trim($t['payment_method'] ?? '');
+
+foreach ($subscriptionsList as $s) {
+    $pm = trim($s['payment_method'] ?? '');
     if (mb_strpos($pm, 'ສົດ') !== false || mb_strtolower($pm) === 'cash' || mb_strpos(mb_strtolower($pm), 'cash') !== false) {
-        $cash_total += (float)$t['price_paid'];
+        $cash_total += (float)$s['price_paid'];
     } else {
-        // Since we only use Cash and Transfer, classify other methods (e.g. Transfer, QR) as Transfer
-        $transfer_total += (float)$t['price_paid'];
+        $transfer_total += (float)$s['price_paid'];
+    }
+}
+foreach ($dailyList as $d) {
+    $pm = trim($d['payment_method'] ?? '');
+    if (mb_strpos($pm, 'ສົດ') !== false || mb_strtolower($pm) === 'cash' || mb_strpos(mb_strtolower($pm), 'cash') !== false) {
+        $cash_total += (float)$d['price_paid'];
+    } else {
+        $transfer_total += (float)$d['price_paid'];
+    }
+}
+foreach ($salesList as $s) {
+    $pm = trim($s['payment_method'] ?? '');
+    if (mb_strpos($pm, 'ສົດ') !== false || mb_strtolower($pm) === 'cash' || mb_strpos(mb_strtolower($pm), 'cash') !== false) {
+        $cash_total += (float)$s['total_amount'];
+    } else {
+        $transfer_total += (float)$s['total_amount'];
     }
 }
 
-// ===== 6-Month Revenue Trend =====
+// 4. Generate 6-Month Finance Trend (Chart.js)
+$chartLabels = [];
+$chartRevData = [];
+$chartExpData = [];
 $loMonths = ['ມັງກອນ','ກຸມພາ','ມີນາ','ເມສາ','ພຶດສະພາ','ມິຖຸນາ','ກໍລະກົດ','ສິງຫາ','ກັນຍາ','ຕຸລາ','ພະຈິກ','ທັນວາ'];
-$chartLabels = []; $chartSubData = []; $chartDailyData = [];
+
 for ($i = 5; $i >= 0; $i--) {
     $ts = strtotime("-$i months");
     $y  = (int)date('Y', $ts);
     $m  = (int)date('n', $ts);
-    $chartLabels[]    = $loMonths[$m - 1] . ' ' . ($y + 543);
-    $subQ   = mysqli_query($conn, "SELECT COALESCE(SUM(price_paid),0) FROM memberships WHERE YEAR(created_at)=$y AND MONTH(created_at)=$m");
+    $chartLabels[] = $loMonths[$m - 1] . ' ' . ($y + 543);
+    
+    // Subscriptions
+    $subQ = mysqli_query($conn, "SELECT COALESCE(SUM(price_paid),0) FROM memberships WHERE YEAR(created_at)=$y AND MONTH(created_at)=$m");
+    $subVal = (float)(mysqli_fetch_row($subQ)[0] ?? 0);
+    
+    // Daily check-ins
     $dailyQ = mysqli_query($conn, "SELECT COALESCE(SUM(price_paid),0) FROM daily_checkins WHERE YEAR(checkin_date)=$y AND MONTH(checkin_date)=$m");
-    $chartSubData[]   = (float)(mysqli_fetch_row($subQ)[0]   ?? 0);
-    $chartDailyData[] = (float)(mysqli_fetch_row($dailyQ)[0] ?? 0);
+    $dailyVal = (float)(mysqli_fetch_row($dailyQ)[0] ?? 0);
+    
+    // POS Sales
+    $salesQ = mysqli_query($conn, "SELECT COALESCE(SUM(total_amount),0) FROM sales WHERE YEAR(sale_date)=$y AND MONTH(sale_date)=$m");
+    $salesVal = (float)(mysqli_fetch_row($salesQ)[0] ?? 0);
+    
+    $totalRev = $subVal + $dailyVal + $salesVal;
+    $chartRevData[] = $totalRev;
+    
+    // Imports
+    $importQ = mysqli_query($conn, "SELECT COALESCE(SUM(total_amount),0) FROM stock_in WHERE YEAR(stock_in_date)=$y AND MONTH(stock_in_date)=$m");
+    $importVal = (float)(mysqli_fetch_row($importQ)[0] ?? 0);
+    
+    // General expenses
+    $expQ = mysqli_query($conn, "SELECT COALESCE(SUM(amount),0) FROM expenses WHERE YEAR(expense_date)=$y AND MONTH(expense_date)=$m");
+    $expVal = (float)(mysqli_fetch_row($expQ)[0] ?? 0);
+    
+    $totalExp = $importVal + $expVal;
+    $chartExpData[] = $totalExp;
 }
-
-// ===== Staff Performance (daily_checkins) =====
-$staffRows = [];
-$staffResult = mysqli_query($conn, "
-    SELECT COALESCE(NULLIF(TRIM(CONCAT(u.fname,' ',u.lname)),''),'ລະບົບ') AS staff_name,
-           COUNT(d.id) AS txn_count,
-           COALESCE(SUM(d.price_paid),0) AS total_revenue
-    FROM daily_checkins d LEFT JOIN users u ON d.user_id=u.user_id
-    GROUP BY d.user_id ORDER BY total_revenue DESC LIMIT 10
-");
-if ($staffResult) while ($r = mysqli_fetch_assoc($staffResult)) $staffRows[] = $r;
-$staffMax = !empty($staffRows) ? max(1, (float)max(array_column($staffRows, 'total_revenue'))) : 1;
 ?>
 <!DOCTYPE html>
 <html lang="lo">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ລາຍງານລາຍຮັບ</title>
-    <!-- Google Fonts - Noto Sans Lao Looped -->
+    <title>ລາຍງານການເງິນ ລາຍຮັບ-ລາຍຈ່າຍ</title>
     <link rel="stylesheet" href="../assets/css/local-font.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="../bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="../icon/css/all.min.css">
@@ -160,7 +215,7 @@ $staffMax = !empty($staffRows) ? max(1, (float)max(array_column($staffRows, 'tot
     
     <style>
         body {
-            font-family: 'Noto Sans Lao Looped', sans-serif;
+            font-family: 'Noto Sans Lao', 'Noto Sans Lao Looped', sans-serif;
             background-color: #f4f6f9;
         }
         .stat-card-rev {
@@ -176,7 +231,7 @@ $staffMax = !empty($staffRows) ? max(1, (float)max(array_column($staffRows, 'tot
             transform: translateY(-4px);
         }
         .stat-card-rev h3 {
-            font-size: 1.60rem;
+            font-size: 1.6rem;
             font-weight: 800;
             margin-bottom: 2px;
             margin-top: 2px;
@@ -210,64 +265,24 @@ $staffMax = !empty($staffRows) ? max(1, (float)max(array_column($staffRows, 'tot
             z-index: 2;
         }
         
-        .payment-card-rev {
-            border-radius: 16px;
-            border: none;
-            color: white;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-            padding: 10px 14px !important;
-        }
-        .payment-card-rev:hover {
-            transform: translateY(-4px);
-        }
-        .payment-card-rev .card-title {
-            font-size: 0.8rem;
-            font-weight: 600;
-            opacity: 0.9;
-        }
-        .payment-card-rev .card-value {
-            font-size: 1.2rem;
-            font-weight: 700;
-            letter-spacing: -0.5px;
-            margin: 2px 0;
-        }
-        .payment-card-rev .card-desc {
-            font-size: 0.72rem;
-            opacity: 0.85;
-            font-weight: 500;
-        }
-        .payment-card-icon-right {
-            font-size: 1.4rem;
-            color: rgba(255, 255, 255, 0.25);
-            background: rgba(255, 255, 255, 0.1);
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
+        .row-tight {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-            flex-shrink: 0;
+            flex-wrap: wrap;
+            margin-right: -8px !important;
+            margin-left: -8px !important;
         }
-        .payment-card-rev:hover .payment-card-icon-right {
-            color: rgba(255, 255, 255, 0.45);
-            background: rgba(255, 255, 255, 0.18);
-            transform: scale(1.08) rotate(5deg);
-        }
-        .payment-card-rev * {
-            position: relative;
-            z-index: 2;
+        .row-tight > [class*='col-'] {
+            padding-right: 8px !important;
+            padding-left: 8px !important;
+            margin-bottom: 16px !important;
         }
         
-        /* Custom tabs styling */
         .nav-tabs .nav-link {
             border: none;
             border-bottom: 3px solid transparent;
             color: #6c757d;
             background: transparent;
-            padding: 12px 20px;
+            padding: 12px 18px;
             font-weight: 600;
             transition: all 0.2s ease;
         }
@@ -284,19 +299,6 @@ $staffMax = !empty($staffRows) ? max(1, (float)max(array_column($staffRows, 'tot
             border-bottom: 3px solid #0d6efd !important;
             background: transparent !important;
             font-weight: 700;
-        }
-        
-        /* Tight grid layout */
-        .row-tight {
-            display: flex;
-            flex-wrap: wrap;
-            margin-right: -8px !important;
-            margin-left: -8px !important;
-        }
-        .row-tight > [class*='col-'] {
-            padding-right: 8px !important;
-            padding-left: 8px !important;
-            margin-bottom: 16px !important;
         }
         @media print {
             body {
@@ -318,10 +320,6 @@ $staffMax = !empty($staffRows) ? max(1, (float)max(array_column($staffRows, 'tot
                 border: 1px solid #ddd !important;
                 padding: 8px !important;
             }
-            /* Show all paginated rows when printing */
-            .page-hidden {
-                display: table-row !important;
-            }
         }
     </style>
 </head>
@@ -331,9 +329,9 @@ $staffMax = !empty($staffRows) ? max(1, (float)max(array_column($staffRows, 'tot
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2 no-print">
         <div>
             <h4 class="fw-bold text-dark mb-1">
-                <i class="fas fa-chart-bar text-primary me-2"></i> ລາຍງານລາຍຮັບ ແລະ ບັນທຶກການເງິນ
+                <i class="fas fa-chart-line text-primary me-2"></i> ລາຍງານການເງິນ ລາຍຮັບ-ລາຍຈ່າຍ
             </h4>
-            <p class="text-muted small mb-0">ສະຫຼຸບລາຍຮັບຂອງຍິມຈາກການສະໝັກແພັກເກດຂອງສະມາຊິກ</p>
+            <p class="text-muted small mb-0">ຕິດຕາມສະຫຼຸບລາຍຮັບ-ລາຍຈ່າຍ ແລະ ສັງລວມກຳໄລສຸດທິຂອງສະໂມສອນ</p>
         </div>
         <div>
             <button class="btn btn-secondary rounded-pill px-4 shadow-sm" onclick="window.print()">
@@ -342,174 +340,22 @@ $staffMax = !empty($staffRows) ? max(1, (float)max(array_column($staffRows, 'tot
         </div>
     </div>
 
-    <!-- Stats Cards Row -->
-    <div class="row-tight no-print">
-        <div class="col-md-4">
-            <div class="card stat-card-rev bg-gradient" style="background: linear-gradient(135deg, #0ba360 0%, #3cba92 100%); box-shadow: 0 8px 20px rgba(11, 163, 150, 0.15);">
-                <div class="d-flex justify-content-between align-items-center w-100">
-                    <div>
-                        <small class="text-white-50 font-weight-bold">ລາຍຮັບມື້ນີ້</small>
-                        <h3 id="stat-today"><?= formatCurrency($initial_today) ?></h3>
-                        <small class="text-white-50"><i class="fas fa-calendar-day mr-1"></i> ລາຍຮັບປະຈຳວັນ</small>
-                    </div>
-                    <div class="stat-card-icon-right">
-                        <i class="fas fa-calendar-day"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card stat-card-rev bg-gradient" style="background: linear-gradient(135deg, #3E64FF 0%, #5B86E5 100%); box-shadow: 0 8px 20px rgba(62, 100, 255, 0.15);">
-                <div class="d-flex justify-content-between align-items-center w-100">
-                    <div>
-                        <small class="text-white-50 font-weight-bold">ລາຍຮັບເດືອນນີ້</small>
-                        <h3 id="stat-month"><?= formatCurrency($initial_month) ?></h3>
-                        <small class="text-white-50"><i class="fas fa-calendar-alt mr-1"></i> ລາຍຮັບປະຈຳເດືອນ</small>
-                    </div>
-                    <div class="stat-card-icon-right">
-                        <i class="fas fa-calendar-alt"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card stat-card-rev bg-gradient" style="background: linear-gradient(135deg, #9C33FD 0%, #FF5252 100%); box-shadow: 0 8px 20px rgba(156, 51, 253, 0.15);">
-                <div class="d-flex justify-content-between align-items-center w-100">
-                    <div>
-                        <small class="text-white-50 font-weight-bold">ລາຍຮັບທັງໝົດ</small>
-                        <h3 id="stat-all"><?= formatCurrency($initial_all) ?></h3>
-                        <small class="text-white-50"><i class="fas fa-chart-line mr-1"></i> ຍອດລວມສະສົມ</small>
-                    </div>
-                    <div class="stat-card-icon-right">
-                        <i class="fas fa-chart-line"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Payment Method Breakdown Cards -->
-    <div class="row-tight no-print">
-        <div class="col-md-4 col-sm-6">
-            <div class="card payment-card-rev bg-gradient" style="background: linear-gradient(135deg, #10B981 0%, #059669 100%); box-shadow: 0 6px 15px rgba(16, 185, 129, 0.12);">
-                <div class="d-flex justify-content-between align-items-center w-100">
-                    <div>
-                        <span class="card-title">ເງິນສົດ</span>
-                        <div class="card-value" id="cashTotal"><?= number_format($cash_total, 0, '.', ',') ?> ກີບ</div>
-                        <?php $cash_pct = $total_revenue > 0 ? round($cash_total / $total_revenue * 100, 1) : 0; ?>
-                        <div class="card-desc"><i class="fas fa-percentage me-1"></i><?= $cash_pct ?>% ຂອງທັງໝົດ</div>
-                    </div>
-                    <div class="payment-card-icon-right">
-                        <i class="fas fa-money-bill-wave"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4 col-sm-6">
-            <div class="card payment-card-rev bg-gradient" style="background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%); box-shadow: 0 6px 15px rgba(59, 130, 246, 0.12);">
-                <div class="d-flex justify-content-between align-items-center w-100">
-                    <div>
-                        <span class="card-title">ເງິນໂອນ</span>
-                        <div class="card-value" id="transferTotal"><?= number_format($transfer_total, 0, '.', ',') ?> ກີບ</div>
-                        <?php $transfer_pct = $total_revenue > 0 ? round($transfer_total / $total_revenue * 100, 1) : 0; ?>
-                        <div class="card-desc"><i class="fas fa-percentage me-1"></i><?= $transfer_pct ?>% ຂອງທັງໝົດ</div>
-                    </div>
-                    <div class="payment-card-icon-right">
-                        <i class="fas fa-mobile-alt"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4 col-sm-12">
-            <div class="card payment-card-rev bg-gradient" style="background: linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%); box-shadow: 0 6px 15px rgba(139, 92, 246, 0.12);">
-                <div class="d-flex justify-content-between align-items-center w-100">
-                    <div>
-                        <span class="card-title">ລວມເງິນທັງໝົດ</span>
-                        <div class="card-value" id="grandTotal"><?= number_format($total_revenue, 0, '.', ',') ?> ກີບ</div>
-                        <div class="card-desc"><i class="fas fa-list-ol me-1"></i><?= count($transactions) ?> ລາຍການ</div>
-                    </div>
-                    <div class="payment-card-icon-right">
-                        <i class="fas fa-receipt"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ===== Analytics: 6-Month Trend + Staff Performance ===== -->
-    <div class="row g-3 mb-4 no-print">
-        <!-- 6-Month Revenue Trend Chart -->
-        <div class="col-lg-7">
-            <div class="card card-custom h-100" style="border-radius:16px;">
-                <div class="card-body p-3 p-md-4">
-                    <div class="d-flex align-items-center justify-content-between mb-3">
-                        <h6 class="fw-bold mb-0">
-                            <i class="fas fa-chart-bar text-primary me-2"></i>ແນວໂນ້ມລາຍຮັບ 6 ເດືອນ
-                        </h6>
-                        <div class="d-flex gap-3 align-items-center" style="font-size:0.75rem;color:#6c757d;">
-                            <span><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#3E64FF;margin-right:4px;"></span>ສະມາຊິກ</span>
-                            <span><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#10b981;margin-right:4px;"></span>ລາຍວັນ</span>
-                        </div>
-                    </div>
-                    <canvas id="revenueChart" style="max-height:240px;"></canvas>
-                </div>
-            </div>
-        </div>
-        <!-- Staff Performance -->
-        <div class="col-lg-5">
-            <div class="card card-custom h-100" style="border-radius:16px;">
-                <div class="card-body p-3 p-md-4">
-                    <h6 class="fw-bold mb-3">
-                        <i class="fas fa-medal text-warning me-2"></i>ຜົນງານພະນັກງານ (ລູກຄ້າລາຍວັນ)
-                    </h6>
-                    <?php if (empty($staffRows)): ?>
-                    <div class="text-center text-muted py-4">
-                        <i class="fas fa-user-slash fa-2x mb-2 d-block"></i>ຍັງບໍ່ມີຂໍ້ມູນ
-                    </div>
-                    <?php else: ?>
-                    <?php
-                    $barColors = ['#3E64FF','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#ec4899','#84cc16','#f97316','#6b7280'];
-                    foreach ($staffRows as $idx => $s):
-                        $pct = $staffMax > 0 ? round((float)$s['total_revenue'] / $staffMax * 100) : 0;
-                        $clr = $barColors[$idx % count($barColors)];
-                    ?>
-                    <div class="mb-3">
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <span class="fw-bold" style="font-size:0.88rem;color:#1e293b;">
-                                <i class="fas fa-circle me-1" style="font-size:0.45rem;color:<?= $clr ?>;vertical-align:middle;"></i>
-                                <?= htmlspecialchars($s['staff_name']) ?>
-                            </span>
-                            <span class="fw-bold" style="font-size:0.83rem;color:<?= $clr ?>;">
-                                <?= number_format((float)$s['total_revenue'],0,'.',',') ?> ກີບ
-                            </span>
-                        </div>
-                        <div class="progress" style="height:7px;border-radius:8px;background:#f1f5f9;">
-                            <div class="progress-bar" style="width:<?= $pct ?>%;background:<?= $clr ?>;border-radius:8px;"></div>
-                        </div>
-                        <div class="text-muted mt-1" style="font-size:0.7rem;"><?= (int)$s['txn_count'] ?> ລາຍການ</div>
-                    </div>
-                    <?php endforeach; ?>
-                    <?php endif; ?>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Filter Card -->
+    <!-- Filter Form -->
     <div class="card card-custom mb-4 no-print">
         <div class="card-body p-3">
-            <form method="GET" class="row align-items-end">
-                <div class="col-md-4 mb-2 mb-md-0">
+            <form method="GET" class="row align-items-end g-2">
+                <input type="hidden" name="tab" value="<?= htmlspecialchars($activeTab) ?>">
+                <div class="col-md-4">
                     <label class="form-label fw-bold small">ເລີ່ມແຕ່ວັນທີ</label>
                     <input type="date" name="start_date" class="form-control" value="<?= htmlspecialchars($startDate) ?>">
                 </div>
-                <div class="col-md-4 mb-2 mb-md-0">
+                <div class="col-md-4">
                     <label class="form-label fw-bold small">ຫາວັນທີ</label>
                     <input type="date" name="end_date" class="form-control" value="<?= htmlspecialchars($endDate) ?>">
                 </div>
                 <div class="col-md-4 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary flex-grow-1"><i class="fas fa-search mr-1"></i> ຄົ້ນຫາ</button>
-                    <!-- <a href="revenue_report.php" class="btn btn-secondary"><i class="fas fa-sync-alt"></i></a> -->
+                    <button type="submit" class="btn btn-primary flex-grow-1"><i class="fas fa-search me-1"></i> ຄົ້ນຫາ</button>
+                    <a href="revenue_report.php?tab=<?= htmlspecialchars($activeTab) ?>" class="btn btn-secondary"><i class="fas fa-sync-alt"></i></a>
                 </div>
             </form>
         </div>
@@ -517,310 +363,492 @@ $staffMax = !empty($staffRows) ? max(1, (float)max(array_column($staffRows, 'tot
 
     <!-- Print Title Sheet -->
     <div class="d-none d-print-block text-center mb-4">
-        <h2>ລາຍງານລາຍຮັບລະບົບຍິມ & ຟິດເນັດ</h2>
+        <h2>ລາຍງານການເງິນ ລາຍຮັບ-ລາຍຈ່າຍ ຍິມ & ຟິດເນັດ</h2>
         <?php if ($startDate !== '' || $endDate !== ''): ?>
             <p>ໄລຍະເວລາ: <?= $startDate ? date('d/m/Y', strtotime($startDate)) : 'ເລີ່ມຕົ້ນ' ?> ຫາ <?= $endDate ? date('d/m/Y', strtotime($endDate)) : 'ປັດຈຸບັນ' ?></p>
         <?php else: ?>
-            <p>ລາຍງານລາຍຮັບທັງໝົດໃນລະບົບ</p>
+            <p>ລາຍງານສະຫຼຸບການເງິນທັງໝົດໃນລະບົບ</p>
         <?php endif; ?>
         <p class="small text-muted">ວັນທີດຶງລາຍງານ: <?= date('d/m/Y H:i:s') ?></p>
     </div>
 
-    <!-- Table Card -->
-    <div class="card card-custom">
-        <div class="bg-light px-3 pt-2 border-bottom no-print" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
-            <ul class="nav nav-tabs border-bottom-0" id="reportTabs" role="tablist">
+    <!-- Stats Cards Row -->
+    <div class="row-tight mb-2">
+        <!-- Card 1: Total Revenue -->
+        <div class="col-md-4">
+            <div class="card stat-card-rev bg-gradient" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); box-shadow: 0 8px 20px rgba(56, 239, 125, 0.15);">
+                <div class="d-flex justify-content-between align-items-center w-100">
+                    <div>
+                        <small class="text-white-50 font-weight-bold">ລາຍຮັບລວມທັງໝົດ</small>
+                        <h3><?= formatCurrency($totalRevenue) ?></h3>
+                        <small class="text-white-50"><i class="fas fa-arrow-alt-circle-up mr-1"></i> Subscriptions + Daily + POS</small>
+                    </div>
+                    <div class="stat-card-icon-right">
+                        <i class="fas fa-arrow-circle-up"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Card 2: Total Expenses -->
+        <div class="col-md-4">
+            <div class="card stat-card-rev bg-gradient" style="background: linear-gradient(135deg, #f857a6 0%, #ff5858 100%); box-shadow: 0 8px 20px rgba(255, 88, 88, 0.15);">
+                <div class="d-flex justify-content-between align-items-center w-100">
+                    <div>
+                        <small class="text-white-50 font-weight-bold">ລາຍຈ່າຍລວມທັງໝົດ</small>
+                        <h3><?= formatCurrency($totalExpenses) ?></h3>
+                        <small class="text-white-50"><i class="fas fa-arrow-alt-circle-down mr-1"></i> Stock Imports + General Exp</small>
+                    </div>
+                    <div class="stat-card-icon-right">
+                        <i class="fas fa-arrow-circle-down"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Card 3: Net Profit/Loss -->
+        <div class="col-md-4">
+            <?php 
+            $isProfit = ($netIncome >= 0);
+            $gradientColor = $isProfit ? "linear-gradient(135deg, #3a7bd5 0%, #3a6073 100%)" : "linear-gradient(135deg, #870000 0%, #190000 100%)";
+            $shadowColor = $isProfit ? "rgba(58, 123, 213, 0.15)" : "rgba(135, 0, 0, 0.15)";
+            ?>
+            <div class="card stat-card-rev bg-gradient" style="background: <?= $gradientColor ?>; box-shadow: 0 8px 20px <?= $shadowColor ?>;">
+                <div class="d-flex justify-content-between align-items-center w-100">
+                    <div>
+                        <small class="text-white-50 font-weight-bold">ກຳໄລ / ຂາດທຶນ ສຸດທິ</small>
+                        <h3><?= formatCurrency($netIncome) ?></h3>
+                        <small class="text-white-50"><i class="fas fa-balance-scale mr-1"></i> ຍອດຄົງເຫຼືອທັງໝົດ</small>
+                    </div>
+                    <div class="stat-card-icon-right">
+                        <i class="fas <?= $isProfit ? 'fa-smile' : 'fa-sad-tear' ?>"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link <?= $activeTab === 'subscription' ? 'active text-primary' : 'text-secondary' ?> px-3 py-2" id="subscription-tab" data-type="subscription" style="border: none; background: transparent;">
-                        <i class="fas fa-id-card me-1"></i> ລາຍຮັບສະມາຊິກ
-                    </button>
+    <!-- Tab navigation -->
+    <div class="card card-custom mb-4 no-print">
+        <div class="card-header bg-white border-bottom-0 pt-3">
+            <ul class="nav nav-tabs border-bottom" id="reportTabs" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link <?= $activeTab === 'overview' ? 'active' : '' ?>" href="revenue_report.php?tab=overview&start_date=<?= $startDate ?>&end_date=<?= $endDate ?>"><i class="fas fa-columns me-1"></i> ພາບລວມການເງິນ</a>
                 </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link <?= $activeTab === 'daily' ? 'active text-primary' : 'text-secondary' ?> px-3 py-2" id="daily-tab" data-type="daily" style="border: none; background: transparent;">
-                        <i class="fas fa-user-clock me-1"></i> ລາຍຮັບລູກຄ້າລາຍວັນ
-                    </button>
+                <li class="nav-item">
+                    <a class="nav-link <?= $activeTab === 'subscription' ? 'active' : '' ?>" href="revenue_report.php?tab=subscription&start_date=<?= $startDate ?>&end_date=<?= $endDate ?>"><i class="fas fa-id-card me-1"></i> ຄ່າສະໝັກສະມາຊິກ (<?= count($subscriptionsList) ?>)</a>
                 </li>
-            </ul></div>
+                <li class="nav-item">
+                    <a class="nav-link <?= $activeTab === 'daily' ? 'active' : '' ?>" href="revenue_report.php?tab=daily&start_date=<?= $startDate ?>&end_date=<?= $endDate ?>"><i class="fas fa-user-clock me-1"></i> ຄ່າລາຍວັນ (<?= count($dailyList) ?>)</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link <?= $activeTab === 'pos' ? 'active' : '' ?>" href="revenue_report.php?tab=pos&start_date=<?= $startDate ?>&end_date=<?= $endDate ?>"><i class="fas fa-cash-register me-1"></i> ຍອດຂາຍ POS (<?= count($salesList) ?>)</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link <?= $activeTab === 'stock_in' ? 'active' : '' ?>" href="revenue_report.php?tab=stock_in&start_date=<?= $startDate ?>&end_date=<?= $endDate ?>"><i class="fas fa-file-import me-1"></i> ຕົ້ນທຶນນຳເຂົ້າສິນຄ້າ (<?= count($stockList) ?>)</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link <?= $activeTab === 'expense' ? 'active' : '' ?>" href="revenue_report.php?tab=expense&start_date=<?= $startDate ?>&end_date=<?= $endDate ?>"><i class="fas fa-minus-circle me-1"></i> ລາຍຈ່າຍທົ່ວໄປ (<?= count($expensesList) ?>)</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Active Tab Pane -->
+    <div class="card card-custom">
         <div class="card-body p-0">
-            <!-- Search & Control Header -->
+            
+            <!-- CASE 1: OVERVIEW -->
+            <?php if ($activeTab === 'overview'): ?>
+            <div class="p-4">
+                <div class="row g-4">
+                    <!-- Chart side -->
+                    <div class="col-lg-7">
+                        <h6 class="fw-bold mb-3"><i class="fas fa-chart-bar text-primary me-2"></i>ແນວໂນ້ມລາຍຮັບ - ລາຍຈ່າຍ 6 ເດືອນຫຼ້າສຸດ</h6>
+                        <canvas id="financialChart" style="max-height: 280px;"></canvas>
+                    </div>
+                    <!-- breakdown table side -->
+                    <div class="col-lg-5">
+                        <h6 class="fw-bold mb-3"><i class="fas fa-list-ul text-secondary me-2"></i>ສະຫຼຸບລາຍຮັບ-ລາຍຈ່າຍ ແຍກຕາມແຫຼ່ງຂໍ້ມູນ</h6>
+                        <table class="table table-bordered align-middle">
+                            <tbody>
+                                <!-- Revenues -->
+                                <tr class="bg-light"><td colspan="2" class="fw-bold text-success"><i class="fas fa-plus-circle me-1"></i> ລາຍຮັບ (Revenues)</td></tr>
+                                <tr>
+                                    <td>ຄ່າສະໝັກສະມາຊິກ (Subscriptions)</td>
+                                    <td class="text-end fw-bold"><?= formatCurrency($subRevenueSum) ?></td>
+                                </tr>
+                                <tr>
+                                    <td>ຄ່າລູກຄ້າລາຍວັນ (Daily check-ins)</td>
+                                    <td class="text-end fw-bold"><?= formatCurrency($dailyRevenueSum) ?></td>
+                                </tr>
+                                <tr>
+                                    <td>ຍອດຂາຍສິນຄ້າຮ້ານຄ້າ (POS Sales)</td>
+                                    <td class="text-end fw-bold"><?= formatCurrency($salesRevenueSum) ?></td>
+                                </tr>
+                                <tr class="table-success fw-bold text-dark">
+                                    <td>ລວມລາຍຮັບທັງໝົດ</td>
+                                    <td class="text-end text-success"><?= formatCurrency($totalRevenue) ?></td>
+                                </tr>
+                                
+                                <!-- Expenses -->
+                                <tr class="bg-light"><td colspan="2" class="fw-bold text-danger"><i class="fas fa-minus-circle me-1"></i> ລາຍຈ່າຍ (Expenses)</td></tr>
+                                <tr>
+                                    <td>ຕົ້ນທຶນນຳເຂົ້າສິນຄ້າ (Stock Imports)</td>
+                                    <td class="text-end fw-bold"><?= formatCurrency($stockExpenseSum) ?></td>
+                                </tr>
+                                <tr>
+                                    <td>ລາຍຈ່າຍທົ່ວໄປ (General Expenses)</td>
+                                    <td class="text-end fw-bold"><?= formatCurrency($generalExpenseSum) ?></td>
+                                </tr>
+                                <tr class="table-danger fw-bold text-dark">
+                                    <td>ລວມລາຍຈ່າຍທັງໝົດ</td>
+                                    <td class="text-end text-danger"><?= formatCurrency($totalExpenses) ?></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <!-- Cashier payment breakdowns (Revenues only) -->
+                        <div class="card bg-light border-0 rounded-3 mt-3">
+                            <div class="card-body p-3">
+                                <h6 class="fw-bold small text-muted mb-2">ຊ່ອງທາງການຊຳລະເງິນ (ສະເພາະລາຍຮັບ)</h6>
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>ເງິນສົດ (Cash):</span>
+                                    <span class="fw-bold text-success"><?= formatCurrency($cash_total) ?></span>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span>ເງິນໂອນ (Transfer):</span>
+                                    <span class="fw-bold text-primary"><?= formatCurrency($transfer_total) ?></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- CASE 2: SUBSCRIPTIONS -->
+            <?php elseif ($activeTab === 'subscription'): ?>
             <div class="p-3 border-bottom d-flex flex-wrap justify-content-between align-items-center gap-3 no-print">
-                <div class="d-flex align-items-center flex-wrap gap-3">
-                    <div class="text-muted small">
-                        ລາຍການທັງໝົດ: <span class="fw-bold text-primary" id="revCount"><?= count($transactions) ?></span> ລາຍການ
-                    </div>
-                    <div class="d-flex align-items-center gap-2">
-                        <span class="text-muted small">ສະແດງ:</span>
-                        <select id="pageSizeSelect" class="form-control form-control-sm" style="width: 80px; border-radius: 8px; font-weight: bold; height: 32px;">
-                            <option value="10" selected>10</option>
-                            <option value="20">20</option>
-                            <option value="30">30</option>
-                            <option value="50">50</option>
-                            <option value="all">ທັງໝົດ</option>
-                        </select>
-                    </div>
+                <div class="text-muted small">
+                    ລາຍການສະໝັກສະມາຊິກ: <span class="fw-bold text-primary"><?= count($subscriptionsList) ?></span> ລາຍການ
                 </div>
                 <div class="search-box flex-grow-1" style="max-width: 400px;">
                     <i class="fas fa-search"></i>
-                    <input type="text" id="searchInput" class="form-control" placeholder="ຄົ້ນຫາລາຍຮັບ...">
+                    <input type="text" id="subSearchInput" class="form-control" placeholder="ຄົ້ນຫາຊື່, ລະຫັດ, ແພັກເກດ...">
                 </div>
             </div>
-
             <div class="table-responsive">
                 <table class="table table-custom table-hover align-middle mb-0">
                     <thead>
-                        <tr id="header-row">
-                            <!-- Default Headers (Subscription & Combined View) -->
-                            <th class="text-center cell-default">ລະຫັດສະມາຊິກ</th>
-                            <th class="cell-default">ຊື່ສະມາຊິກ</th>
-                            <th class="cell-default">ແພັກເກດ</th>
-                            <th class="text-center cell-default">ຊຳລະໂດຍ</th>
-                            <th class="text-center cell-default">ວັນທີສະໝັກ</th>
-                            <th class="text-end cell-default" style="width: 180px;">ຍອດເງິນຊຳລະ</th>
-
-                            <!-- Daily Only Headers -->
-                            <th class="text-center cell-daily-only d-none">ຊຳລະໂດຍ</th>
-                            <th class="text-center cell-daily-only d-none">ວັນທີເຂົ້າໃຊ້</th>
-                            <th class="text-end cell-daily-only d-none" style="width: 180px;">ຍອດເງິນຊຳລະ</th>
-                            <th class="text-center cell-daily-only d-none">ພະນັກງານບັນທຶກ</th>
+                        <tr>
+                            <th class="text-center">ລະຫັດສະມາຊິກ</th>
+                            <th>ຊື່ສະມາຊິກ</th>
+                            <th>ແພັກເກດ</th>
+                            <th class="text-center">ຊຳລະໂດຍ</th>
+                            <th class="text-center">ວັນທີສະໝັກ</th>
+                            <th class="text-end" style="width: 180px;">ຍອດເງິນຊຳລະ</th>
                         </tr>
                     </thead>
-                    <tbody id="revenueTableBody">
-                        <?php if (count($transactions) > 0): ?>
-                            <?php foreach ($transactions as $t): ?>
-                                <?php if ($t['type'] === 'subscription'): ?>
-                                    <tr class="revenue-row"
-                                        data-price="<?= (float)$t['price_paid'] ?>"
-                                        data-payment="<?= htmlspecialchars(mb_strtolower($t['payment_method'] ?? ''), ENT_QUOTES) ?>"
-                                        data-type="subscription">
-                                        <td class="text-center cell-default"><code><?= htmlspecialchars($t['member_code'] ?? '-') ?></code></td>
-                                        <td class="fw-bold text-dark cell-default"><?= htmlspecialchars(($t['fname'] ?? 'ລົບແລ້ວ') . ' ' . ($t['lname'] ?? '')) ?></td>
-                                        <td class="cell-default"><span class="badge bg-light text-primary border"><?= htmlspecialchars($t['package_name'] ?: 'ບໍ່ລະບຸ') ?></span></td>
-                                        <td class="text-center cell-default"><?= htmlspecialchars($t['payment_method']) ?></td>
-                                        <td class="text-center text-muted cell-default"><?= date('d/m/Y H:i', strtotime($t['created_at'])) ?></td>
-                                        <td class="text-end fw-bold text-success cell-default"><?= formatCurrency($t['price_paid']) ?></td>
-                                    </tr>
-                                <?php else: ?>
-                                    <tr class="revenue-row"
-                                        data-price="<?= (float)$t['price_paid'] ?>"
-                                        data-payment="<?= htmlspecialchars(mb_strtolower($t['payment_method'] ?? ''), ENT_QUOTES) ?>"
-                                        data-type="daily">
-                                        <!-- Default Columns (Used in 'All' tab) -->
-                                        <td class="text-center cell-default"><span class="badge bg-secondary text-white">ລູກຄ້າລາຍວັນ</span></td>
-                                        <td class="fw-bold text-dark cell-default">ລູກຄ້າລາຍວັນ (ເພດ <?= htmlspecialchars($t['gender'] ?? '-') ?>)</td>
-                                        <td class="cell-default"><span class="badge bg-light text-info border">ເຊັກອິນລາຍວັນ</span></td>
-                                        <td class="text-center cell-default"><?= htmlspecialchars($t['payment_method']) ?></td>
-                                        <td class="text-center text-muted cell-default"><?= date('d/m/Y H:i', strtotime($t['created_at'])) ?></td>
-                                        <td class="text-end fw-bold text-success cell-default"><?= formatCurrency($t['price_paid']) ?></td>
-
-                                        <!-- Daily Customer Tab Columns -->
-                                        <td class="text-center cell-daily-only d-none">
-                                            <span class="badge px-3 py-2 bg-light text-dark border" style="border-radius:12px;font-size:0.85rem;font-weight:700;">
-                                                <?= htmlspecialchars($t['payment_method']) ?>
-                                            </span>
-                                        </td>
-                                        <td class="text-center text-muted cell-daily-only d-none"><?= date('d/m/Y H:i', strtotime($t['created_at'])) ?></td>
-                                        <td class="text-end fw-bold text-success cell-daily-only d-none"><?= formatCurrency($t['price_paid']) ?></td>
-                                        <?php 
-                                            $staffName = trim(($t['staff_fname'] ?? '') . ' ' . ($t['staff_lname'] ?? ''));
-                                            if ($staffName === '') $staffName = 'Admin';
-                                        ?>
-                                        <td class="text-center fw-bold text-dark cell-daily-only d-none"><?= htmlspecialchars($staffName) ?></td>
-                                    </tr>
-                                <?php endif; ?>
-                            <?php endforeach; ?>
+                    <tbody id="subTableBody">
+                        <?php if (empty($subscriptionsList)): ?>
+                            <tr><td colspan="6" class="text-center py-5 text-muted"><i class="fas fa-search me-2"></i>ບໍ່ພົບຂໍ້ມູນລາຍຮັບ</td></tr>
                         <?php else: ?>
-                            <tr id="emptyRow">
-                                <td colspan="6" class="text-center py-5 text-muted">
-                                    <i class="fas fa-search fa-2x mb-3 d-block text-secondary"></i>
-                                    ບໍ່ພົບຂໍ້ມູນລາຍຮັບ
-                                </td>
-                            </tr>
+                            <?php foreach ($subscriptionsList as $s): ?>
+                                <tr class="sub-row">
+                                    <td class="text-center"><code><?= htmlspecialchars($s['member_code'] ?? '-') ?></code></td>
+                                    <td class="fw-bold text-dark"><?= htmlspecialchars(($s['fname'] ?? 'ລົບແລ້ວ') . ' ' . ($s['lname'] ?? '')) ?></td>
+                                    <td><span class="badge bg-light text-primary border"><?= htmlspecialchars($s['package_name'] ?: 'ບໍ່ລະບຸ') ?></span></td>
+                                    <td class="text-center"><?= htmlspecialchars($s['payment_method']) ?></td>
+                                    <td class="text-center text-muted"><?= date('d/m/Y H:i', strtotime($s['created_at'])) ?></td>
+                                    <td class="text-end fw-bold text-success"><?= formatCurrency($s['price_paid']) ?></td>
+                                </tr>
+                            <?php endforeach; ?>
                         <?php endif; ?>
-
-                        <!-- Footer row calculating Sum -->
-                        <tr id="summaryFooterRow" style="background-color:#f8fafc;border-top:2px solid #dee2e6;">
-                            <!-- Default Footer View -->
-                            <!-- <td colspan="3" class="fw-bold text-end text-muted cell-default" style="font-size:0.9rem;">
-                                <span class="me-3"><i class="fas fa-money-bill-wave text-success me-1"></i>ເງິນສົດ: <span id="footerCash" class="text-success fw-bold"><?= number_format($cash_total,0,'.',',') ?> ກີບ</span></span>
-                                <span class="me-3"><i class="fas fa-mobile-alt text-primary me-1"></i>ເງິນໂອນ: <span id="footerTransfer" class="text-primary fw-bold"><?= number_format($transfer_total,0,'.',',') ?> ກີບ</span></span>
-                            </td> -->
-                            <td colspan="2" class="text-end fw-bold text-dark cell-default" style="font-size:1rem;">ລວມທັງໝົດ:</td>
-
-                            <!-- Daily Tab Footer View -->
-                            <!-- <td colspan="2" class="fw-bold text-end text-muted cell-daily-only d-none" style="font-size:0.9rem;">
-                                <span class="me-3"><i class="fas fa-money-bill-wave text-success me-1"></i>ເງິນສົດ: <span id="footerCashDaily" class="text-success fw-bold"><?= number_format($cash_total,0,'.',',') ?> ກີບ</span></span>
-                                <span class="me-3"><i class="fas fa-mobile-alt text-primary me-1"></i>ເງິນໂອນ: <span id="footerTransferDaily" class="text-primary fw-bold"><?= number_format($transfer_total,0,'.',',') ?> ກີບ</span></span>
-                            </td> -->
-                            <td colspan="1" class="text-end fw-bold text-dark cell-daily-only d-none" style="font-size:1rem;">ລວມທັງໝົດ:</td>
-
-                            <td id="totalRevenueSum" class="text-end fw-bold text-success" style="font-size:1.15rem;"><?= formatCurrency($total_revenue) ?></td>
+                    </tbody>
+                    <tfoot>
+                        <tr class="table-light fw-bold">
+                            <td colspan="5" class="text-end">ລວມຄ່າສະໝັກສະມາຊິກທັງໝົດ:</td>
+                            <td class="text-end text-success" style="font-size:1.1rem;"><?= formatCurrency($subRevenueSum) ?></td>
                         </tr>
-                    </tbody></table>
+                    </tfoot>
+                </table>
             </div>
+            
+            <!-- CASE 3: DAILY -->
+            <?php elseif ($activeTab === 'daily'): ?>
+            <div class="p-3 border-bottom d-flex flex-wrap justify-content-between align-items-center gap-3 no-print">
+                <div class="text-muted small">
+                    ລາຍການລູກຄ້າລາຍວັນ: <span class="fw-bold text-primary"><?= count($dailyList) ?></span> ລາຍການ
+                </div>
+                <div class="search-box flex-grow-1" style="max-width: 400px;">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="dailySearchInput" class="form-control" placeholder="ຄົ້ນຫາເພດ, ພະນັກງານ, ວິທີຊຳລະ...">
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-custom table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th class="text-center">ລະຫັດ / ລາຍການ</th>
+                            <th>ລາຍລະອຽດ</th>
+                            <th class="text-center">ຊຳລະໂດຍ</th>
+                            <th class="text-center">ວັນທີເຂົ້າໃຊ້</th>
+                            <th class="text-center">ພະນັກງານບັນທຶກ</th>
+                            <th class="text-end" style="width: 180px;">ຍອດເງິນຊຳລະ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dailyTableBody">
+                        <?php if (empty($dailyList)): ?>
+                            <tr><td colspan="6" class="text-center py-5 text-muted"><i class="fas fa-search me-2"></i>ບໍ່ພົບຂໍ້ມູນລາຍຮັບ</td></tr>
+                        <?php else: ?>
+                            <?php foreach ($dailyList as $d): ?>
+                                <tr class="daily-row">
+                                    <td class="text-center"><span class="badge bg-secondary text-white">ລາຍວັນ</span></td>
+                                    <td class="fw-bold text-dark">ລູກຄ້າລາຍວັນ (ເພດ <?= htmlspecialchars($d['gender'] ?? '-') ?>)</td>
+                                    <td class="text-center"><?= htmlspecialchars($d['payment_method']) ?></td>
+                                    <td class="text-center text-muted"><?= date('d/m/Y H:i', strtotime($d['created_at'])) ?></td>
+                                    <?php 
+                                        $staffName = trim(($d['staff_fname'] ?? '') . ' ' . ($d['staff_lname'] ?? ''));
+                                        if ($staffName === '') $staffName = 'Admin';
+                                    ?>
+                                    <td class="text-center"><?= htmlspecialchars($staffName) ?></td>
+                                    <td class="text-end fw-bold text-success"><?= formatCurrency($d['price_paid']) ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </tbody>
+                    <tfoot>
+                        <tr class="table-light fw-bold">
+                            <td colspan="5" class="text-end">ລວມຄ່າລາຍວັນທັງໝົດ:</td>
+                            <td class="text-end text-success" style="font-size:1.1rem;"><?= formatCurrency($dailyRevenueSum) ?></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <!-- CASE 4: POS SALES -->
+            <?php elseif ($activeTab === 'pos'): ?>
+            <div class="p-3 border-bottom d-flex flex-wrap justify-content-between align-items-center gap-3 no-print">
+                <div class="text-muted small">
+                    ລາຍການຂາຍສິນຄ້າ POS: <span class="fw-bold text-primary"><?= count($salesList) ?></span> ລາຍການ
+                </div>
+                <div class="search-box flex-grow-1" style="max-width: 400px;">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="posSearchInput" class="form-control" placeholder="ຄົ້ນຫາລະຫັດໃບບິນ, ພະນັກງານ, ວິທີຊຳລະ...">
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-custom table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th class="text-center" style="width: 140px;">ວັນທີຂາຍ</th>
+                            <th>ລະຫັດໃບບິນ</th>
+                            <th class="text-center">ຊຳລະໂດຍ</th>
+                            <th class="text-center">ພະນັກງານຂາຍ</th>
+                            <th class="text-end" style="width: 180px;">ຍອດເງິນຊຳລະ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="posTableBody">
+                        <?php if (empty($salesList)): ?>
+                            <tr><td colspan="5" class="text-center py-5 text-muted"><i class="fas fa-search me-2"></i>ບໍ່ພົບຂໍ້ມູນການຂາຍ</td></tr>
+                        <?php else: ?>
+                            <?php foreach ($salesList as $s): ?>
+                                <tr class="pos-row">
+                                    <td class="text-center fw-bold"><?= date('d/m/Y H:i', strtotime($s['sale_date'])) ?></td>
+                                    <td><span class="badge bg-light text-dark border fw-bold"><?= htmlspecialchars($s['sale_code']) ?></span></td>
+                                    <td class="text-center"><?= htmlspecialchars($s['payment_method']) ?></td>
+                                    <?php 
+                                        $staffName = trim(($s['staff_fname'] ?? '') . ' ' . ($s['staff_lname'] ?? ''));
+                                        if ($staffName === '') $staffName = 'Admin';
+                                    ?>
+                                    <td class="text-center"><?= htmlspecialchars($staffName) ?></td>
+                                    <td class="text-end fw-bold text-success"><?= formatCurrency($s['total_amount']) ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </tbody>
+                    <tfoot>
+                        <tr class="table-light fw-bold">
+                            <td colspan="4" class="text-end">ລວມຍອດຂາຍສິນຄ້າທັງໝົດ:</td>
+                            <td class="text-end text-success" style="font-size:1.1rem;"><?= formatCurrency($salesRevenueSum) ?></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <!-- CASE 5: STOCK IN COSTS -->
+            <?php elseif ($activeTab === 'stock_in'): ?>
+            <div class="p-3 border-bottom d-flex flex-wrap justify-content-between align-items-center gap-3 no-print">
+                <div class="text-muted small">
+                    ລາຍການນຳເຂົ້າສິນຄ້າ: <span class="fw-bold text-danger"><?= count($stockList) ?></span> ລາຍການ
+                </div>
+                <div class="search-box flex-grow-1" style="max-width: 400px;">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="stockSearchInput" class="form-control" placeholder="ຄົ້ນຫາຜູ້ສະໜອງ, ພະນັກງານ...">
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-custom table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th class="text-center" style="width: 140px;">ວັນທີນຳເຂົ້າ</th>
+                            <th>ລະຫັດນຳເຂົ້າ</th>
+                            <th>ຜູ້ສະໜອງສິນຄ້າ (Supplier)</th>
+                            <th class="text-center">ພະນັກງານບັນທຶກ</th>
+                            <th class="text-end" style="width: 180px;">ລວມຄ່າໃຊ້ຈ່າຍ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="stockTableBody">
+                        <?php if (empty($stockList)): ?>
+                            <tr><td colspan="5" class="text-center py-5 text-muted"><i class="fas fa-search me-2"></i>ບໍ່ພົບຂໍ້ມູນການນຳເຂົ້າ</td></tr>
+                        <?php else: ?>
+                            <?php foreach ($stockList as $st): ?>
+                                <tr class="stock-row">
+                                    <td class="text-center fw-bold"><?= date('d/m/Y H:i', strtotime($st['stock_in_date'])) ?></td>
+                                    <td><span class="badge bg-light text-secondary border fw-bold">#<?= str_pad($st['stock_in_id'], 5, '0', STR_PAD_LEFT) ?></span></td>
+                                    <td class="fw-bold text-dark"><?= htmlspecialchars($st['supplier'] ?: 'ບໍ່ລະບຸ') ?></td>
+                                    <?php 
+                                        $staffName = trim(($st['staff_fname'] ?? '') . ' ' . ($st['staff_lname'] ?? ''));
+                                        if ($staffName === '') $staffName = 'Admin';
+                                    ?>
+                                    <td class="text-center"><?= htmlspecialchars($staffName) ?></td>
+                                    <td class="text-end fw-bold text-danger"><?= formatCurrency($st['total_amount']) ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </tbody>
+                    <tfoot>
+                        <tr class="table-light fw-bold">
+                            <td colspan="4" class="text-end">ລວມຕົ້ນທຶນນຳເຂົ້າສິນຄ້າທັງໝົດ:</td>
+                            <td class="text-end text-danger" style="font-size:1.1rem;"><?= formatCurrency($stockExpenseSum) ?></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <!-- CASE 6: GENERAL EXPENSES -->
+            <?php elseif ($activeTab === 'expense'): ?>
+            <div class="p-3 border-bottom d-flex flex-wrap justify-content-between align-items-center gap-3 no-print">
+                <div class="text-muted small">
+                    ລາຍການລາຍຈ່າຍທົ່ວໄປ: <span class="fw-bold text-danger"><?= count($expensesList) ?></span> ລາຍການ
+                </div>
+                <div class="search-box flex-grow-1" style="max-width: 400px;">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="expSearchInput" class="form-control" placeholder="ຄົ້ນຫາຫົວຂໍ້, ປະເພດລາຍຈ່າຍ, ຜູ້ບັນທຶກ...">
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-custom table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th class="text-center" style="width: 120px;">ວັນທີລາຍຈ່າຍ</th>
+                            <th>ຫົວຂໍ້ລາຍຈ່າຍ</th>
+                            <th>ປະເພດລາຍຈ່າຍ</th>
+                            <th>ໝາຍເຫດ</th>
+                            <th class="text-center">ຜູ້ບັນທຶກ</th>
+                            <th class="text-end" style="width: 180px;">ຈຳນວນເງິນ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="expTableBody">
+                        <?php if (empty($expensesList)): ?>
+                            <tr><td colspan="6" class="text-center py-5 text-muted"><i class="fas fa-search me-2"></i>ບໍ່ພົບຂໍ້ມູນລາຍຈ່າຍ</td></tr>
+                        <?php else: ?>
+                            <?php foreach ($expensesList as $e): ?>
+                                <tr class="exp-row">
+                                    <td class="text-center fw-bold"><?= date('d/m/Y', strtotime($e['expense_date'])) ?></td>
+                                    <td class="fw-bold text-dark"><?= htmlspecialchars($e['title']) ?></td>
+                                    <td><span class="badge bg-light text-danger border"><?= htmlspecialchars($e['category']) ?></span></td>
+                                    <td class="text-muted small"><?= htmlspecialchars($e['notes'] ?: '-') ?></td>
+                                    <?php 
+                                        $staffName = trim(($e['staff_fname'] ?? '') . ' ' . ($e['staff_lname'] ?? ''));
+                                        if ($staffName === '') $staffName = 'Admin';
+                                    ?>
+                                    <td class="text-center"><?= htmlspecialchars($staffName) ?></td>
+                                    <td class="text-end fw-bold text-danger"><?= formatCurrency($e['amount']) ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </tbody>
+                    <tfoot>
+                        <tr class="table-light fw-bold">
+                            <td colspan="5" class="text-end">ລວມລາຍຈ່າຍທົ່ວໄປທັງໝົດ:</td>
+                            <td class="text-end text-danger" style="font-size:1.1rem;"><?= formatCurrency($generalExpenseSum) ?></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+            <?php endif; ?>
+
         </div>
-        <!-- Pagination Footer -->
+        
+        <!-- Pagination controls dynamically shown except in Overview tab -->
+        <?php if ($activeTab !== 'overview'): ?>
         <div class="card-footer bg-white border-top px-3 py-2 d-flex flex-wrap justify-content-between align-items-center gap-2 no-print" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
-            <div class="text-muted small" id="paginationInfo">
-                ສະແດງ 1-10 ຈາກທັງໝົດ 10 ລາຍການ
-            </div>
+            <div class="text-muted small" id="pagerInfo">ສະແດງ 0 ຫາ 0 ຈາກທັງໝົດ 0 ລາຍການ</div>
             <nav aria-label="Page navigation">
-                <ul class="pagination pagination-sm mb-0 justify-content-center" id="paginationControls"></ul>
+                <ul class="pagination pagination-sm mb-0 justify-content-center" id="pagerControls"></ul>
             </nav>
         </div>
+        <?php endif; ?>
+
     </div>
 </div>
 
 <script>
-const statsData = {
-    subscription: {
-        today: <?= (float)$sub_today ?>,
-        month: <?= (float)$sub_month ?>,
-        all:  <?= (float)$sub_all ?>
-    },
-    daily: {
-        today: <?= (float)$daily_today ?>,
-        month: <?= (float)$daily_month ?>,
-        all:  <?= (float)$daily_all ?>
-    }
-};
-
-$(document).ready(function() {
-    var itemsPerPage = 10;
-    var currentPage = 1;
-    var filteredRows = [];
-
-    $('#pageSizeSelect').on('change', function() {
-        var val = $(this).val();
-        if (val === 'all') {
-            itemsPerPage = 999999;
-        } else {
-            itemsPerPage = parseInt(val);
-        }
-        showPage(1);
-    });
-
-    var activeType = '<?= $activeTab ?>';
+// Helper Pagination Script for Tabs
+function initTablePagination(searchInputId, pagerInfoId, pagerControlsId, rowsClass, itemsPerPage) {
+    let currentPage = 1;
+    let limit = itemsPerPage || 10;
     
-    $('#reportTabs button').on('click', function() {
-        $('#reportTabs button').removeClass('active text-primary').addClass('text-secondary');
-        $(this).addClass('active text-primary').removeClass('text-secondary');
-        activeType = $(this).data('type');
-        updateFilteredRows();
-        showPage(1);
-    });
-
-    function updateFilteredRows() {
-        var query = $('#searchInput').val().toLowerCase().trim();
-        filteredRows = [];
-        var totalSum = 0, cashSum = 0, transferSum = 0;
-
-        // Toggle table header and row cell columns based on selected tab
-        if (activeType === 'daily') {
-            $('.cell-default').addClass('d-none');
-            $('.cell-daily-only').removeClass('d-none');
-        } else {
-            $('.cell-daily-only').addClass('d-none');
-            $('.cell-default').removeClass('d-none');
-        }
-
-        $('.revenue-row').removeClass('page-hidden');
-
-        $('.revenue-row').each(function() {
-            var text = $(this).text().toLowerCase();
-            var rowType = $(this).data('type') || 'subscription';
-            var matchesType = (activeType === 'all' || rowType === activeType);
-            
-            if (text.indexOf(query) > -1 && matchesType) {
-                filteredRows.push(this);
-                var price   = parseFloat($(this).data('price')) || 0;
-                var payment = ($(this).data('payment') || '').toLowerCase();
-                totalSum += price;
-                if (payment.indexOf('ສົດ') > -1 || payment === 'cash' || payment.indexOf('cash') > -1) {
-                    cashSum += price;
-                } else {
-                    transferSum += price;
-                }
+    function updateTable() {
+        let query = $(searchInputId).val().toLowerCase().trim();
+        let visibleRows = [];
+        
+        $(rowsClass).each(function() {
+            let text = $(this).text().toLowerCase();
+            if (text.indexOf(query) > -1) {
+                visibleRows.push(this);
             } else {
                 $(this).hide();
             }
         });
-
-        $('#revCount').text(filteredRows.length);
-
-        // Update dynamic sums
-        var fmt = function(n) { return n.toLocaleString('en-US') + ' ກີບ'; };
-        $('#totalRevenueSum').text(fmt(totalSum));
-        $('#cashTotal').text(fmt(cashSum));
-        $('#transferTotal').text(fmt(transferSum));
         
-        $('#grandTotal').text(fmt(totalSum));
-        $('#footerCash').text(fmt(cashSum));
-        $('#footerTransfer').text(fmt(transferSum));
-        
-        // Update top summary cards dynamically depending on active tab
-        $('#stat-today').text(fmt(statsData[activeType].today));
-        $('#stat-month').text(fmt(statsData[activeType].month));
-        $('#stat-all').text(fmt(statsData[activeType].all));
-        
-
-        if (filteredRows.length === 0 && $('.revenue-row').length > 0) {
-            if ($('#emptySearchResult').length === 0) {
-                $('#revenueTableBody').append(
-                    `<tr id="emptySearchResult"><td colspan="6" class="text-center py-4 text-muted"><i class="fas fa-search me-2"></i>ບໍ່ພົບຂໍ້ມູນລາຍຮັບ</td></tr>`
-                );
-            }
-            $('#summaryFooterRow').hide();
-        } else {
-            $('#emptySearchResult').remove();
-            $('#summaryFooterRow').show();
-        }
-    }
-
-    function showPage(page) {
-        currentPage = page;
-        var totalItems = filteredRows.length;
-        
-        if (totalItems === 0) {
-            $('.revenue-row').hide().addClass('page-hidden');
-            $('#paginationInfo').text('ສະແດງ 0 ຫາ 0 ຈາກທັງໝົດ 0 ລາຍການ');
-            $('#paginationControls').html('');
-            return;
-        }
-        
-        var totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+        let totalItems = visibleRows.length;
+        let totalPages = Math.ceil(totalItems / limit) || 1;
         
         if (currentPage < 1) currentPage = 1;
         if (currentPage > totalPages) currentPage = totalPages;
         
-        var startIndex = (currentPage - 1) * itemsPerPage;
-        var endIndex = Math.min(startIndex + itemsPerPage, totalItems);
+        let startIndex = (currentPage - 1) * limit;
+        let endIndex = Math.min(startIndex + limit, totalItems);
         
-        $('.revenue-row').hide().addClass('page-hidden');
-        for (var i = startIndex; i < endIndex; i++) {
-            $(filteredRows[i]).show().removeClass('page-hidden');
+        $(rowsClass).hide();
+        for (let i = startIndex; i < endIndex; i++) {
+            $(visibleRows[i]).show();
         }
         
-        $('#paginationInfo').text('ສະແດງ ' + (startIndex + 1) + ' ຫາ ' + endIndex + ' ຈາກທັງໝົດ ' + totalItems + ' ລາຍການ');
+        if (totalItems === 0) {
+            $(pagerInfoId).text('ສະແດງ 0 ຫາ 0 ຈາກທັງໝົດ 0 ລາຍການ');
+            $(pagerControlsId).html('');
+            return;
+        }
         
-        renderControls(totalPages);
-    }
-
-    function renderControls(totalPages) {
-        var controlsHtml = '';
+        $(pagerInfoId).text(`ສະແດງ ${startIndex + 1} ຫາ ${endIndex} ຈາກທັງໝົດ ${totalItems} ລາຍການ`);
+        
+        // Render pagination controls
+        let controlsHtml = '';
         if (currentPage === 1) {
             controlsHtml += `<li class="page-item disabled"><a class="page-link" href="javascript:void(0)"><i class="fas fa-chevron-left"></i></a></li>`;
         } else {
             controlsHtml += `<li class="page-item"><a class="page-link" href="javascript:void(0)" data-page="${currentPage - 1}"><i class="fas fa-chevron-left"></i></a></li>`;
         }
         
-        var startPage = Math.max(1, currentPage - 2);
-        var endPage = Math.min(totalPages, startPage + 4);
+        let startPage = Math.max(1, currentPage - 2);
+        let endPage = Math.min(totalPages, startPage + 4);
         if (endPage - startPage < 4) {
             startPage = Math.max(1, endPage - 4);
         }
         
-        for (var p = startPage; p <= endPage; p++) {
+        for (let p = startPage; p <= endPage; p++) {
+            if (p <= 0) continue;
             if (p === currentPage) {
                 controlsHtml += `<li class="page-item active"><a class="page-link" href="javascript:void(0)">${p}</a></li>`;
             } else {
@@ -834,49 +862,70 @@ $(document).ready(function() {
             controlsHtml += `<li class="page-item"><a class="page-link" href="javascript:void(0)" data-page="${currentPage + 1}"><i class="fas fa-chevron-right"></i></a></li>`;
         }
         
-        $('#paginationControls').html(controlsHtml);
+        $(pagerControlsId).html(controlsHtml);
         
-        $('#paginationControls a[data-page]').off('click').on('click', function(e) {
+        $(pagerControlsId + ' a[data-page]').off('click').on('click', function(e) {
             e.preventDefault();
-            showPage(parseInt($(this).data('page')));
+            currentPage = parseInt($(this).data('page'));
+            updateTable();
         });
     }
-
-    $('#searchInput').on('input', function() {
-        updateFilteredRows();
-        showPage(1);
+    
+    $(searchInputId).on('input', function() {
+        currentPage = 1;
+        updateTable();
     });
+    
+    updateTable();
+}
 
-    // Run pagination
-    updateFilteredRows();
-    showPage(1);
+$(document).ready(function() {
+    // Initialize corresponding pagination depending on which tab is active
+    let activeTab = '<?= $activeTab ?>';
+    if (activeTab === 'subscription') {
+        initTablePagination('#subSearchInput', '#pagerInfo', '#pagerControls', '.sub-row', 10);
+    } else if (activeTab === 'daily') {
+        initTablePagination('#dailySearchInput', '#pagerInfo', '#pagerControls', '.daily-row', 10);
+    } else if (activeTab === 'pos') {
+        initTablePagination('#posSearchInput', '#pagerInfo', '#pagerControls', '.pos-row', 10);
+    } else if (activeTab === 'stock_in') {
+        initTablePagination('#stockSearchInput', '#pagerInfo', '#pagerControls', '.stock-row', 10);
+    } else if (activeTab === 'expense') {
+        initTablePagination('#expSearchInput', '#pagerInfo', '#pagerControls', '.exp-row', 10);
+    }
 });
 </script>
 
+<?php if ($activeTab === 'overview'): ?>
 <script>
-// ===== Revenue Trend Chart (Chart.js) =====
+// ===== Chart Rendering (Chart.js) =====
 (function() {
-    var labels    = <?= json_encode($chartLabels, JSON_UNESCAPED_UNICODE) ?>;
-    var subData   = <?= json_encode($chartSubData) ?>;
-    var dailyData = <?= json_encode($chartDailyData) ?>;
-    var ctx = document.getElementById('revenueChart');
+    let labels = <?= json_encode($chartLabels, JSON_UNESCAPED_UNICODE) ?>;
+    let revData = <?= json_encode($chartRevData) ?>;
+    let expData = <?= json_encode($chartExpData) ?>;
+    let ctx = document.getElementById('financialChart');
     if (!ctx) return;
+    
     new Chart(ctx, {
         type: 'bar',
         data: {
             labels: labels,
             datasets: [
                 {
-                    label: 'ລາຍຮັບສະມາຊິກ',
-                    data: subData,
-                    backgroundColor: 'rgba(62,100,255,0.82)',
+                    label: 'ລາຍຮັບລວມ (Revenues)',
+                    data: revData,
+                    backgroundColor: 'rgba(56, 239, 125, 0.85)',
+                    borderColor: 'rgb(56, 239, 125)',
+                    borderWidth: 1,
                     borderRadius: 6,
                     borderSkipped: false
                 },
                 {
-                    label: 'ລາຍຮັບລາຍວັນ',
-                    data: dailyData,
-                    backgroundColor: 'rgba(16,185,129,0.82)',
+                    label: 'ລາຍຈ່າຍລວມ (Expenses)',
+                    data: expData,
+                    backgroundColor: 'rgba(255, 88, 88, 0.85)',
+                    borderColor: 'rgb(255, 88, 88)',
+                    borderWidth: 1,
                     borderRadius: 6,
                     borderSkipped: false
                 }
@@ -885,9 +934,8 @@ $(document).ready(function() {
         options: {
             responsive: true,
             maintainAspectRatio: true,
-            interaction: { mode: 'index', intersect: false },
             plugins: {
-                legend: { display: false },
+                legend: { position: 'bottom', labels: { font: { family: "'Noto Sans Lao', sans-serif", size: 12 } } },
                 tooltip: {
                     callbacks: {
                         label: function(c) {
@@ -899,15 +947,15 @@ $(document).ready(function() {
             scales: {
                 x: {
                     grid: { display: false },
-                    ticks: { font: { family: "'Noto Sans Lao Looped', sans-serif", size: 11 } }
+                    ticks: { font: { family: "'Noto Sans Lao', sans-serif", size: 11 } }
                 },
                 y: {
                     beginAtZero: true,
                     grid: { color: 'rgba(0,0,0,0.04)' },
                     ticks: {
                         callback: function(v) {
-                            return v >= 1000000
-                                ? (v/1000000).toFixed(1) + 'M'
+                            return v >= 1000000 
+                                ? (v/1000000).toFixed(1) + 'M' 
                                 : v >= 1000 ? (v/1000).toFixed(0) + 'K' : v;
                         },
                         font: { size: 11 }
@@ -918,5 +966,6 @@ $(document).ready(function() {
     });
 })();
 </script>
+<?php endif; ?>
 </body>
 </html>

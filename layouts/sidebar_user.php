@@ -152,6 +152,16 @@
         </li>
         <?php endif; ?>
 
+        <!-- ເມນູ: ຈັດການລາຍຈ່າຍ -->
+        <?php if (hasPermission('expenses', 'view')): ?>
+        <li class="nav-item">
+          <a href="pages/expenses.php" target="frame" class="nav-link">
+            <i class="nav-icon fas fa-minus-circle text-danger"></i>
+            <p>ຈັດການລາຍຈ່າຍ</p>
+          </a>
+        </li>
+        <?php endif; ?>
+
       </ul>
     </nav>
     <!-- /.sidebar-menu -->
