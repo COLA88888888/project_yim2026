@@ -176,15 +176,15 @@ if ($resProd) {
             </div>
 
             <!-- Products Grid -->
-            <div class="row row-cols-2 row-cols-sm-3 row-cols-md-3 g-2" id="productsGrid" style="max-height: calc(100vh - 240px); overflow-y: auto; padding-bottom: 20px;">
+            <div class="row px-2" id="productsGrid" style="max-height: calc(100vh - 240px); overflow-y: auto; padding-bottom: 20px;">
                 <?php foreach ($products as $p): ?>
                     <?php 
                         $outOfStock = $p['quantity'] <= 0; 
                         $cardClass = $outOfStock ? 'out-of-stock' : '';
                     ?>
-                    <div class="col product-card-container" data-category="<?= $p['category_id'] ?>" data-name="<?= htmlspecialchars(strtolower($p['product_name'])) ?>" data-code="<?= htmlspecialchars(strtolower($p['product_code'])) ?>">
+                    <div class="col-6 col-sm-4 col-md-4 px-1 mb-2 product-card-container" data-category="<?= $p['category_id'] ?>" data-name="<?= htmlspecialchars(strtolower($p['product_name'])) ?>" data-code="<?= htmlspecialchars(strtolower($p['product_code'])) ?>">
                         <div class="pos-product-card <?= $cardClass ?>" onclick="<?= $outOfStock ? 'void(0)' : 'addToCart(' . json_encode($p) . ')' ?>">
-                            <div class="mb-2 text-center rounded bg-white border d-flex align-items-center justify-content-center shadow-sm" style="height: 90px; overflow: hidden; background-color: #fff;">
+                            <div class="mb-2 text-center rounded d-flex align-items-center justify-content-center shadow-sm" style="height: 110px; overflow: hidden; background-color: #fafafa; border: 1px solid #f0f0f0;">
                                 <?php if (!empty($p['image']) && file_exists('../uploads/products/' . $p['image'])): ?>
                                     <img src="../uploads/products/<?= htmlspecialchars($p['image']) ?>" alt="product" style="width: 100%; height: 100%; object-fit: contain;">
                                 <?php else: ?>
@@ -193,7 +193,7 @@ if ($resProd) {
                             </div>
                             <div>
                                 <span class="badge bg-light text-dark border mb-2 small"><i class="fas fa-folder me-1 text-primary"></i><?= htmlspecialchars($p['category_name']) ?></span>
-                                <h6 class="fw-bold text-dark mb-1 text-truncate" title="<?= htmlspecialchars($p['product_name']) ?>"><?= htmlspecialchars($p['product_name']) ?></h6>
+                                <h6 class="fw-bold text-dark mb-1 text-truncate" style="font-size: 0.9rem;" title="<?= htmlspecialchars($p['product_name']) ?>"><?= htmlspecialchars($p['product_name']) ?></h6>
                             </div>
                             <div class="d-flex justify-content-between align-items-center mt-3 border-top pt-2">
                                 <span class="fw-bold text-success" style="font-size: 1.05rem;"><?= formatCurrency($p['sale_price']) ?></span>
