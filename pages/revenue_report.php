@@ -83,17 +83,24 @@ if ($dailyRes) {
 // --- POS Sales ---
 $salesList = [];
 $salesRevenueSum = 0;
-$salesRes = mysqli_query($conn, "SELECT s.*, u.fname AS staff_fname, u.lname AS staff_lname 
+$salesCostSum = 0;
+$salesRes = mysqli_query($conn, "SELECT s.*, u.fname AS staff_fname, u.lname AS staff_lname,
+                                       COALESCE(SUM(sd.quantity * p.cost_price), 0) AS total_cost
                                  FROM sales s 
                                  LEFT JOIN users u ON s.user_id = u.user_id 
+                                 LEFT JOIN sale_details sd ON s.sale_id = sd.sale_id
+                                 LEFT JOIN products p ON sd.product_id = p.product_id
                                  $whereClauseSales 
+                                 GROUP BY s.sale_id
                                  ORDER BY s.sale_id DESC");
 if ($salesRes) {
     while ($row = mysqli_fetch_assoc($salesRes)) {
         $salesList[] = $row;
         $salesRevenueSum += (float)$row['total_amount'];
+        $salesCostSum += (float)$row['total_cost'];
     }
 }
+$salesProfitSum = $salesRevenueSum - $salesCostSum;
 
 // --- Stock Imports ---
 $stockList = [];
@@ -626,6 +633,49 @@ for ($i = 5; $i >= 0; $i--) {
 
             <!-- CASE 4: POS SALES -->
             <?php elseif ($activeTab === 'pos'): ?>
+            <div class="row-tight p-3 no-print">
+                <div class="col-md-4">
+                    <div class="card stat-card-rev bg-gradient" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+                        <div class="d-flex justify-content-between align-items-center w-100">
+                            <div>
+                                <small class="text-white-50 font-weight-bold">ຍອດຂາຍສິນຄ້າລວມ</small>
+                                <h3><?= formatCurrency($salesRevenueSum) ?></h3>
+                            </div>
+                            <div class="stat-card-icon-right">
+                                <i class="fas fa-shopping-cart"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card stat-card-rev bg-gradient" style="background: linear-gradient(135deg, #f857a6 0%, #ff5858 100%);">
+                        <div class="d-flex justify-content-between align-items-center w-100">
+                            <div>
+                                <small class="text-white-50 font-weight-bold">ຕົ້ນທຶນສິນຄ້າລວມ</small>
+                                <h3><?= formatCurrency($salesCostSum) ?></h3>
+                            </div>
+                            <div class="stat-card-icon-right">
+                                <i class="fas fa-file-invoice-dollar"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <?php $isPOSProfit = ($salesProfitSum >= 0); ?>
+                    <div class="card stat-card-rev bg-gradient" style="background: <?= $isPOSProfit ? 'linear-gradient(135deg, #3a7bd5 0%, #3a6073 100%)' : 'linear-gradient(135deg, #870000 0%, #190000 100%)' ?>;">
+                        <div class="d-flex justify-content-between align-items-center w-100">
+                            <div>
+                                <small class="text-white-50 font-weight-bold">ກຳໄລຈາກການຂາຍ</small>
+                                <h3><?= formatCurrency($salesProfitSum) ?></h3>
+                            </div>
+                            <div class="stat-card-icon-right">
+                                <i class="fas fa-hand-holding-usd"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="p-3 border-bottom d-flex flex-wrap justify-content-between align-items-center gap-3 no-print">
                 <div class="text-muted small">
                     ລາຍການຂາຍສິນຄ້າ POS: <span class="fw-bold text-primary"><?= count($salesList) ?></span> ລາຍການ
@@ -641,34 +691,45 @@ for ($i = 5; $i >= 0; $i--) {
                         <tr>
                             <th class="text-center" style="width: 140px;">ວັນທີຂາຍ</th>
                             <th>ລະຫັດໃບບິນ</th>
+                            <th class="text-end" style="width: 150px;">ຍອດຂາຍ</th>
+                            <th class="text-end" style="width: 150px;">ຕົ້ນທຶນ</th>
+                            <th class="text-end" style="width: 150px;">ກຳໄລ</th>
                             <th class="text-center">ຊຳລະໂດຍ</th>
                             <th class="text-center">ພະນັກງານຂາຍ</th>
-                            <th class="text-end" style="width: 180px;">ຍອດເງິນຊຳລະ</th>
                         </tr>
                     </thead>
                     <tbody id="posTableBody">
                         <?php if (empty($salesList)): ?>
-                            <tr><td colspan="5" class="text-center py-5 text-muted"><i class="fas fa-search me-2"></i>ບໍ່ພົບຂໍ້ມູນການຂາຍ</td></tr>
+                            <tr><td colspan="7" class="text-center py-5 text-muted"><i class="fas fa-search me-2"></i>ບໍ່ພົບຂໍ້ມູນການຂາຍ</td></tr>
                         <?php else: ?>
                             <?php foreach ($salesList as $s): ?>
                                 <tr class="pos-row">
                                     <td class="text-center fw-bold"><?= date('d/m/Y H:i', strtotime($s['sale_date'])) ?></td>
                                     <td><span class="badge bg-light text-dark border fw-bold"><?= htmlspecialchars($s['sale_code']) ?></span></td>
+                                    <td class="text-end fw-bold text-success"><?= formatCurrency($s['total_amount']) ?></td>
+                                    <td class="text-end fw-bold text-danger"><?= formatCurrency($s['total_cost']) ?></td>
+                                    <?php 
+                                        $pft = (float)$s['total_amount'] - (float)$s['total_cost'];
+                                        $pftClass = ($pft >= 0) ? 'text-primary' : 'text-danger';
+                                    ?>
+                                    <td class="text-end fw-bold <?= $pftClass ?>"><?= formatCurrency($pft) ?></td>
                                     <td class="text-center"><?= htmlspecialchars($s['payment_method']) ?></td>
                                     <?php 
                                         $staffName = trim(($s['staff_fname'] ?? '') . ' ' . ($s['staff_lname'] ?? ''));
                                         if ($staffName === '') $staffName = 'Admin';
                                     ?>
                                     <td class="text-center"><?= htmlspecialchars($staffName) ?></td>
-                                    <td class="text-end fw-bold text-success"><?= formatCurrency($s['total_amount']) ?></td>
                                 </tr>
                             <?php endforeach; ?>
                         <?php endif; ?>
                     </tbody>
                     <tfoot>
                         <tr class="table-light fw-bold">
-                            <td colspan="4" class="text-end">ລວມຍອດຂາຍສິນຄ້າທັງໝົດ:</td>
-                            <td class="text-end text-success" style="font-size:1.1rem;"><?= formatCurrency($salesRevenueSum) ?></td>
+                            <td colspan="2" class="text-end">ລວມທັງໝົດ:</td>
+                            <td class="text-end text-success"><?= formatCurrency($salesRevenueSum) ?></td>
+                            <td class="text-end text-danger"><?= formatCurrency($salesCostSum) ?></td>
+                            <td class="text-end <?= ($salesProfitSum >= 0) ? 'text-primary' : 'text-danger' ?>"><?= formatCurrency($salesProfitSum) ?></td>
+                            <td colspan="2"></td>
                         </tr>
                     </tfoot>
                 </table>
