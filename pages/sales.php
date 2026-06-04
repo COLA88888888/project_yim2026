@@ -193,7 +193,7 @@ if ($resProd) {
                         $cardClass = $outOfStock ? 'out-of-stock' : '';
                     ?>
                     <div class="col-6 col-sm-4 col-md-4 px-1 mb-2 product-card-container" data-category="<?= $p['category_id'] ?>" data-name="<?= htmlspecialchars(strtolower($p['product_name'])) ?>" data-code="<?= htmlspecialchars(strtolower($p['product_code'])) ?>">
-                        <div class="pos-product-card <?= $cardClass ?>" onclick="<?= $outOfStock ? 'void(0)' : 'addToCart(' . json_encode($p) . ')' ?>">
+                        <div class="pos-product-card <?= $cardClass ?>" onclick="<?= $outOfStock ? 'void(0)' : 'addToCartById(' . $p['product_id'] . ')' ?>">
                             <div class="mb-2 text-center rounded d-flex align-items-center justify-content-center shadow-sm" style="height: 110px; overflow: hidden; background-color: #fafafa; border: 1px solid #f0f0f0;">
                                 <?php if (!empty($p['image']) && file_exists('../uploads/products/' . $p['image'])): ?>
                                     <img src="../uploads/products/<?= htmlspecialchars($p['image']) ?>" alt="product" style="width: 100%; height: 100%; object-fit: contain;">
@@ -290,6 +290,13 @@ let productsList = <?= json_encode($products) ?>;
 
 function formatCurrency(amount) {
     return new Intl.NumberFormat('lo-LA').format(amount) + ' ກີບ';
+}
+
+function addToCartById(productId) {
+    let product = productsList.find(p => p.product_id == productId);
+    if (product) {
+        addToCart(product);
+    }
 }
 
 function addToCart(product) {
