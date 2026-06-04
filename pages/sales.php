@@ -110,29 +110,73 @@ if ($resProd) {
             overflow-y: auto;
             padding: 10px;
         }
-        .cart-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #f1f3f5;
-            padding: 12px 6px;
-        }
         .qty-btn {
-            width: 26px;
-            height: 26px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
-            border: 1px solid #dee2e6;
-            background-color: #fff;
+            border: none;
+            background-color: #e9ecef;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            font-size: 0.9rem;
+            font-size: 1.05rem;
             cursor: pointer;
             transition: all 0.15s;
+            flex-shrink: 0;
         }
         .qty-btn:hover {
-            background-color: #e9ecef;
+            background-color: #007bff;
+            color: #fff;
+        }
+        .qty-btn.minus:hover {
+            background-color: #dc3545;
+            color: #fff;
+        }
+        .cart-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 6px;
+            border-bottom: 1px solid #f1f3f5;
+        }
+        .cart-item-img {
+            width: 46px;
+            height: 46px;
+            border-radius: 8px;
+            object-fit: cover;
+            background: #f8f9fa;
+            flex-shrink: 0;
+            border: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .cart-item-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        .qty-badge-overlay {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: #dc3545;
+            color: #fff;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            font-size: 11px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #fff;
+            z-index: 10;
+        }
+        .pos-product-card {
+            position: relative;
         }
         .print-receipt-container {
             font-family: 'Noto Sans Lao', 'Noto Sans Lao Looped', Arial, sans-serif;
@@ -327,6 +371,7 @@ function addToCart(product) {
             product_id: product.product_id,
             product_name: product.product_name,
             product_code: product.product_code,
+            image: product.image || '',
             sale_price: parseFloat(product.sale_price),
             quantity: 1,
             unit: product.unit,
@@ -366,11 +411,14 @@ function renderCart() {
     let container = $('#cartItems');
     container.empty();
 
+    // Reset all qty badges on product cards
+    $('.pos-product-card .qty-badge-overlay').remove();
+
     if (cart.length === 0) {
         container.append(`
-            <div class="text-center py-5 text-muted" id="emptyCartMessage">
-                <i class="fas fa-shopping-cart fa-3x mb-3 d-block text-light"></i>
-                ກະຕ່າສິນຄ້າວ່າງເປົ່າ
+            <div class="text-center py-5 text-muted">
+                <i class="fas fa-shopping-basket fa-3x mb-3 d-block" style="color:#e2e8f0;"></i>
+                <span style="font-size:0.9rem;">ກະຕ່າສິນຄ້າວ່າງເປົ່າ</span>
             </div>
         `);
         $('#cartTotalText').text('0 ກີບ');
@@ -380,22 +428,38 @@ function renderCart() {
 
     cart.forEach((item, index) => {
         let subtotal = item.sale_price * item.quantity;
+        let priceNum = new Intl.NumberFormat('lo-LA').format(item.sale_price);
+        let subtotalNum = new Intl.NumberFormat('lo-LA').format(subtotal);
+        let qtyNum = Number(item.quantity).toLocaleString('en-US');
+
+        // Build image cell
+        let imgHtml = '';
+        if (item.image) {
+            imgHtml = `<img src="../uploads/products/${item.image}" alt="" onerror="this.src=''; this.parentElement.innerHTML='<i class=\'fas fa-box\' style=\'color:#adb5bd;\'></i>';">`;
+        } else {
+            imgHtml = `<i class="fas fa-box" style="color:#adb5bd; font-size:1.3rem;"></i>`;
+        }
+
         container.append(`
             <div class="cart-item">
-                <div style="max-width: 60%;">
-                    <span class="d-block fw-bold text-dark" style="font-size: 0.9rem; line-height: 1.2;">${item.product_name}</span>
-                    <span class="text-muted small">${formatCurrency(item.sale_price)}</span>
+                <div class="cart-item-img">${imgHtml}</div>
+                <div style="flex:1; min-width:0;">
+                    <div class="fw-bold text-dark text-truncate" style="font-size:0.88rem; line-height:1.2;">${item.product_name}</div>
+                    <div class="text-muted" style="font-size:0.78rem; margin-top:2px;">${priceNum} × ${qtyNum} = <span class="fw-bold text-success">${subtotalNum} ກີບ</span></div>
                 </div>
-                <div class="d-flex align-items-center gap-2">
-                    <button class="qty-btn" onclick="updateQty(${index}, -1)">-</button>
-                    <span class="fw-bold px-1" style="font-size: 0.95rem; min-width: 20px; text-align: center;">${item.quantity}</span>
-                    <button class="qty-btn" onclick="updateQty(${index}, 1)">+</button>
-                </div>
-                <div class="text-end" style="min-width: 90px;">
-                    <span class="fw-bold text-dark">${formatCurrency(subtotal)}</span>
+                <div class="d-flex align-items-center gap-1 flex-shrink-0">
+                    <button class="qty-btn minus" onclick="updateQty(${index}, -1)" title="ຫຼຸດ"><i class="fas fa-minus" style="font-size:0.7rem;"></i></button>
+                    <span class="fw-bold text-dark" style="font-size:1rem; min-width:26px; text-align:center;">${item.quantity}</span>
+                    <button class="qty-btn" onclick="updateQty(${index}, 1)" title="ເພີ່ມ"><i class="fas fa-plus" style="font-size:0.7rem;"></i></button>
                 </div>
             </div>
         `);
+
+        // Add qty badge on matching product card
+        let cardEl = $(`.product-card-container[data-code="${item.product_code.toLowerCase()}"] .pos-product-card`);
+        if (cardEl.length) {
+            cardEl.append(`<div class="qty-badge-overlay">${item.quantity}</div>`);
+        }
     });
 
     let total = calculateTotal();
