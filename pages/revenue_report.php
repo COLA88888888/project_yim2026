@@ -961,6 +961,9 @@ $(document).ready(function() {
 <script>
 // ===== Chart Rendering (Chart.js) =====
 (function() {
+    // Set global default font family for Chart.js
+    Chart.defaults.font.family = "'Noto Sans Lao Looped', 'Noto Sans Lao', sans-serif";
+
     let labels = <?= json_encode($chartLabels, JSON_UNESCAPED_UNICODE) ?>;
     let revData = <?= json_encode($chartRevData) ?>;
     let expData = <?= json_encode($chartExpData) ?>;
@@ -996,7 +999,7 @@ $(document).ready(function() {
             responsive: true,
             maintainAspectRatio: true,
             plugins: {
-                legend: { position: 'bottom', labels: { font: { family: "'Noto Sans Lao', sans-serif", size: 12 } } },
+                legend: { position: 'bottom', labels: { font: { family: "'Noto Sans Lao Looped', 'Noto Sans Lao', sans-serif", size: 12 } } },
                 tooltip: {
                     callbacks: {
                         label: function(c) {
@@ -1008,7 +1011,7 @@ $(document).ready(function() {
             scales: {
                 x: {
                     grid: { display: false },
-                    ticks: { font: { family: "'Noto Sans Lao', sans-serif", size: 11 } }
+                    ticks: { font: { family: "'Noto Sans Lao Looped', 'Noto Sans Lao', sans-serif", size: 11 } }
                 },
                 y: {
                     beginAtZero: true,
@@ -1019,7 +1022,7 @@ $(document).ready(function() {
                                 ? (v/1000000).toFixed(1) + 'M' 
                                 : v >= 1000 ? (v/1000).toFixed(0) + 'K' : v;
                         },
-                        font: { size: 11 }
+                        font: { family: "'Noto Sans Lao Looped', 'Noto Sans Lao', sans-serif", size: 11 }
                     }
                 }
             }
