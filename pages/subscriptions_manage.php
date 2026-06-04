@@ -260,51 +260,71 @@ if ($pkgRes) {
 </div>
 
 <!-- Dynamic Printable Receipt Template (hidden in desktop view) -->
-<div id="printArea" style="display: none; font-family: 'Noto Sans Lao Looped', Arial, sans-serif; padding: 30px; color: #333;">
-    <div style="text-align: center; margin-bottom: 25px;">
-        <h2 style="margin: 0; font-weight: 700; color: #111;">ຍິມ & ຟິດເນັດ 2026</h2>
-        <p style="margin: 5px 0 0 0; font-size: 0.9rem; color: #666;">ໂທລະສັບ: 020 99999999 | ທີ່ຢູ່: ຍິມ ຟິດເນັດ, ນະຄອນຫຼວງວຽງຈັນ</p>
-        <h3 style="margin: 15px 0 0 0; text-transform: uppercase; border-bottom: 2px solid #000; padding-bottom: 10px;">ໃບບິນຮັບເງິນ / Receipt</h3>
-    </div>
-    
-    <table style="width: 100%; margin-bottom: 20px; font-size: 0.95rem; line-height: 1.6;">
-        <tr>
-            <td style="width: 50%;"><strong>ເລກທີບິນ:</strong> <span id="printReceiptId">#000</span></td>
-            <td style="width: 50%; text-align: right;"><strong>ວັນທີຊຳລະ:</strong> <span id="printReceiptDate">01/01/2026</span></td>
-        </tr>
-        <tr>
-            <td><strong>ລະຫັດສະມາຊິກ:</strong> <span id="printMemberCode">GYM0000</span></td>
-            <td style="text-align: right;"><strong>ຊື່ສະມາຊິກ:</strong> <span id="printMemberName">ຊື່ ນາມສະກຸນ</span></td>
-        </tr>
-    </table>
-    
-    <table style="width: 100%; border-collapse: collapse; margin-bottom: 35px; font-size: 0.95rem;">
-        <thead>
-            <tr style="border-top: 2px solid #000; border-bottom: 2px solid #000; background-color: #f9f9f9;">
-                <th style="padding: 10px; text-align: left;">ລາຍການແພັກເກດ</th>
-                <th style="padding: 10px; text-align: center;">ໄລຍະເວລາ</th>
-                <th style="padding: 10px; text-align: center;">ວັນເລີ່ມຕົ້ນ - ວັນໝົດອາຍຸ</th>
-                <th style="padding: 10px; text-align: right;">ລາຄາຈ່າຍຈິງ</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr style="border-bottom: 1px solid #ddd;">
-                <td style="padding: 12px 10px;" id="printPackageName">ແພັກເກດລາຍເດືອນ</td>
-                <td style="padding: 12px 10px; text-align: center;" id="printDuration">30 ມື້</td>
-                <td style="padding: 12px 10px; text-align: center;" id="printDates">01/01/2026 - 31/01/2026</td>
-                <td style="padding: 12px 10px; text-align: right; font-weight: bold;" id="printPrice">250,000 ກີບ</td>
-            </tr>
-        </tbody>
-    </table>
-
-    <div style="float: right; width: 300px; text-align: right; font-size: 1rem; line-height: 1.8;">
-        <p style="margin: 0;"><strong>ຊຳລະດ້ວຍ:</strong> <span id="printPaymentMethod">ເງິນສົດ</span></p>
-        <p style="margin: 10px 0 0 0; font-size: 1.2rem; border-top: 2px double #000; padding-top: 10px;"><strong>ຍອດລວມທັງໝົດ:</strong> <span id="printTotal" style="color: #28a745; font-weight: bold;">250,000 ກີບ</span></p>
-    </div>
-    
-    <div style="clear: both; margin-top: 80px; text-align: center; font-size: 0.85rem; color: #666; border-top: 1px dashed #ccc; padding-top: 15px;">
-        <p>ຂໍຂອບໃຈທີ່ໃຊ້ບໍລິການຍິມຂອງພວກເຮົາ! ຂໍໃຫ້ມີສຸຂະພາບທີ່ແຂງແຮງ.</p>
-        <p style="margin-top: 5px;">Thank you for your business! Stay healthy.</p>
+<div id="printArea" style="display: none;">
+    <div class="print-receipt-container">
+        <div class="receipt-header">
+            <h4 class="receipt-logo">GYM & FITNESS</h4>
+            <p class="receipt-address">ບ້ານ ໂພນສະຫວ່າງ, ມ. ຈັນທະບູລີ, ນະຄອນຫຼວງວຽງຈັນ</p>
+            <h5 class="receipt-title">ໃບບິນຮັບເງິນ / RECEIPT</h5>
+        </div>
+        <div class="receipt-divider"></div>
+        <div class="receipt-meta">
+            <table>
+                <tr>
+                    <td style="width: 45%;"><b>ເລກທີບິນ:</b></td>
+                    <td style="width: 55%; font-weight: bold;" id="printReceiptId">#00000</td>
+                </tr>
+                <tr>
+                    <td><b>ວັນທີຊຳລະ:</b></td>
+                    <td id="printReceiptDate">01/01/2026</td>
+                </tr>
+                <tr>
+                    <td><b>ລະຫັດສະມາຊິກ:</b></td>
+                    <td id="printMemberCode">GYM0000</td>
+                </tr>
+                <tr>
+                    <td><b>ຊື່ສະມາຊິກ:</b></td>
+                    <td id="printMemberName">ຊື່ ນາມສະກຸນ</td>
+                </tr>
+            </table>
+        </div>
+        <div class="receipt-divider"></div>
+        <table class="receipt-table">
+            <thead>
+                <tr>
+                    <th class="text-start">ລາຍການແພັກເກດ</th>
+                    <th class="text-end" style="width: 95px;">ລາຄາຈ່າຍຈິງ</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="text-start">
+                        <div id="printPackageName" style="font-weight: bold;">ແພັກເກດລາຍເດືອນ</div>
+                        <div style="font-size: 8.5px; color: #555; margin-top: 2px;">
+                            ໄລຍະເວລາ: <span id="printDuration">30 ມື້</span><br>
+                            (<span id="printDates">01/01/2026 - 31/01/2026</span>)
+                        </div>
+                    </td>
+                    <td class="text-end" style="font-weight: bold; vertical-align: top;" id="printPrice">250,000 ກີບ</td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="receipt-divider"></div>
+        <div class="receipt-total-section">
+            <div class="receipt-total-row">
+                <span>ຊຳລະດ້ວຍ:</span>
+                <span id="printPaymentMethod" style="font-weight: bold;">ເງິນສົດ</span>
+            </div>
+            <div class="receipt-total-row grand-total">
+                <span>ຍອດລວມທັງໝົດ:</span>
+                <span id="printTotal" style="color: #28a745; font-weight: bold;">250,000 ກີບ</span>
+            </div>
+        </div>
+        <div class="receipt-divider"></div>
+        <div class="receipt-footer">
+            <p>ຂໍຂອບໃຈທີ່ໃຊ້ບໍລິການຍິມຂອງພວກເຮົາ!<br>ຂໍໃຫ້ມີສຸຂະພາບທີ່ແຂງແຮງ.</p>
+            <p style="margin-top: 4px;">Thank you for your business! Stay healthy.</p>
+        </div>
     </div>
 </div>
 
@@ -641,16 +661,29 @@ function printReceipt(membershipId) {
 
                 // Print sequence
                 let printContent = document.getElementById('printArea').innerHTML;
-                let originalContent = document.body.innerHTML;
                 
                 // Open new window to print beautifully without sidebar/navbar interferance
-                let printWindow = window.open('', '_blank', 'height=600,width=800');
+                let printWindow = window.open('', '_blank', 'height=600,width=380');
                 printWindow.document.write('<html><head><title>Print Receipt</title>');
+                // Set base href to resolve local relative font files
+                printWindow.document.write('<base href="' + window.location.origin + window.location.pathname + '">');
+                printWindow.document.write('<link rel="stylesheet" href="../assets/css/local-font.css">');
                 printWindow.document.write('<style>');
-                printWindow.document.write('body { font-family: "Noto Sans Lao Looped", sans-serif; padding: 20px; }');
-                printWindow.document.write('table { width: 100%; border-collapse: collapse; }');
-                printWindow.document.write('th, td { border: 1px solid #ddd; padding: 8px; }');
-                printWindow.document.write('th { background-color: #f2f2f2; }');
+                printWindow.document.write('@media print { @page { size: 80mm auto; margin: 0; } body { margin: 0; padding: 4mm; } }');
+                printWindow.document.write('body { font-family: "Noto Sans Lao", "Noto Sans Lao Looped", Arial, sans-serif; width: 72mm; margin: 0 auto; color: #000; background: #fff; font-size: 11px; line-height: 1.3; }');
+                printWindow.document.write('.text-center { text-align: center; } .text-start { text-align: left; } .text-end { text-align: right; }');
+                printWindow.document.write('.receipt-header { text-align: center; margin-bottom: 8px; }');
+                printWindow.document.write('.receipt-logo { font-size: 16px; font-weight: bold; margin: 0 0 2px 0; color: #111; }');
+                printWindow.document.write('.receipt-address { font-size: 9px; color: #666; margin: 0 0 4px 0; }');
+                printWindow.document.write('.receipt-title { font-size: 12px; font-weight: bold; margin: 6px 0; text-transform: uppercase; color: #28a745; }');
+                printWindow.document.write('.receipt-divider { border-top: 1px dashed #000; margin: 8px 0; }');
+                printWindow.document.write('.receipt-meta { font-size: 9.5px; margin-bottom: 6px; } .receipt-meta table { width: 100%; } .receipt-meta td { padding: 2px 0; }');
+                printWindow.document.write('.receipt-table { width: 100%; border-collapse: collapse; margin: 4px 0; }');
+                printWindow.document.write('.receipt-table th { font-weight: bold; border-bottom: 1px solid #000; padding: 4px 0; font-size: 10px; }');
+                printWindow.document.write('.receipt-table td { padding: 5px 0; font-size: 10.5px; vertical-align: top; }');
+                printWindow.document.write('.receipt-total-section { font-size: 11px; margin: 6px 0; } .receipt-total-row { display: flex; justify-content: space-between; padding: 2px 0; }');
+                printWindow.document.write('.receipt-total-row.grand-total { font-size: 13px; font-weight: bold; margin-top: 4px; border-top: 1px dashed #000; padding-top: 4px; }');
+                printWindow.document.write('.receipt-footer { text-align: center; margin-top: 12px; font-size: 9.5px; font-weight: bold; }');
                 printWindow.document.write('</style>');
                 printWindow.document.write('</head><body>');
                 printWindow.document.write(printContent);

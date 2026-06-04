@@ -41,18 +41,31 @@ if ($result) {
             background-color: #f4f6f9;
         }
         .print-receipt-container {
-            font-family: 'Noto Sans Lao', Arial, sans-serif;
+            font-family: 'Noto Sans Lao', 'Noto Sans Lao Looped', Arial, sans-serif;
             color: #000;
-            padding: 10px;
-            font-size: 0.85rem;
+            padding: 15px;
+            font-size: 11px;
+            max-width: 340px;
+            margin: 0 auto;
+            background: #fff;
+            border: 1px dashed #ccc;
+            border-radius: 4px;
+            line-height: 1.3;
         }
-        .print-receipt-container table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        .print-receipt-container th, .print-receipt-container td {
-            padding: 4px 0;
-        }
+        .receipt-header { text-align: center; margin-bottom: 8px; }
+        .receipt-logo { font-size: 16px; font-weight: bold; margin: 0 0 2px 0; color: #111; }
+        .receipt-address { font-size: 9px; color: #666; margin: 0 0 4px 0; }
+        .receipt-title { font-size: 12px; font-weight: bold; margin: 6px 0; text-transform: uppercase; color: #28a745; }
+        .receipt-divider { border-top: 1px dashed #000; margin: 8px 0; }
+        .receipt-meta { font-size: 9.5px; margin-bottom: 6px; }
+        .receipt-meta div { margin-bottom: 3px; }
+        .receipt-table { width: 100%; border-collapse: collapse; margin: 4px 0; }
+        .receipt-table th { font-weight: bold; border-bottom: 1px solid #000; padding: 4px 0; font-size: 10px; }
+        .receipt-table td { padding: 5px 0; font-size: 10.5px; vertical-align: top; }
+        .receipt-total-section { font-size: 11px; margin: 6px 0; }
+        .receipt-total-row { display: flex; justify-content: space-between; padding: 2px 0; }
+        .receipt-total-row.grand-total { font-size: 13px; font-weight: bold; margin-top: 4px; border-top: 1px dashed #000; padding-top: 4px; }
+        .receipt-footer { text-align: center; margin-top: 12px; font-size: 9.5px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -193,22 +206,25 @@ function viewReceipt(saleId) {
                 let datetime = new Date(s.sale_date).toLocaleString('lo-LA');
                 
                 let html = `
-                    <div class="print-receipt-container text-center">
-                        <h4 class="fw-bold mb-1">GYM & FITNESS</h4>
-                        <p class="text-muted small mb-3">ບ້ານ ໂພນສະຫວ່າງ, ມ. ຈັນທະບູລີ, ນະຄອນຫຼວງວຽງຈັນ</p>
-                        <div style="border-top: 1px dashed #333; margin: 8px 0;"></div>
-                        <div class="text-start small mb-2">
+                    <div class="print-receipt-container">
+                        <div class="receipt-header">
+                            <h4 class="receipt-logo">GYM & FITNESS</h4>
+                            <p class="receipt-address">ບ້ານ ໂພນສະຫວ່າງ, ມ. ຈັນທະບູລີ, ນະຄອນຫຼວງວຽງຈັນ</p>
+                            <h5 class="receipt-title">ໃບບິນຮັບເງິນ / RECEIPT</h5>
+                        </div>
+                        <div class="receipt-divider"></div>
+                        <div class="receipt-meta">
                             <div><b>ເລກບິນ:</b> ${s.sale_code}</div>
                             <div><b>ວັນທີ:</b> ${datetime}</div>
                             <div><b>ພະນັກງານຂາຍ:</b> ${s.staff_fname} ${s.staff_lname}</div>
                         </div>
-                        <div style="border-top: 1px dashed #333; margin: 8px 0;"></div>
-                        <table>
+                        <div class="receipt-divider"></div>
+                        <table class="receipt-table">
                             <thead>
-                                <tr style="border-bottom: 1px dotted #333;">
+                                <tr>
                                     <th class="text-start">ລາຍການ</th>
-                                    <th class="text-center" style="width: 50px;">ຈຳນວນ</th>
-                                    <th class="text-end" style="width: 80px;">ລວມ</th>
+                                    <th class="text-center" style="width: 60px;">ຈຳນວນ</th>
+                                    <th class="text-end" style="width: 90px;">ລວມ</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -216,11 +232,12 @@ function viewReceipt(saleId) {
                 
                 items.forEach(item => {
                     let itemTotal = item.price * item.quantity;
+                    let qtyDisplay = Number(item.quantity).toLocaleString('en-US');
                     html += `
                         <tr>
                             <td class="text-start">${item.product_name}</td>
-                            <td class="text-center">${item.quantity}</td>
-                            <td class="text-end">${formatCurrency(itemTotal)}</td>
+                            <td class="text-center">${qtyDisplay}</td>
+                            <td class="text-end">${new Intl.NumberFormat('lo-LA').format(itemTotal)}</td>
                         </tr>
                     `;
                 });
@@ -228,16 +245,19 @@ function viewReceipt(saleId) {
                 html += `
                             </tbody>
                         </table>
-                        <div style="border-top: 1px dashed #333; margin: 8px 0;"></div>
-                        <div class="d-flex justify-content-between align-items-center fw-bold h6">
-                            <span>ລວມທັງໝົດ:</span>
-                            <span>${formatCurrency(s.total_amount)}</span>
+                        <div class="receipt-divider"></div>
+                        <div class="receipt-total-section">
+                            <div class="receipt-total-row">
+                                <span>ຊຳລະໂດຍ:</span>
+                                <span class="fw-bold">${s.payment_method}</span>
+                            </div>
+                            <div class="receipt-total-row grand-total">
+                                <span>ຍອດລວມທັງໝົດ:</span>
+                                <span class="text-success">${formatCurrency(s.total_amount)}</span>
+                            </div>
                         </div>
-                        <div class="text-start small mt-2">
-                            <div><b>ຊຳລະໂດຍ:</b> ${s.payment_method}</div>
-                        </div>
-                        <div style="border-top: 1px dashed #333; margin: 8px 0;"></div>
-                        <p class="text-center font-weight-bold small mt-3">*** ຂໍຂອບໃຈທີ່ໃຊ້ບໍລິການ ***</p>
+                        <div class="receipt-divider"></div>
+                        <p class="receipt-footer">*** ຂໍຂອບໃຈທີ່ໃຊ້ບໍລິການ ***</p>
                     </div>
                 `;
                 
@@ -254,19 +274,36 @@ function viewReceipt(saleId) {
 function printReceipt() {
     let printContents = document.getElementById('receiptPrintArea').innerHTML;
     
-    let printWindow = window.open('', '_blank', 'width=350,height=600');
+    let printWindow = window.open('', '_blank', 'width=380,height=600');
     printWindow.document.write('<html><head><title>ພິມໃບບິນຮັບເງິນ</title>');
-    printWindow.document.write('<link rel="stylesheet" href="../bootstrap/css/bootstrap.min.css">');
+    // Set base href to resolve local relative font files
+    printWindow.document.write('<base href="' + window.location.origin + window.location.pathname + '">');
+    printWindow.document.write('<link rel="stylesheet" href="../assets/css/local-font.css">');
     printWindow.document.write('<style>');
-    printWindow.document.write('body { font-family: "Noto Sans Lao", sans-serif; padding: 20px; text-align: center; color: #000; }');
-    printWindow.document.write('table { width: 100%; } th, td { padding: 4px 0; font-size: 12px; }');
+    printWindow.document.write('@media print { @page { size: 80mm auto; margin: 0; } body { margin: 0; padding: 4mm; } }');
+    printWindow.document.write('body { font-family: "Noto Sans Lao", "Noto Sans Lao Looped", Arial, sans-serif; width: 72mm; margin: 0 auto; color: #000; background: #fff; font-size: 11px; line-height: 1.3; }');
+    printWindow.document.write('.text-center { text-align: center; } .text-start { text-align: left; } .text-end { text-align: right; }');
+    printWindow.document.write('.receipt-header { text-align: center; margin-bottom: 8px; }');
+    printWindow.document.write('.receipt-logo { font-size: 16px; font-weight: bold; margin: 0 0 2px 0; color: #111; }');
+    printWindow.document.write('.receipt-address { font-size: 9px; color: #666; margin: 0 0 4px 0; }');
+    printWindow.document.write('.receipt-title { font-size: 12px; font-weight: bold; margin: 6px 0; text-transform: uppercase; color: #28a745; }');
+    printWindow.document.write('.receipt-divider { border-top: 1px dashed #000; margin: 8px 0; }');
+    printWindow.document.write('.receipt-meta { font-size: 9.5px; margin-bottom: 6px; } .receipt-meta div { margin-bottom: 3px; }');
+    printWindow.document.write('.receipt-table { width: 100%; border-collapse: collapse; margin: 4px 0; }');
+    printWindow.document.write('.receipt-table th { font-weight: bold; border-bottom: 1px solid #000; padding: 4px 0; font-size: 10px; }');
+    printWindow.document.write('.receipt-table td { padding: 5px 0; font-size: 10.5px; vertical-align: top; }');
+    printWindow.document.write('.receipt-total-section { font-size: 11px; margin: 6px 0; } .receipt-total-row { display: flex; justify-content: space-between; padding: 2px 0; }');
+    printWindow.document.write('.receipt-total-row.grand-total { font-size: 13px; font-weight: bold; margin-top: 4px; border-top: 1px dashed #000; padding-top: 4px; }');
+    printWindow.document.write('.receipt-footer { text-align: center; margin-top: 12px; font-size: 9.5px; font-weight: bold; }');
     printWindow.document.write('</style></head><body>');
     printWindow.document.write(printContents);
     printWindow.document.write('</body></html>');
     
     printWindow.document.close();
-    printWindow.focus();
+    
+    // Wait for fonts to load
     setTimeout(function() {
+        printWindow.focus();
         printWindow.print();
         printWindow.close();
     }, 500);
