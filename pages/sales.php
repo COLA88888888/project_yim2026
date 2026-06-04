@@ -161,9 +161,15 @@ if ($resProd) {
                     <h4 class="fw-bold text-dark mb-1"><i class="fas fa-cash-register text-primary me-2"></i> ຂາຍສິນຄ້າ (POS)</h4>
                     <p class="text-muted small mb-0">ເລືອກສິນຄ້າເພື່ອອອກບິນຂາຍ ແລະ ຕັດສະຕັອກສິນຄ້າອັດຕະໂນມັດ</p>
                 </div>
-                <div class="search-box" style="width: 100%; max-width: 320px;">
-                    <i class="fas fa-search"></i>
-                    <input type="text" id="searchInput" class="form-control" placeholder="ຄົ້ນຫາສິນຄ້າ...">
+                <div class="d-flex gap-2 flex-wrap">
+                    <div class="search-box" style="width: 180px;">
+                        <i class="fas fa-barcode"></i>
+                        <input type="text" id="barcodeInput" class="form-control text-primary" style="font-weight: bold; border-color: #007bff;" placeholder="ຍິງບາໂຄ້ດຂາຍ..." autofocus>
+                    </div>
+                    <div class="search-box" style="width: 200px;">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchInput" class="form-control" placeholder="ຄົ້ນຫາສິນຄ້າ...">
+                    </div>
                 </div>
             </div>
 
@@ -276,6 +282,7 @@ if ($resProd) {
 
 <script>
 let cart = [];
+let productsList = <?= json_encode($products) ?>;
 
 function formatCurrency(amount) {
     return new Intl.NumberFormat('lo-LA').format(amount) + ' ₭';
@@ -518,6 +525,27 @@ function printReceipt() {
 }
 
 $(document).ready(function() {
+    // Barcode scanning input handler
+    $('#barcodeInput').on('keypress', function(e) {
+        if (e.which === 13) { // Enter key
+            e.preventDefault();
+            let barcode = $(this).val().trim();
+            if (barcode === '') return;
+
+            let product = productsList.find(p => p.product_code == barcode);
+            if (product) {
+                addToCart(product);
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'ບໍ່ພົບສິນຄ້າ',
+                    text: 'ບໍ່ພົບລະຫັດບາໂຄ້ດນີ້ໃນລະບົບສິນຄ້າ: ' + barcode
+                });
+            }
+            $(this).val('').focus();
+        }
+    });
+
     // Category tabs filter
     $('.pos-category-tab').on('click', function() {
         $('.pos-category-tab').removeClass('active');
