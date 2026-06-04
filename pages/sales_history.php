@@ -219,7 +219,7 @@ function viewReceipt(saleId) {
                     html += `
                         <tr>
                             <td class="text-start">${item.product_name}</td>
-                            <td class="text-center">${item.quantity} ${item.unit}</td>
+                            <td class="text-center">${item.quantity}</td>
                             <td class="text-end">${formatCurrency(itemTotal)}</td>
                         </tr>
                     `;

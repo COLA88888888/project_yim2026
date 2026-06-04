@@ -305,7 +305,7 @@ function renderCart() {
                 <td><code>${item.product_code}</code></td>
                 <td class="fw-bold text-dark">${item.product_name}</td>
                 <td class="text-end">${formatCurrency(item.cost_price)}</td>
-                <td class="text-center"><span class="badge bg-light text-dark border">${item.quantity} ${item.unit}</span></td>
+                <td class="text-center"><span class="badge bg-light text-dark border">${item.quantity}</span></td>
                 <td class="text-end fw-bold">${formatCurrency(subtotal)}</td>
                 <td class="text-center">
                     <button class="btn btn-link text-danger p-0 remove-item-btn" data-index="${index}" title="ລົບອອກ">

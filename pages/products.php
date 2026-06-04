@@ -103,14 +103,13 @@ if ($resCat) {
                             <th class="text-end">ຕົ້ນທຶນ</th>
                             <th class="text-end">ລາຄາຂາຍ</th>
                             <th class="text-center">ຈຳນວນໃນສາງ</th>
-                            <th>ໜ່ວຍ</th>
                             <th class="text-center" style="width: 150px;">ຈັດການ</th>
                         </tr>
                     </thead>
                     <tbody id="productTableBody">
                         <?php if (empty($products)): ?>
                             <tr>
-                                <td colspan="9" class="text-center py-5 text-muted">
+                                <td colspan="8" class="text-center py-5 text-muted">
                                     <i class="fas fa-boxes fa-2x mb-3 d-block"></i>
                                     ຍັງບໍ່ມີຂໍ້ມູນສິນຄ້າ
                                 </td>
@@ -139,7 +138,6 @@ if ($resCat) {
                                             <span class="badge bg-success text-white"><?= $p['quantity'] ?></span>
                                         <?php endif; ?>
                                     </td>
-                                    <td><?= htmlspecialchars($p['unit']) ?></td>
                                     <td class="text-center">
                                         <div class="d-flex justify-content-center gap-1">
                                             <button class="btn btn-warning btn-sm btn-action" onclick="openEditModal(<?= $p['product_id'] ?>)" title="ແກ້ໄຂ">
@@ -222,10 +220,7 @@ if ($resCat) {
                         </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">ໜ່ວຍນັບ:</label>
-                        <input type="text" name="unit" id="unit" class="form-control" placeholder="ກະລຸນາປ້ອນໜ່ວຍນັບ..." >
-                    </div>
+                    <input type="hidden" name="unit" id="unit" value="">
                 </div>
                 <div class="modal-footer bg-light" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
                     <button type="submit" class="btn btn-success fw-bold px-4" id="saveBtn"><i class="fas fa-save me-1"></i> ບັນທຶກ</button>

@@ -200,7 +200,7 @@ if ($resProd) {
                                 <?php if ($outOfStock): ?>
                                     <span class="badge bg-danger text-white">ໝົດສະຕັອກ</span>
                                 <?php else: ?>
-                                    <span class="badge bg-light text-dark border">ເຫຼືອ: <?= $p['quantity'] ?> <?= htmlspecialchars($p['unit']) ?></span>
+                                    <span class="badge bg-light text-dark border">ເຫຼືອ: <?= $p['quantity'] ?></span>
                                 <?php endif; ?>
                             </div>
                         </div>
@@ -357,7 +357,7 @@ function renderCart() {
             <div class="cart-item">
                 <div style="max-width: 60%;">
                     <span class="d-block fw-bold text-dark" style="font-size: 0.9rem; line-height: 1.2;">${item.product_name}</span>
-                    <span class="text-muted small">${formatCurrency(item.sale_price)} / ${item.unit}</span>
+                    <span class="text-muted small">${formatCurrency(item.sale_price)}</span>
                 </div>
                 <div class="d-flex align-items-center gap-2">
                     <button class="qty-btn" onclick="updateQty(${index}, -1)">-</button>
@@ -460,7 +460,7 @@ function loadReceipt(saleId) {
                     html += `
                         <tr>
                             <td class="text-start">${item.product_name}</td>
-                            <td class="text-center">${item.quantity} ${item.unit}</td>
+                            <td class="text-center">${item.quantity}</td>
                             <td class="text-end">${formatCurrency(itemTotal)}</td>
                         </tr>
                     `;
