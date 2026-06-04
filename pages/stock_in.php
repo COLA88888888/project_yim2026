@@ -86,9 +86,9 @@ if ($result) {
                     </select>
                 </div>
 
-                <div class="mb-3" id="productNameDiv" style="display: none;">
+                <div class="mb-3" id="productNameDiv">
                     <label class="form-label fw-bold">ຊື່ສິນຄ້າ</label>
-                    <input type="text" id="selectedProductName" class="form-control bg-light" readonly style="font-weight: bold; font-size: 1.1rem; border-color: #28a745;">
+                    <input type="text" id="selectedProductName" class="form-control bg-light" readonly placeholder="ລໍຖ້າຍິງບາໂຄ້ດ..." style="font-weight: bold; font-size: 1.1rem; border-color: #28a745;">
                 </div>
 
                 <div class="row">
@@ -185,12 +185,10 @@ $(document).ready(function() {
             $('#itemCost').val(cost).trigger('input');
             $('#itemQty').val(1);
             $('#selectedProductName').val(opt.data('name'));
-            $('#productNameDiv').slideDown(200);
         } else {
             $('#itemCost').val('');
             $('#itemQty').val(1);
             $('#selectedProductName').val('');
-            $('#productNameDiv').slideUp(200);
         }
     });
 
