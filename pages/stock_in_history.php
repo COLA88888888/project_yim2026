@@ -113,7 +113,7 @@ if ($result) {
                 </div>
                 <div class="search-box flex-grow-1" style="max-width: 400px;">
                     <i class="fas fa-search"></i>
-                    <input type="text" id="searchInput" class="form-control" placeholder="ຄົ້ນຫາໃບບິນ (ເລກບິນ, ຜູ້ສະໜອງ ຫຼື ຜູ້ບັນທຶກ)...">
+                    <input type="text" id="searchInput" class="form-control" placeholder="ຄົ້ນຫາໃບບິນ (ເລກບິນ ຫຼື ຜູ້ບັນທຶກ)...">
                 </div>
             </div>
 
@@ -124,7 +124,6 @@ if ($result) {
                         <tr>
                             <th>ເລກໃບບິນ</th>
                             <th>ວັນທີນຳເຂົ້າ</th>
-                            <th>ຜູ້ສະໜອງສິນຄ້າ (Supplier)</th>
                             <th class="text-end">ຍອດລວມຕົ້ນທຶນ</th>
                             <th>ຜູ້ບັນທຶກ</th>
                             <th class="text-center" style="width: 100px;">ລາຍລະອຽດ</th>
@@ -133,7 +132,7 @@ if ($result) {
                     <tbody id="importsTableBody">
                         <?php if (empty($imports)): ?>
                             <tr>
-                                <td colspan="6" class="text-center py-5 text-muted">
+                                <td colspan="5" class="text-center py-5 text-muted">
                                     <i class="fas fa-file-invoice fa-2x mb-3 d-block"></i>
                                     ຍັງບໍ່ມີປະຫວັດການນຳເຂົ້າສິນຄ້າ
                                 </td>
@@ -146,7 +145,6 @@ if ($result) {
                                 <tr class="import-row">
                                     <td class="fw-bold"><code class="text-primary"><?= htmlspecialchars($formattedId) ?></code></td>
                                     <td class="text-muted small"><?= date('d/m/Y H:i', strtotime($i['stock_in_date'])) ?></td>
-                                    <td class="fw-bold text-dark"><?= htmlspecialchars($i['supplier'] ?: 'ບໍ່ລະບຸ') ?></td>
                                     <td class="text-end fw-bold text-success"><?= formatCurrency($i['total_amount']) ?></td>
                                     <td><?= htmlspecialchars($i['staff_fname'] . ' ' . $i['staff_lname']) ?></td>
                                     <td class="text-center">
@@ -235,7 +233,6 @@ function viewImportReceipt(stockInId) {
                         <div class="text-start small mb-2">
                             <div><b>ເລກໃບບິນ:</b> ${formattedId}</div>
                             <div><b>ວັນທີ:</b> ${datetime}</div>
-                            <div><b>ຜູ້ສະໜອງ:</b> ${s.supplier || 'ບໍ່ລະບຸ'}</div>
                             <div><b>ຜູ້ບັນທຶກ:</b> ${s.staff_fname} ${s.staff_lname}</div>
                         </div>
                         <div style="border-top: 1px dashed #333; margin: 8px 0;"></div>

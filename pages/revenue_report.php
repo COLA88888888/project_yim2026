@@ -743,7 +743,7 @@ for ($i = 5; $i >= 0; $i--) {
                 </div>
                 <div class="search-box flex-grow-1" style="max-width: 400px;">
                     <i class="fas fa-search"></i>
-                    <input type="text" id="stockSearchInput" class="form-control" placeholder="ຄົ້ນຫາຜູ້ສະໜອງ, ພະນັກງານ...">
+                    <input type="text" id="stockSearchInput" class="form-control" placeholder="ຄົ້ນຫາລະຫັດ, ພະນັກງານ...">
                 </div>
             </div>
             <div class="table-responsive">
@@ -752,20 +752,18 @@ for ($i = 5; $i >= 0; $i--) {
                         <tr>
                             <th class="text-center" style="width: 140px;">ວັນທີນຳເຂົ້າ</th>
                             <th>ລະຫັດນຳເຂົ້າ</th>
-                            <th>ຜູ້ສະໜອງສິນຄ້າ (Supplier)</th>
                             <th class="text-center">ພະນັກງານບັນທຶກ</th>
                             <th class="text-end" style="width: 180px;">ລວມຄ່າໃຊ້ຈ່າຍ</th>
                         </tr>
                     </thead>
                     <tbody id="stockTableBody">
                         <?php if (empty($stockList)): ?>
-                            <tr><td colspan="5" class="text-center py-5 text-muted"><i class="fas fa-search me-2"></i>ບໍ່ພົບຂໍ້ມູນການນຳເຂົ້າ</td></tr>
+                            <tr><td colspan="4" class="text-center py-5 text-muted"><i class="fas fa-search me-2"></i>ບໍ່ພົບຂໍ້ມູນການນຳເຂົ້າ</td></tr>
                         <?php else: ?>
                             <?php foreach ($stockList as $st): ?>
                                 <tr class="stock-row">
                                     <td class="text-center fw-bold"><?= date('d/m/Y H:i', strtotime($st['stock_in_date'])) ?></td>
                                     <td><span class="badge bg-light text-secondary border fw-bold">#<?= str_pad($st['stock_in_id'], 5, '0', STR_PAD_LEFT) ?></span></td>
-                                    <td class="fw-bold text-dark"><?= htmlspecialchars($st['supplier'] ?: 'ບໍ່ລະບຸ') ?></td>
                                     <?php 
                                         $staffName = trim(($st['staff_fname'] ?? '') . ' ' . ($st['staff_lname'] ?? ''));
                                         if ($staffName === '') $staffName = 'Admin';
@@ -778,7 +776,7 @@ for ($i = 5; $i >= 0; $i--) {
                     </tbody>
                     <tfoot>
                         <tr class="table-light fw-bold">
-                            <td colspan="4" class="text-end">ລວມຕົ້ນທຶນນຳເຂົ້າສິນຄ້າທັງໝົດ:</td>
+                            <td colspan="3" class="text-end">ລວມຕົ້ນທຶນນຳເຂົ້າສິນຄ້າທັງໝົດ:</td>
                             <td class="text-end text-danger" style="font-size:1.1rem;"><?= formatCurrency($stockExpenseSum) ?></td>
                         </tr>
                     </tfoot>
