@@ -33,7 +33,51 @@ function clean($conn, $value)
     return trim($value ?? '');
 }
 
-// 1. ເພີ່ມໃບບິນນຳເຂົ້າສິນຄ້າໃໝ່ (Create Stock In)
+// 1. ດຶງລາຍລະອຽດໃບບິນນຳເຂົ້າ (Get Stock In Invoice Details)
+if ($action === 'get') {
+    $stockInId = clean($conn, $_GET['stock_in_id'] ?? '');
+    
+    if ($stockInId === '') {
+        jsonErr('ລະຫັດໃບບິນນຳເຂົ້າບໍ່ຖືກຕ້ອງ');
+    }
+    
+    // ດຶງໃບບິນຫຼັກ
+    $stmtStock = mysqli_prepare($conn, '
+        SELECT s.*, u.fname as staff_fname, u.lname as staff_lname 
+        FROM stock_in s
+        LEFT JOIN users u ON s.user_id = u.user_id 
+        WHERE s.stock_in_id = ? LIMIT 1
+    ');
+    mysqli_stmt_bind_param($stmtStock, 'i', $stockInId);
+    mysqli_stmt_execute($stmtStock);
+    $resStock = mysqli_stmt_get_result($stmtStock);
+    $stock = mysqli_fetch_assoc($resStock);
+    mysqli_stmt_close($stmtStock);
+    
+    if (!$stock) {
+        jsonErr('ບໍ່ພົບຂໍ້ມູນໃບບິນນຳເຂົ້າ', 404);
+    }
+    
+    // ດຶງລາຍການສິນຄ້າໃນໃບບິນ
+    $items = [];
+    $stmtItems = mysqli_prepare($conn, '
+        SELECT sd.*, p.product_name, p.product_code 
+        FROM stock_in_details sd
+        LEFT JOIN products p ON sd.product_id = p.product_id 
+        WHERE sd.stock_in_id = ?
+    ');
+    mysqli_stmt_bind_param($stmtItems, 'i', $stockInId);
+    mysqli_stmt_execute($stmtItems);
+    $resItems = mysqli_stmt_get_result($stmtItems);
+    while ($row = mysqli_fetch_assoc($resItems)) {
+        $items[] = $row;
+    }
+    mysqli_stmt_close($stmtItems);
+    
+    jsonOk('OK', ['stock' => $stock, 'items' => $items]);
+}
+
+// 2. ເພີ່ມໃບບິນນຳເຂົ້າສິນຄ້າໃໝ່ (Create Stock In)
 if ($action === 'create') {
     $supplier = clean($conn, $_POST['supplier'] ?? '');
     $totalAmount = clean($conn, $_POST['total_amount'] ?? '0');

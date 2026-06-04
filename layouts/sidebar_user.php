@@ -124,6 +124,12 @@
             <p>ນຳເຂົ້າສິນຄ້າ</p>
           </a>
         </li>
+        <li class="nav-item">
+          <a href="pages/stock_in_history.php" target="frame" class="nav-link">
+            <i class="nav-icon fas fa-file-invoice text-success"></i>
+            <p>ປະຫວັດການນຳເຂົ້າ</p>
+          </a>
+        </li>
         <?php endif; ?>
 
         <!-- ເມນູ: ຈັດການຂໍ້ມູນສິນຄ້າ -->

@@ -115,6 +115,14 @@
           </a>
         </li>
 
+        <!-- ເມນູ: ປະຫວັດການນຳເຂົ້າ -->
+        <li class="nav-item">
+          <a href="pages/stock_in_history.php" target="frame" class="nav-link">
+            <i class="nav-icon fas fa-file-invoice text-success"></i>
+            <p>ປະຫວັດການນຳເຂົ້າ</p>
+          </a>
+        </li>
+
         <!-- ເມນູ: ຈັດການຂໍ້ມູນສິນຄ້າ -->
         <li class="nav-item">
           <a href="pages/products.php" target="frame" class="nav-link">
