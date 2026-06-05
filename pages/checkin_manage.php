@@ -694,6 +694,20 @@ $(document).ready(function() {
     // Keep input focused automatically
     $('#searchVal').focus();
 
+    // Auto-submit form when typing stops (useful for barcode scanner)
+    let searchTimeout = null;
+    $('#searchVal').on('input', function() {
+        if (searchTimeout) {
+            clearTimeout(searchTimeout);
+        }
+        let val = $(this).val().trim();
+        if (val.length >= 4) {
+            searchTimeout = setTimeout(function() {
+                $('#verifyForm').submit();
+            }, 300);
+        }
+    });
+
     $(document).on('click', function(e) {
         if (!$(e.target).is('input, select, textarea, button, a, option, .swal2-confirm, .swal2-cancel') && 
             !Swal.isVisible() && 
