@@ -83,9 +83,11 @@ if ($result) {
             <p class="text-muted small mb-0">ກຳນົດ ແລະ ບໍລິຫານປະເພດລາຍຈ່າຍພາຍໃນຍິມ (ເຊັ່ນ ຄ່ານ້ຳ/ຄ່າໄຟ, ຄ່າເຊົ່າ, ເງິນເດືອນພະນັກງານ)</p>
         </div>
         <div>
+            <?php if (hasPermission('expenses', 'add')): ?>
             <button class="btn btn-danger rounded-pill px-4 shadow-sm" onclick="openCreateModal()">
                 <i class="fas fa-plus me-1"></i> ເພີ່ມປະເພດລາຍຈ່າຍໃໝ່
             </button>
+            <?php endif; ?>
         </div>
     </div>
 
@@ -113,13 +115,15 @@ if ($result) {
                             <th style="width: 150px;">ລະຫັດປະເພດລາຍຈ່າຍ</th>
                             <th>ຊື່ປະເພດລາຍຈ່າຍ</th>
                             <th style="width: 250px;">ວັນທີບັນທຶກ</th>
+                            <?php if (hasPermission('expenses', 'edit') || hasPermission('expenses', 'delete')): ?>
                             <th class="text-center" style="width: 150px;">ຈັດການ</th>
+                            <?php endif; ?>
                         </tr>
                     </thead>
                     <tbody id="categoryTableBody">
                         <?php if (empty($categories)): ?>
                             <tr>
-                                <td colspan="4" class="text-center py-5 text-muted">
+                                <td colspan="<?= (hasPermission('expenses', 'edit') || hasPermission('expenses', 'delete')) ? 4 : 3 ?>" class="text-center py-5 text-muted">
                                     <i class="fas fa-folder-open fa-2x mb-3 d-block"></i>
                                     ຍັງບໍ່ມີຂໍ້ມູນປະເພດລາຍຈ່າຍ
                                 </td>
@@ -130,16 +134,22 @@ if ($result) {
                                     <td><span class="badge bg-info text-white"><?= htmlspecialchars($c['category_code']) ?></span></td>
                                     <td class="fw-bold text-dark"><?= htmlspecialchars($c['category_name']) ?></td>
                                     <td class="text-muted small"><?= date('d/m/Y H:i', strtotime($c['created_at'])) ?></td>
+                                    <?php if (hasPermission('expenses', 'edit') || hasPermission('expenses', 'delete')): ?>
                                     <td class="text-center">
                                         <div class="d-flex justify-content-center gap-1">
+                                            <?php if (hasPermission('expenses', 'edit')): ?>
                                             <button class="btn btn-warning btn-sm btn-action" onclick="openEditModal(<?= $c['category_id'] ?>)" title="ແກ້ໄຂ">
                                                 <i class="fas fa-edit"></i>
                                             </button>
+                                            <?php endif; ?>
+                                            <?php if (hasPermission('expenses', 'delete')): ?>
                                             <button class="btn btn-danger btn-sm btn-action" onclick="deleteCategory(<?= $c['category_id'] ?>)" title="ລົບ">
                                                 <i class="fas fa-trash-alt"></i>
                                             </button>
+                                            <?php endif; ?>
                                         </div>
                                     </td>
+                                    <?php endif; ?>
                                 </tr>
                             <?php endforeach; ?>
                         <?php endif; ?>

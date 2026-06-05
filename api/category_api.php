@@ -28,6 +28,20 @@ function jsonErr($message, $code = 400)
     exit;
 }
 
+// ຄວາມປອດໄພ & ສິດທິການໃຊ້ງານ
+if (($action === 'get' || $action === 'list') && !hasPermission('product_categories', 'view')) {
+    jsonErr('ບໍ່ມີສິດເຂົ້າເຖິງ', 403);
+}
+if ($action === 'create' && !hasPermission('product_categories', 'add')) {
+    jsonErr('ບໍ່ມີສິດເພີ່ມຂໍ້ມູນ', 403);
+}
+if ($action === 'update' && !hasPermission('product_categories', 'edit')) {
+    jsonErr('ບໍ່ມີສິດແກ້ໄຂຂໍ້ມູນ', 403);
+}
+if ($action === 'delete' && !hasPermission('product_categories', 'delete')) {
+    jsonErr('ບໍ່ມີສິດລົບຂໍ້ມູນ', 403);
+}
+
 function clean($conn, $value)
 {
     return trim($value ?? '');

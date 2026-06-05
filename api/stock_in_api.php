@@ -28,6 +28,14 @@ function jsonErr($message, $code = 400)
     exit;
 }
 
+// ຄວາມປອດໄພ & ສິດທິການໃຊ້ງານ
+if ($action === 'get' && !hasPermission('stock_in', 'view')) {
+    jsonErr('ບໍ່ມີສິດເຂົ້າເຖິງ', 403);
+}
+if ($action === 'create' && !hasPermission('stock_in', 'add')) {
+    jsonErr('ບໍ່ມີສິດເພີ່ມຂໍ້ມູນ', 403);
+}
+
 function clean($conn, $value)
 {
     return trim($value ?? '');

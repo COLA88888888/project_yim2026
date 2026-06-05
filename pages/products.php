@@ -68,14 +68,16 @@ if ($resCat) {
             <p class="text-muted small mb-0">ກຳນົດ ແລະ ບໍລິຫານຂໍ້ມູນສິນຄ້າ, ລາຄາຂາຍ, ລາຄາຕົ້ນທຶນ ແລະ ຈຳນວນສິນຄ້າໃນສາງ</p>
         </div>
         <div>
-            <?php if (!empty($categories)): ?>
-            <button class="btn btn-primary rounded-pill px-4 shadow-sm" onclick="openCreateModal()">
-                <i class="fas fa-plus me-1"></i> ເພີ່ມສິນຄ້າໃໝ່
-            </button>
-            <?php else: ?>
-            <a href="product_categories.php" class="btn btn-warning rounded-pill px-4 shadow-sm">
-                <i class="fas fa-exclamation-triangle me-1"></i> ກະລຸນາເພີ່ມປະເພດສິນຄ້າກ່ອນ
-            </a>
+            <?php if (hasPermission('products', 'add')): ?>
+                <?php if (!empty($categories)): ?>
+                <button class="btn btn-primary rounded-pill px-4 shadow-sm" onclick="openCreateModal()">
+                    <i class="fas fa-plus me-1"></i> ເພີ່ມສິນຄ້າໃໝ່
+                </button>
+                <?php else: ?>
+                <a href="product_categories.php" class="btn btn-warning rounded-pill px-4 shadow-sm">
+                    <i class="fas fa-exclamation-triangle me-1"></i> ກະລຸນາເພີ່ມປະເພດສິນຄ້າກ່ອນ
+                </a>
+                <?php endif; ?>
             <?php endif; ?>
         </div>
     </div>
@@ -88,6 +90,16 @@ if ($resCat) {
                 <div class="d-flex align-items-center flex-wrap gap-3">
                     <div class="text-muted small">
                         ສິນຄ້າທັງໝົດ: <span class="fw-bold text-primary" id="productCount"><?= count($products) ?></span> ລາຍການ
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="text-muted small">ສະແດງ:</span>
+                        <select id="pageSizeSelect" class="form-control form-control-sm" style="width: 80px; border-radius: 8px; font-weight: bold; height: 32px;">
+                            <option value="10" selected>10</option>
+                            <option value="20">20</option>
+                            <option value="30">30</option>
+                            <option value="50">50</option>
+                            <option value="all">ທັງໝົດ</option>
+                        </select>
                     </div>
                 </div>
                 <div class="search-box flex-grow-1" style="max-width: 400px;">
@@ -108,13 +120,15 @@ if ($resCat) {
                             <th class="text-end">ຕົ້ນທຶນ</th>
                             <th class="text-end">ລາຄາຂາຍ</th>
                             <th class="text-center">ຈຳນວນໃນສາງ</th>
+                            <?php if (hasPermission('products', 'edit') || hasPermission('products', 'delete')): ?>
                             <th class="text-center" style="width: 150px;">ຈັດການ</th>
+                            <?php endif; ?>
                         </tr>
                     </thead>
                     <tbody id="productTableBody">
                         <?php if (empty($products)): ?>
                             <tr>
-                                <td colspan="8" class="text-center py-5 text-muted">
+                                <td colspan="<?= (hasPermission('products', 'edit') || hasPermission('products', 'delete')) ? 8 : 7 ?>" class="text-center py-5 text-muted">
                                     <i class="fas fa-boxes fa-2x mb-3 d-block"></i>
                                     ຍັງບໍ່ມີຂໍ້ມູນສິນຄ້າ
                                 </td>
@@ -143,22 +157,37 @@ if ($resCat) {
                                             <span class="badge bg-success text-white"><?= $p['quantity'] ?></span>
                                         <?php endif; ?>
                                     </td>
+                                    <?php if (hasPermission('products', 'edit') || hasPermission('products', 'delete')): ?>
                                     <td class="text-center">
                                         <div class="d-flex justify-content-center gap-1">
+                                            <?php if (hasPermission('products', 'edit')): ?>
                                             <button class="btn btn-warning btn-sm btn-action" onclick="openEditModal(<?= $p['product_id'] ?>)" title="ແກ້ໄຂ">
                                                 <i class="fas fa-edit"></i>
                                             </button>
+                                            <?php endif; ?>
+                                            <?php if (hasPermission('products', 'delete')): ?>
                                             <button class="btn btn-danger btn-sm btn-action" onclick="deleteProduct(<?= $p['product_id'] ?>)" title="ລົບ">
                                                 <i class="fas fa-trash-alt"></i>
                                             </button>
+                                            <?php endif; ?>
                                         </div>
                                     </td>
+                                    <?php endif; ?>
                                 </tr>
                             <?php endforeach; ?>
                         <?php endif; ?>
                     </tbody>
                 </table>
             </div>
+        </div>
+        <!-- Pagination Footer -->
+        <div class="card-footer bg-white border-top px-3 py-2 d-flex flex-wrap justify-content-between align-items-center gap-2" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+            <div class="text-muted small" id="paginationInfo">
+                ສະແດງ 1-10 ຈາກທັງໝົດ 10 ລາຍການ
+            </div>
+            <nav aria-label="Page navigation">
+                <ul class="pagination pagination-sm mb-0 justify-content-center" id="paginationControls"></ul>
+            </nav>
         </div>
     </div>
 </div>
@@ -318,23 +347,138 @@ $(document).ready(function() {
         });
     });
 
-    // Search Products in JavaScript
-    $('#searchInput').on('input', function() {
-        var query = $(this).val().toLowerCase().trim();
-        var count = 0;
+    // Pagination & Search in JavaScript
+    var itemsPerPage = 10;
+    var currentPage = 1;
+    var filteredRows = [];
+
+    $('#pageSizeSelect').on('change', function() {
+        var val = $(this).val();
+        if (val === 'all') {
+            itemsPerPage = 999999;
+        } else {
+            itemsPerPage = parseInt(val);
+        }
+        showPage(1);
+    });
+
+    function updateFilteredRows() {
+        var query = $('#searchInput').val().toLowerCase().trim();
+        filteredRows = [];
         
         $('.product-row').each(function() {
             var text = $(this).text().toLowerCase();
             if (text.indexOf(query) > -1) {
-                $(this).show();
-                count++;
+                filteredRows.push(this);
             } else {
                 $(this).hide();
             }
         });
         
-        $('#productCount').text(count);
+        $('#productCount').text(filteredRows.length);
+        
+        let hasEditPerm = <?= hasPermission('products', 'edit') ? 'true' : 'false' ?>;
+        let hasDeletePerm = <?= hasPermission('products', 'delete') ? 'true' : 'false' ?>;
+        let colspanVal = (hasEditPerm || hasDeletePerm) ? 8 : 7;
+        
+        if (filteredRows.length === 0 && $('.product-row').length > 0) {
+            if ($('#emptySearchResult').length === 0) {
+                $('#productTableBody').append(
+                    `<tr id="emptySearchResult"><td colspan="${colspanVal}" class="text-center py-4 text-muted"><i class="fas fa-search me-2"></i>ບໍ່ພົບຂໍ້ມູນສິນຄ້າ</td></tr>`
+                );
+            }
+        } else {
+            $('#emptySearchResult').remove();
+        }
+    }
+
+    function showPage(page) {
+        currentPage = page;
+        var totalItems = filteredRows.length;
+        
+        if (totalItems === 0) {
+            $('.product-row').hide();
+            $('#paginationInfo').text('ສະແດງ 0 ຫາ 0 ຈາກທັງໝົດ 0 ລາຍການ');
+            $('#paginationControls').html('');
+            return;
+        }
+        
+        var totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+        
+        if (currentPage < 1) currentPage = 1;
+        if (currentPage > totalPages) currentPage = totalPages;
+        
+        var startIndex = (currentPage - 1) * itemsPerPage;
+        var endIndex = Math.min(startIndex + itemsPerPage, totalItems);
+        
+        $('.product-row').hide();
+        for (var i = startIndex; i < endIndex; i++) {
+            $(filteredRows[i]).show();
+        }
+        
+        $('#paginationInfo').text('ສະແດງ ' + (startIndex + 1) + ' ຫາ ' + endIndex + ' ຈາກທັງໝົດ ' + totalItems + ' ລາຍການ');
+        
+        renderControls(totalPages);
+    }
+
+    function renderControls(totalPages) {
+        var controlsHtml = '';
+        if (currentPage === 1) {
+            controlsHtml += `<li class="page-item disabled"><a class="page-link" href="javascript:void(0)"><i class="fas fa-chevron-left"></i></a></li>`;
+        } else {
+            controlsHtml += `<li class="page-item"><a class="page-link" href="javascript:void(0)" data-page="${currentPage - 1}"><i class="fas fa-chevron-left"></i></a></li>`;
+        }
+        
+        var startPage = Math.max(1, currentPage - 2);
+        var endPage = Math.min(totalPages, startPage + 4);
+        if (endPage - startPage < 4) {
+            startPage = Math.max(1, endPage - 4);
+        }
+        
+        if (startPage > 1) {
+            controlsHtml += `<li class="page-item"><a class="page-link" href="javascript:void(0)" data-page="1">1</a></li>`;
+            if (startPage > 2) {
+                controlsHtml += `<li class="page-item disabled"><a class="page-link" href="javascript:void(0)">...</a></li>`;
+            }
+        }
+        
+        for (var p = startPage; p <= endPage; p++) {
+            if (p === currentPage) {
+                controlsHtml += `<li class="page-item active"><a class="page-link" href="javascript:void(0)">${p}</a></li>`;
+            } else {
+                controlsHtml += `<li class="page-item"><a class="page-link" href="javascript:void(0)" data-page="${p}">${p}</a></li>`;
+            }
+        }
+        
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) {
+                controlsHtml += `<li class="page-item disabled"><a class="page-link" href="javascript:void(0)">...</a></li>`;
+            }
+            controlsHtml += `<li class="page-item"><a class="page-link" href="javascript:void(0)" data-page="${totalPages}">${totalPages}</a></li>`;
+        }
+        
+        if (currentPage === totalPages) {
+            controlsHtml += `<li class="page-item disabled"><a class="page-link" href="javascript:void(0)"><i class="fas fa-chevron-right"></i></a></li>`;
+        } else {
+            controlsHtml += `<li class="page-item"><a class="page-link" href="javascript:void(0)" data-page="${currentPage + 1}"><i class="fas fa-chevron-right"></i></a></li>`;
+        }
+        
+        $('#paginationControls').html(controlsHtml);
+        
+        $('#paginationControls a[data-page]').off('click').on('click', function(e) {
+            e.preventDefault();
+            showPage(parseInt($(this).data('page')));
+        });
+    }
+
+    $('#searchInput').on('input', function() {
+        updateFilteredRows();
+        showPage(1);
     });
+
+    // Run pagination
+    updateFilteredRows();
+    showPage(1);
 });
 
 function previewProductImage(input) {

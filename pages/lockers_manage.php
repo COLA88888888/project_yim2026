@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -54,6 +54,11 @@ sort($floors);
             font-family: 'Noto Sans Lao Looped', sans-serif;
             background-color: #f4f6f9;
         }
+        <?php if (!hasPermission('lockers', 'edit')): ?>
+        .locker-card {
+            cursor: default !important;
+        }
+        <?php endif; ?>
         
         /* Premium Locker Grid & Card Styles */
         .locker-grid {
@@ -292,9 +297,12 @@ sort($floors);
                              data-code="<?= htmlspecialchars(strtolower($l['locker_code'])) ?>" 
                              data-floor="<?= htmlspecialchars(strtolower($l['locker_floor'] ?: '')) ?>"
                              data-status="<?= htmlspecialchars($l['status']) ?>"
-                             onclick="toggleLocker(<?= $l['locker_id'] ?>, '<?= $l['status'] ?>')">
+                             <?php if (hasPermission('lockers', 'edit')): ?>
+                             onclick="toggleLocker(<?= $l['locker_id'] ?>, '<?= $l['status'] ?>')"
+                             <?php endif; ?>>
                             
                             <!-- Action overlay buttons (edit/delete only) -->
+                            <?php if (hasPermission('lockers', 'edit') || hasPermission('lockers', 'delete')): ?>
                             <div class="locker-actions">
                                 <?php if (hasPermission('lockers', 'edit')): ?>
                                 <button class="locker-action-btn btn-edit text-warning" onclick="event.stopPropagation(); openEditModal(<?= $l['locker_id'] ?>)" title="ແກ້ໄຂ">
@@ -307,6 +315,7 @@ sort($floors);
                                 </button>
                                 <?php endif; ?>
                             </div>
+                            <?php endif; ?>
                             
                             <!-- Icon representing status -->
                             <div class="locker-icon">

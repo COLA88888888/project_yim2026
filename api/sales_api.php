@@ -28,6 +28,14 @@ function jsonErr($message, $code = 400)
     exit;
 }
 
+// ຄວາມປອດໄພ & ສິດທິການໃຊ້ງານ
+if ($action === 'get' && !hasPermission('sales', 'view') && !hasPermission('sales_history', 'view')) {
+    jsonErr('ບໍ່ມີສິດເຂົ້າເຖິງ', 403);
+}
+if ($action === 'create' && !hasPermission('sales', 'add')) {
+    jsonErr('ບໍ່ມີສິດຂາຍສິນຄ້າ', 403);
+}
+
 function clean($conn, $value)
 {
     return trim($value ?? '');

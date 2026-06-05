@@ -106,6 +106,7 @@ foreach ($rows as $r) {
 
     <div class="row">
         <!-- ===== LEFT CARD: Form ===== -->
+        <?php if (hasPermission('daily_checkin', 'add')): ?>
         <div class="col-lg-4 col-md-5 mb-4 no-print">
             <div class="card card-custom h-auto">
                 <div class="card-header bg-info text-white fw-bold" style="border-top-left-radius:16px;border-top-right-radius:16px;padding:14px 20px;">
@@ -164,9 +165,10 @@ foreach ($rows as $r) {
                 </div>
             </div>
         </div>
+        <?php endif; ?>
 
         <!-- ===== RIGHT CARD: Stats + History ===== -->
-        <div class="col-lg-8 col-md-7 mb-4">
+        <div class="<?= hasPermission('daily_checkin', 'add') ? 'col-lg-8 col-md-7' : 'col-lg-12' ?> mb-4">
 
             <!-- Stats Cards Row -->
             <div class="row-tight">
@@ -232,7 +234,7 @@ foreach ($rows as $r) {
                             <tbody id="historyTableBody">
                                 <?php if (empty($rows)): ?>
                                     <tr id="emptyRow">
-                                        <td colspan="5" class="text-center py-5 text-muted">
+                                        <td colspan="<?= hasPermission('daily_checkin', 'delete') ? 5 : 4 ?>" class="text-center py-5 text-muted">
                                             <i class="fas fa-user-slash fa-2x mb-3 d-block text-secondary"></i>
                                             ຍັງບໍ່ມີການເຊັກອິນໃນວັນນີ້
                                         </td>

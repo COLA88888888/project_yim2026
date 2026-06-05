@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -146,17 +146,19 @@ if ($sql_report) {
                             <th class="p-2">ຊື່ເຂົ້າລະບົບ</th>
                             <th class="p-2">ສະຖານະ</th>
                             <th class="p-2 text-start">ໝາຍເຫດ</th>
-                             <?php $can_edit = hasPermission('users', 'edit'); $can_delete = hasPermission('users', 'delete'); ?>
+                              <?php $can_edit = hasPermission('users', 'edit'); $can_delete = hasPermission('users', 'delete'); ?>
+                             <?php if ($can_edit || $can_delete): ?>
                              <th class="p-2" style="min-width:145px;">ຈັດການ</th>
+                             <?php endif; ?>
                         </tr>
                     </thead>
                     <tbody>
                         <?php if (empty($users)): ?> 
                             <tr>
-                                <td colspan="10" class="text-center text-muted">
-                                    <i class="fas fa-users"></i>
-                                    ຍັງບໍ່ມີຂໍ້ມູນຜູ້ໃຊ້
-                                </td>
+                                 <td colspan="<?= ($can_edit || $can_delete) ? 10 : 9 ?>" class="text-center text-muted">
+                                     <i class="fas fa-users"></i>
+                                     ຍັງບໍ່ມີຂໍ້ມູນຜູ້ໃຊ້
+                                 </td>
                             </tr>
                         <?php else: ?> 
                         <?php $i = 1; foreach ($users as $row): ?>
@@ -174,6 +176,7 @@ if ($sql_report) {
                                 </span>
                             </td>
                             <td><small class="text-muted"><?= $row['remark'] ? htmlspecialchars($row['remark']) : '-' ?></small></td>
+                            <?php if ($can_edit || $can_delete): ?>
                             <td class="text-center text-nowrap">
                                 <button type="button" class="btn btn-info btn-sm text-white btn-view-details" data-id="<?= htmlspecialchars($row['user_id'], ENT_QUOTES) ?>" title="ເບິ່ງລາຍລະອຽດ" style="padding: 0.25rem 0.5rem; border-radius: 5px; border: none; box-shadow: none;">
                                     <i class="fas fa-eye"></i>
@@ -189,6 +192,7 @@ if ($sql_report) {
                                 </button>
                                 <?php endif; ?>
                             </td>
+                            <?php endif; ?>
                         </tr>
                         <?php endforeach; ?>
                         <?php endif; ?>

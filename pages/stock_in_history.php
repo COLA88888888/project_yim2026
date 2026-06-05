@@ -105,6 +105,9 @@ if ($result) {
         .btn-action:hover {
             transform: translateY(-2px);
         }
+        .cursor-pointer {
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -128,6 +131,16 @@ if ($result) {
                     <div class="text-muted small">
                         ໃບບິນນຳເຂົ້າທັງໝົດ: <span class="fw-bold text-primary" id="importsCount"><?= count($imports) ?></span> ໃບບິນ
                     </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="text-muted small">ສະແດງ:</span>
+                        <select id="pageSizeSelect" class="form-control form-control-sm" style="width: 80px; border-radius: 8px; font-weight: bold; height: 32px;">
+                            <option value="10" selected>10</option>
+                            <option value="20">20</option>
+                            <option value="30">30</option>
+                            <option value="50">50</option>
+                            <option value="all">ທັງໝົດ</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="search-box flex-grow-1" style="max-width: 400px;">
                     <i class="fas fa-search"></i>
@@ -144,13 +157,12 @@ if ($result) {
                             <th>ວັນທີນຳເຂົ້າ</th>
                             <th class="text-end">ຍອດລວມຕົ້ນທຶນ</th>
                             <th>ຜູ້ບັນທຶກ</th>
-                            <th class="text-center" style="width: 100px;">ລາຍລະອຽດ</th>
                         </tr>
                     </thead>
                     <tbody id="importsTableBody">
                         <?php if (empty($imports)): ?>
                             <tr>
-                                <td colspan="5" class="text-center py-5 text-muted">
+                                <td colspan="4" class="text-center py-5 text-muted">
                                     <i class="fas fa-file-invoice fa-2x mb-3 d-block"></i>
                                     ຍັງບໍ່ມີປະຫວັດການນຳເຂົ້າສິນຄ້າ
                                 </td>
@@ -160,22 +172,26 @@ if ($result) {
                                 <?php 
                                     $formattedId = 'IM-' . str_pad($i['stock_in_id'], 5, '0', STR_PAD_LEFT);
                                 ?>
-                                <tr class="import-row">
+                                <tr class="import-row cursor-pointer" onclick="viewImportReceipt(<?= $i['stock_in_id'] ?>)">
                                     <td class="fw-bold"><code class="text-primary"><?= htmlspecialchars($formattedId) ?></code></td>
                                     <td class="text-muted small"><?= date('d/m/Y H:i', strtotime($i['stock_in_date'])) ?></td>
                                     <td class="text-end fw-bold text-success"><?= formatCurrency($i['total_amount']) ?></td>
                                     <td><?= htmlspecialchars($i['staff_fname'] . ' ' . $i['staff_lname']) ?></td>
-                                    <td class="text-center">
-                                        <button class="btn btn-info btn-sm btn-action" onclick="viewImportReceipt(<?= $i['stock_in_id'] ?>)" title="ເບິ່ງໃບບິນ">
-                                            <i class="fas fa-file-invoice"></i>
-                                        </button>
-                                    </td>
                                 </tr>
                             <?php endforeach; ?>
                         <?php endif; ?>
                     </tbody>
                 </table>
             </div>
+        </div>
+        <!-- Pagination Footer -->
+        <div class="card-footer bg-white border-top px-3 py-2 d-flex flex-wrap justify-content-between align-items-center gap-2" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+            <div class="text-muted small" id="paginationInfo">
+                ສະແດງ 1-10 ຈາກທັງໝົດ 10 ໃບບິນ
+            </div>
+            <nav aria-label="Page navigation">
+                <ul class="pagination pagination-sm mb-0 justify-content-center" id="paginationControls"></ul>
+            </nav>
         </div>
     </div>
 </div>
@@ -194,7 +210,7 @@ if ($result) {
                 <!-- Receipt details parsed in JS -->
             </div>
             <div class="modal-footer bg-light" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
-                <button class="btn btn-primary fw-bold px-4 w-100" onclick="printReceipt()"><i class="fas fa-print me-1"></i> ພິມໃບບິນ</button>
+                <button type="button" class="btn btn-secondary fw-bold w-100" data-dismiss="modal">ປິດ</button>
             </div>
         </div>
     </div>
@@ -206,23 +222,134 @@ function formatCurrency(amount) {
 }
 
 $(document).ready(function() {
-    // Search imports list in JS
-    $('#searchInput').on('input', function() {
-        var query = $(this).val().toLowerCase().trim();
-        var count = 0;
+    // Pagination & Search in JavaScript
+    var itemsPerPage = 10;
+    var currentPage = 1;
+    var filteredRows = [];
+
+    $('#pageSizeSelect').on('change', function() {
+        var val = $(this).val();
+        if (val === 'all') {
+            itemsPerPage = 999999;
+        } else {
+            itemsPerPage = parseInt(val);
+        }
+        showPage(1);
+    });
+
+    function updateFilteredRows() {
+        var query = $('#searchInput').val().toLowerCase().trim();
+        filteredRows = [];
         
         $('.import-row').each(function() {
             var text = $(this).text().toLowerCase();
             if (text.indexOf(query) > -1) {
-                $(this).show();
-                count++;
+                filteredRows.push(this);
             } else {
                 $(this).hide();
             }
         });
         
-        $('#importsCount').text(count);
+        $('#importsCount').text(filteredRows.length);
+        
+        if (filteredRows.length === 0 && $('.import-row').length > 0) {
+            if ($('#emptySearchResult').length === 0) {
+                $('#importsTableBody').append(
+                    `<tr id="emptySearchResult"><td colspan="4" class="text-center py-4 text-muted"><i class="fas fa-search me-2"></i>ບໍ່ພົບຂໍ້ມູນປະຫວັດການນຳເຂົ້າ</td></tr>`
+                );
+            }
+        } else {
+            $('#emptySearchResult').remove();
+        }
+    }
+
+    function showPage(page) {
+        currentPage = page;
+        var totalItems = filteredRows.length;
+        
+        if (totalItems === 0) {
+            $('.import-row').hide();
+            $('#paginationInfo').text('ສະແດງ 0 ຫາ 0 ຈາກທັງໝົດ 0 ໃບບິນ');
+            $('#paginationControls').html('');
+            return;
+        }
+        
+        var totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+        
+        if (currentPage < 1) currentPage = 1;
+        if (currentPage > totalPages) currentPage = totalPages;
+        
+        var startIndex = (currentPage - 1) * itemsPerPage;
+        var endIndex = Math.min(startIndex + itemsPerPage, totalItems);
+        
+        $('.import-row').hide();
+        for (var i = startIndex; i < endIndex; i++) {
+            $(filteredRows[i]).show();
+        }
+        
+        $('#paginationInfo').text('ສະແດງ ' + (startIndex + 1) + ' ຫາ ' + endIndex + ' ຈາກທັງໝົດ ' + totalItems + ' ໃບບິນ');
+        
+        renderControls(totalPages);
+    }
+
+    function renderControls(totalPages) {
+        var controlsHtml = '';
+        if (currentPage === 1) {
+            controlsHtml += `<li class="page-item disabled"><a class="page-link" href="javascript:void(0)"><i class="fas fa-chevron-left"></i></a></li>`;
+        } else {
+            controlsHtml += `<li class="page-item"><a class="page-link" href="javascript:void(0)" data-page="${currentPage - 1}"><i class="fas fa-chevron-left"></i></a></li>`;
+        }
+        
+        var startPage = Math.max(1, currentPage - 2);
+        var endPage = Math.min(totalPages, startPage + 4);
+        if (endPage - startPage < 4) {
+            startPage = Math.max(1, endPage - 4);
+        }
+        
+        if (startPage > 1) {
+            controlsHtml += `<li class="page-item"><a class="page-link" href="javascript:void(0)" data-page="1">1</a></li>`;
+            if (startPage > 2) {
+                controlsHtml += `<li class="page-item disabled"><a class="page-link" href="javascript:void(0)">...</a></li>`;
+            }
+        }
+        
+        for (var p = startPage; p <= endPage; p++) {
+            if (p === currentPage) {
+                controlsHtml += `<li class="page-item active"><a class="page-link" href="javascript:void(0)">${p}</a></li>`;
+            } else {
+                controlsHtml += `<li class="page-item"><a class="page-link" href="javascript:void(0)" data-page="${p}">${p}</a></li>`;
+            }
+        }
+        
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) {
+                controlsHtml += `<li class="page-item disabled"><a class="page-link" href="javascript:void(0)">...</a></li>`;
+            }
+            controlsHtml += `<li class="page-item"><a class="page-link" href="javascript:void(0)" data-page="${totalPages}">${totalPages}</a></li>`;
+        }
+        
+        if (currentPage === totalPages) {
+            controlsHtml += `<li class="page-item disabled"><a class="page-link" href="javascript:void(0)"><i class="fas fa-chevron-right"></i></a></li>`;
+        } else {
+            controlsHtml += `<li class="page-item"><a class="page-link" href="javascript:void(0)" data-page="${currentPage + 1}"><i class="fas fa-chevron-right"></i></a></li>`;
+        }
+        
+        $('#paginationControls').html(controlsHtml);
+        
+        $('#paginationControls a[data-page]').off('click').on('click', function(e) {
+            e.preventDefault();
+            showPage(parseInt($(this).data('page')));
+        });
+    }
+
+    $('#searchInput').on('input', function() {
+        updateFilteredRows();
+        showPage(1);
     });
+
+    // Run pagination
+    updateFilteredRows();
+    showPage(1);
 });
 
 function viewImportReceipt(stockInId) {
@@ -305,51 +432,6 @@ function viewImportReceipt(stockInId) {
             Swal.fire({ icon: 'error', title: 'ຜິດພາດ', text: 'ບໍ່ສາມາດດຶງຂໍ້ມູນໃບບິນໄດ້' });
         }
     });
-}
-
-function printReceipt() {
-    let printContents = document.getElementById('receiptPrintArea').innerHTML;
-    
-    // Remove any existing print frame
-    $('#receiptPrintFrame').remove();
-    
-    // Create a hidden iframe
-    let $iframe = $('<iframe id="receiptPrintFrame" style="position: absolute; width: 0; height: 0; border: none;"></iframe>');
-    $('body').append($iframe);
-    
-    let iframeDoc = $iframe[0].contentDocument || $iframe[0].contentWindow.document;
-    
-    iframeDoc.open();
-    iframeDoc.write('<html><head><title>ພິມໃບບິນນຳເຂົ້າ</title>');
-    // Set base href to resolve local relative font files
-    iframeDoc.write('<base href="' + window.location.origin + window.location.pathname + '">');
-    iframeDoc.write('<link rel="stylesheet" href="../assets/css/local-font.css">');
-    iframeDoc.write('<style>');
-    iframeDoc.write('@media print { @page { size: 80mm auto; margin: 0; } body { margin: 0; padding: 4mm; } }');
-    iframeDoc.write('body { font-family: "Noto Sans Lao", "Noto Sans Lao Looped", Arial, sans-serif; width: 72mm; margin: 0 auto; color: #000; background: #fff; font-size: 11px; line-height: 1.3; }');
-    iframeDoc.write('.text-center { text-align: center; } .text-start { text-align: left; } .text-end { text-align: right; }');
-    iframeDoc.write('.receipt-header { text-align: center; margin-bottom: 8px; }');
-    iframeDoc.write('.receipt-logo { font-size: 16px; font-weight: bold; margin: 0 0 2px 0; color: #111; }');
-    iframeDoc.write('.receipt-address { font-size: 9px; color: #666; margin: 0 0 4px 0; }');
-    iframeDoc.write('.receipt-title { font-size: 12px; font-weight: bold; margin: 6px 0; text-transform: uppercase; color: #28a745; }');
-    iframeDoc.write('.receipt-divider { border-top: 1px dashed #000; margin: 8px 0; }');
-    iframeDoc.write('.receipt-meta { font-size: 9.5px; margin-bottom: 6px; } .receipt-meta div { margin-bottom: 3px; }');
-    iframeDoc.write('.receipt-table { width: 100%; border-collapse: collapse; margin: 4px 0; }');
-    iframeDoc.write('.receipt-table th { font-weight: bold; border-bottom: 1px solid #000; padding: 4px 0; font-size: 10px; }');
-    iframeDoc.write('.receipt-table td { padding: 5px 0; font-size: 10.5px; vertical-align: top; }');
-    iframeDoc.write('.receipt-total-section { font-size: 11px; margin: 6px 0; } .receipt-total-row { display: flex; justify-content: space-between; padding: 2px 0; }');
-    iframeDoc.write('.receipt-total-row.grand-total { font-size: 13px; font-weight: bold; margin-top: 4px; border-top: 1px dashed #000; padding-top: 4px; }');
-    iframeDoc.write('.receipt-footer { text-align: center; margin-top: 12px; font-size: 9.5px; font-weight: bold; }');
-    iframeDoc.write('</style></head><body>');
-    iframeDoc.write(printContents);
-    iframeDoc.write('</body></html>');
-    iframeDoc.close();
-    
-    // Wait for fonts/assets to load inside the iframe
-    setTimeout(function() {
-        $iframe[0].contentWindow.focus();
-        $iframe[0].contentWindow.print();
-    }, 500);
 }
 </script>
 </body>

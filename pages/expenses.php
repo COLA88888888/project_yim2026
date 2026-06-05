@@ -111,9 +111,11 @@ $exp_all = mysqli_fetch_row(mysqli_query($conn, "SELECT SUM(amount) FROM expense
             <p class="text-muted small mb-0">ບັນທຶກ ແລະ ຄຸ້ມຄອງລາຍຈ່າຍຕ່າງໆພາຍໃນຍິມ (ຄ່ານ້ຳ/ໄຟ, ຄ່າເຊົ່າ, ເງິນເດືອນ, ແລະ ອື່ນໆ)</p>
         </div>
         <div>
+            <?php if (hasPermission('expenses', 'add')): ?>
             <button class="btn btn-danger rounded-pill px-4 shadow-sm" onclick="openCreateModal()">
                 <i class="fas fa-plus me-1"></i> ບັນທຶກລາຍຈ່າຍໃໝ່
             </button>
+            <?php endif; ?>
         </div>
     </div>
 
@@ -219,7 +221,9 @@ $exp_all = mysqli_fetch_row(mysqli_query($conn, "SELECT SUM(amount) FROM expense
                             <th class="text-end" style="width: 160px;">ຈຳນວນເງິນ</th>
                             <th>ໝາຍເຫດ</th>
                             <th class="text-center">ຜູ້ບັນທຶກ</th>
+                            <?php if (hasPermission('expenses', 'edit') || hasPermission('expenses', 'delete')): ?>
                             <th class="text-center" style="width: 150px;">ຈັດການ</th>
+                            <?php endif; ?>
                         </tr>
                     </thead>
                     <tbody id="expenseTableBody">
@@ -289,6 +293,8 @@ $exp_all = mysqli_fetch_row(mysqli_query($conn, "SELECT SUM(amount) FROM expense
 </div>
 
 <script>
+const canEditExp = <?= hasPermission('expenses', 'edit') ? 'true' : 'false' ?>;
+const canDeleteExp = <?= hasPermission('expenses', 'delete') ? 'true' : 'false' ?>;
 let itemsPerPage = 10;
 let currentPage = 1;
 let allExpenses = [];
@@ -448,9 +454,10 @@ function showPage(page) {
     tbody.html('');
     
     if (totalItems === 0) {
+        let cols = (canEditExp || canDeleteExp) ? 7 : 6;
         tbody.append(`
             <tr>
-                <td colspan="7" class="text-center py-5 text-muted">
+                <td colspan="${cols}" class="text-center py-5 text-muted">
                     <i class="fas fa-folder-open fa-2x mb-3 d-block"></i>
                     ບໍ່ພົບຂໍ້ມູນລາຍຈ່າຍ
                 </td>
@@ -473,6 +480,25 @@ function showPage(page) {
         let badge = badgeColors[exp.category] || 'bg-secondary text-white';
         let staffName = (exp.fname) ? `${exp.fname} ${exp.lname}` : 'Admin';
         
+        let actionsTd = '';
+        if (canEditExp || canDeleteExp) {
+            let editBtn = canEditExp ? `
+                <button class="btn btn-warning btn-sm btn-action" onclick="openEditModal(${exp.expense_id})" title="ແກ້ໄຂ">
+                    <i class="fas fa-edit"></i>
+                </button>` : '';
+            let deleteBtn = canDeleteExp ? `
+                <button class="btn btn-danger btn-sm btn-action" onclick="deleteExpense(${exp.expense_id})" title="ລົບ">
+                    <i class="fas fa-trash-alt"></i>
+                </button>` : '';
+            actionsTd = `
+                <td class="text-center">
+                    <div class="d-flex justify-content-center gap-1">
+                        ${editBtn}
+                        ${deleteBtn}
+                    </div>
+                </td>`;
+        }
+        
         tbody.append(`
             <tr>
                 <td class="text-center fw-bold">${formatDate(exp.expense_date)}</td>
@@ -481,16 +507,7 @@ function showPage(page) {
                 <td class="text-end fw-bold text-danger" style="font-size:1.05rem;">${formatNumber(exp.amount)} ກີບ</td>
                 <td class="text-muted small">${exp.notes || '-'}</td>
                 <td class="text-center"><span class="badge bg-light text-dark border">${staffName}</span></td>
-                <td class="text-center">
-                    <div class="d-flex justify-content-center gap-1">
-                        <button class="btn btn-warning btn-sm btn-action" onclick="openEditModal(${exp.expense_id})" title="ແກ້ໄຂ">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn btn-danger btn-sm btn-action" onclick="deleteExpense(${exp.expense_id})" title="ລົບ">
-                            <i class="fas fa-trash-alt"></i>
-                        </button>
-                    </div>
-                </td>
+                ${actionsTd}
             </tr>
         `);
     }

@@ -55,9 +55,11 @@ if ($result) {
             <p class="text-muted small mb-0">ກຳນົດ ແລະ ບໍລິຫານປະເພດສິນຄ້າໃນຮ້ານຄ້າ (ເຊັ່ນ ເຄື່ອງດື່ມ, ອາຫານເສີມ, ເຄື່ອງກິລາ)</p>
         </div>
         <div>
+            <?php if (hasPermission('product_categories', 'add')): ?>
             <button class="btn btn-primary rounded-pill px-4 shadow-sm" onclick="openCreateModal()">
                 <i class="fas fa-plus me-1"></i> ເພີ່ມປະເພດສິນຄ້າໃໝ່
             </button>
+            <?php endif; ?>
         </div>
     </div>
 
@@ -86,13 +88,15 @@ if ($result) {
                             <th style="width: 150px;">ລະຫັດປະເພດ</th>
                             <th>ຊື່ປະເພດສິນຄ້າ</th>
                             <th>ວັນທີບັນທຶກ</th>
+                            <?php if (hasPermission('product_categories', 'edit') || hasPermission('product_categories', 'delete')): ?>
                             <th class="text-center" style="width: 150px;">ຈັດການ</th>
+                            <?php endif; ?>
                         </tr>
                     </thead>
                     <tbody id="categoryTableBody">
                         <?php if (empty($categories)): ?>
                             <tr>
-                                <td colspan="5" class="text-center py-5 text-muted">
+                                <td colspan="<?= (hasPermission('product_categories', 'edit') || hasPermission('product_categories', 'delete')) ? 5 : 4 ?>" class="text-center py-5 text-muted">
                                     <i class="fas fa-folder-open fa-2x mb-3 d-block"></i>
                                     ຍັງບໍ່ມີຂໍ້ມູນປະເພດສິນຄ້າ
                                 </td>
@@ -104,16 +108,22 @@ if ($result) {
                                     <td><span class="badge bg-info text-white"><?= htmlspecialchars($c['category_code']) ?></span></td>
                                     <td class="fw-bold text-dark"><?= htmlspecialchars($c['category_name']) ?></td>
                                     <td class="text-muted small"><?= date('d/m/Y H:i', strtotime($c['created_at'])) ?></td>
+                                    <?php if (hasPermission('product_categories', 'edit') || hasPermission('product_categories', 'delete')): ?>
                                     <td class="text-center">
                                         <div class="d-flex justify-content-center gap-1">
+                                            <?php if (hasPermission('product_categories', 'edit')): ?>
                                             <button class="btn btn-warning btn-sm btn-action" onclick="openEditModal(<?= $c['category_id'] ?>)" title="ແກ້ໄຂ">
                                                 <i class="fas fa-edit"></i>
                                             </button>
+                                            <?php endif; ?>
+                                            <?php if (hasPermission('product_categories', 'delete')): ?>
                                             <button class="btn btn-danger btn-sm btn-action" onclick="deleteCategory(<?= $c['category_id'] ?>)" title="ລົບ">
                                                 <i class="fas fa-trash-alt"></i>
                                             </button>
+                                            <?php endif; ?>
                                         </div>
                                     </td>
+                                    <?php endif; ?>
                                 </tr>
                             <?php endforeach; ?>
                         <?php endif; ?>

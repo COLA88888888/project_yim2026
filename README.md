@@ -1,12 +1,85 @@
-# AdminCAST
+# Project Yim 2026 - ລະບົບບໍລິຫານຈັດການ Gym & Fitness (Gym Management System)
 
-The Most Advanced Bootstrap 4 Admin Template. HTML & Angular 5+ versions. Based on the popular Bootstrap 4 framework, it provides a completely adaptive and perfect interface.
+ໂຄງການພັດທະນາລະບົບບໍລິຫານຈັດການຟິດເນັດ ແລະ ຂາຍສິນຄ້າພາຍໃນ Gym ໂດຍອີງໃສ່ Bootstrap 4 ພ້ອມດ້ວຍ Backend ທີ່ຂຽນດ້ວຍ PHP ແລະ MySQL.
 
-### Demo
+---
 
-- [HTML demo](http://admincast.com/admincast/preview/html/)
-- [Angular 5 demo](http://admincast.com/admincast/preview/angular/index)
-- [Website](http://admincast.com)
-- [Premium version](http://themeforest.net/item/adminca-responsive-bootstrap-4-3-angular-4-admin-dashboard-template/20912589)
+## 1. ໂຄງສ້າງລະບົບ (System Modules)
 
-![admincast-demo](https://user-images.githubusercontent.com/32571808/34939364-f1391a28-fa04-11e7-8875-f208e2044d5f.jpg)
+ລະບົບປະກອບມີໂມດູນຫຼັກດັ່ງນີ້:
+1. **Point of Sale (POS) / ຂາຍສິນຄ້າ**: ໜ້າຈໍຂາຍສິນຄ້າໜ້າຮ້ານ, ຕັດສະຕັອກອັດຕະໂນມັດ, ຄິດໄລ່ເງິນທອນ, ແລະ ສັ່ງພິມໃບບິນໂດຍກົງໄປຍັງເຄື່ອງພິມຄວາມຮ້ອນ (Thermal Printer).
+2. **ປະຫວັດການຂາຍ (Sales History)**: ກວດສອບລາຍການຂາຍຍ້ອນຫຼັງ, ຄົ້ນຫາເລກບິນ, ແລະ ເບິ່ງໃບບິນຮັບເງິນຄືນ.
+3. **ປະຫວັດການນຳເຂົ້າ (Stock-In History)**: ກວດສອບປະຫວັດການເອົາສິນຄ້າເຂົ້າສາງ, ຕົ້ນທຶນ, ແລະ ຜູ້ບັນທຶກ.
+4. **ຈັດການຂໍ້ມູນສິນຄ້າ (Products & Categories)**: ເພີ່ມ, ແກ້ໄຂ, ລົບ ສິນຄ້າ ພ້ອມທັງຮູບພາບ, ລະຫັດສິນຄ້າ, ລາຄາຕົ້ນທຶນ ແລະ ລາຄາຂາຍ.
+5. **ຈັດການລັອກເກີ (Lockers)**: ລະບົບບັນທຶກສະຖານະການເຊົ່າ/ຄືນລັອກເກີ.
+6. **ລະບົບກຳນົດສິດທິພະນັກງານ (Permissions)**: ກຳນົດສິດທິລະອຽດແຍກຕາມແຕ່ລະໂມດູນ (ເພີ່ມ, ແກ້ໄຂ, ລົບ, ເບິ່ງ).
+
+---
+
+## 2. ໂຄງສ້າງໂຟນເດີຫຼັກ (Directory Structure)
+
+```
+Project_Yim2026/
+├── config/
+│   └── db.php          # ໄຟລ໌ເຊື່ອມຕໍ່ຖານຂໍ້ມູນ ແລະ ຟັງຊັນຊ່ວຍເຫຼືອຫຼັກ (hasPermission, formatCurrency)
+├── pages/
+│   ├── sales.php            # ໜ້າ POS ຂາຍສິນຄ້າ
+│   ├── sales_history.php    # ໜ້າປະຫວັດການຂາຍ
+│   ├── stock_in_history.php # ໜ້າປະຫວັດການນຳເຂົ້າສິນຄ້າ
+│   ├── products.php         # ໜ້າຈັດການຂໍ້ມູນສິນຄ້າ
+│   ├── product_categories.php # ໜ້າຈັດການປະເພດສິນຄ້າ
+│   └── lockers_manage.php   # ໜ້າຈັດການລັອກເກີ
+├── api/
+│   ├── sales_api.php   # API ຈັດການການຂາຍ ແລະ ດຶງຂໍ້ມູນບິນ
+│   ├── stock_in_api.php # API ຈັດການການນຳເຂົ້າສິນຄ້າ
+│   └── product_api.php  # API ຈັດການຂໍ້ມູນສິນຄ້າ (ເພີ່ມ/ລົບ/ແກ້ໄຂ)
+├── uploads/
+│   └── products/       # ໂຟນເດີເກັບຮູບພາບສິນຄ້າ
+└── assets/             # ໄຟລ໌ CSS, JS, ແລະ ໄອຄອນຕ່າງໆ
+```
+
+---
+
+## 3. ການເຮັດວຽກຂອງລະບົບສິດທິ (Permissions System)
+
+ຟັງຊັນຫຼັກໃນການກວດສອບສິດທິແມ່ນ `hasPermission($module, $action)` ທີ່ຢູ່ໃນ [config/db.php](file:///d:/xampp/htdocs/Project_Yim2026/config/db.php):
+* **ຜູ້ບໍລິຫານ (Admin)**: ຈະໄດ້ຮັບສິດທິທຸກຢ່າງໃນລະບົບໂດຍອັດຕະໂນມັດ.
+* **ພະນັກງານທົ່ວໄປ (Staff)**:
+  - **ຖ້າບໍ່ໄດ້ກຳນົດສິດທິ ຫຼື ກຳນົດທັງໝົດ**: ລະບົບຈະອະນຸຍາດໃຫ້ເຂົ້າເຖິງ ແລະ ເຮັດວຽກໄດ້ທຸກເມນູ (Default to Allow).
+  - **ຖ້າກຳນົດສິດທິສະເພາະ**: ລະບົບຈະອະນຸຍາດສະເພາະການກະທຳທີ່ຖືກໝາຍຕິກເລືອກເທົ່ານັ້ນ (ເຊັ່ນ: ຖ້າໝາຍຕິກສະເພາະ "ແກ້ໄຂ", ປຸ່ມ "ເພີ່ມ" ແລະ "ລົບ" ຈະຖືກເຊື່ອງໄວ້ ແລະ ບໍ່ສາມາດໃຊ້ງານໄດ້).
+
+---
+
+## 4. ຄຸນສົມບັດພິເສດທີ່ໄດ້ພັດທະນາເພີ່ມເຕີມ (Special Features)
+
+### ກ. ລະບົບພິມໃບບິນອັດຕະໂນມັດ (Direct Print & Reload)
+* ໃນໜ້າຈໍ POS ([sales.php](file:///d:/xampp/htdocs/Project_Yim2026/pages/sales.php)), ເມື່ອຢືນຢັນການຂາຍສຳເລັດ ລະບົບຈະສັ່ງພິມໃບບິນອອກທາງເຄື່ອງພິມຄວາມຮ້ອນ (Thermal Printer) ໂດຍຜ່ານ iframe ທີ່ເຊື່ອງໄວ້ທັນທີ ໂດຍບໍ່ມີໜ້າຈໍ SweetAlert ແຈ້ງເຕືອນໃຫ້ເສຍເວລາ ແລະ ຈະ Reload ໜ້າຈໍໃໝ່ອັດຕະໂນມັດເມື່ອພິມສຳເລັດ.
+* ມີການປັບປຸງຂະໜາດ ແລະ ໄລຍະຫ່າງຂອງ ໂລໂກຮ້ານ, ຊື່ຮ້ານ ແລະ ທີ່ຢູ່ໃຫ້ເປັນລະບຽບ ງາມຕາ.
+
+### ຂ. ລະບົບແບ່ງໜ້າຂໍ້ມູນ (Client-side Pagination)
+* ໜ້າ **ປະຫວັດການຂາຍ**, **ປະຫວັດການນຳເຂົ້າ**, ແລະ **ຂໍ້ມູນສິນຄ້າ** ໄດ້ຮັບການຕິດຕັ້ງລະບົບ Pagination ທີ່ພັດທະນາດ້ວຍ JavaScript.
+* ສາມາດເລືອກສະແດງຈຳນວນແຖວຕໍ່ໜ້າໄດ້ (10, 20, 30, 50, ຫຼື ສະແດງທັງໝົດ).
+* ຄົ້ນຫາຂໍ້ມູນ (Search) ໄດ້ຢ່າງວ່ອງໄວ ໂດຍລະບົບຈະຄິດໄລ່ຈຳນວນໜ້າ Pagination ໃໝ່ໃຫ້ເໝາະສົມກັບຜົນການຄົ້ນຫາອັດຕະໂນມັດ.
+
+### ຄ. ການກົດເບິ່ງລາຍລະອຽດແຖວ (Clickable Table Rows)
+* ໃນຕາຕະລາງປະຫວັດການຂາຍ ແລະ ການນຳເຂົ້າ ໄດ້ມີການເອົາຖັນປຸ່ມໄອຄອນໃບບິນທີ່ເກີຍກາຍອອກ, ແລ້ວປ່ຽນມາເປັນການກົດໃສ່ **ແຖວ (Row)** ໃດໜຶ່ງໃນຕາຕະລາງໂດຍກົງເພື່ອເປີດເບິ່ງໃບບິນຮັບເງິນ. ເມື່ອເອົາເມົາສ໌ໄປຊີ້ໃສ່ແຖວ ຈະສະແດງຮູບມື (`cursor: pointer`) ແລະ ໄຮໄລ້ແຖວນັ້ນໆຢ່າງສວຍງາມ.
+
+---
+
+## 5. ຂັ້ນຕອນການຕິດຕັ້ງ ແລະ ຕັ້ງຄ່າ (Installation Guide)
+
+1. **ການຕັ້ງຖານຂໍ້ມູນ**:
+   - ສ້າງຖານຂໍ້ມູນ MySQL ໃໝ່ຊື່: `db_gym2026`.
+   - ນຳເຂົ້າ (Import) ໄຟລ໌ຖານຂໍ້ມູນ (SQL) ທີ່ມີຢູ່.
+2. **ຕັ້ງຄ່າການເຊື່ອມຕໍ່**:
+   - ເປີດໄຟລ໌ [config/db.php](file:///d:/xampp/htdocs/Project_Yim2026/config/db.php) ແລ້ວແກ້ໄຂຂໍ້ມູນຖານຂໍ້ມູນໃຫ້ກົງກັບ Host ຂອງທ່ານ:
+     ```php
+     $server = "localhost";
+     $username = "root";
+     $password = "";
+     $database = "db_gym2026";
+     ```
+3. **ເປີດໃຊ້ງານ**:
+   - ກັອບປີໂຟນເດີໂຄງການໄປໄວ້ໃນໂຟນເດີ `htdocs` ຂອງ XAMPP.
+   - ເປີດ Apache ແລະ MySQL ໃນ XAMPP Control Panel.
+   - ເຂົ້າໃຊ້ງານຜ່ານ Browser: `http://localhost/Project_Yim2026`.

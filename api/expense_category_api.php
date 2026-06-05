@@ -28,6 +28,20 @@ function jsonErr($message, $code = 400)
     exit;
 }
 
+// ຄວາມປອດໄພ & ສິດທິການໃຊ້ງານ
+if (($action === 'get' || $action === 'list') && !hasPermission('expenses', 'view')) {
+    jsonErr('ບໍ່ມີສິດເຂົ້າເຖິງ', 403);
+}
+if ($action === 'create' && !hasPermission('expenses', 'add')) {
+    jsonErr('ບໍ່ມີສິດເພີ່ມຂໍ້ມູນ', 403);
+}
+if ($action === 'update' && !hasPermission('expenses', 'edit')) {
+    jsonErr('ບໍ່ມີສິດແກ້ໄຂຂໍ້ມູນ', 403);
+}
+if ($action === 'delete' && !hasPermission('expenses', 'delete')) {
+    jsonErr('ບໍ່ມີສິດລົບຂໍ້ມູນ', 403);
+}
+
 function clean($conn, $value)
 {
     return trim($value ?? '');

@@ -41,6 +41,9 @@ if ($action === 'update' && !hasPermission('lockers', 'edit')) {
 if ($action === 'delete' && !hasPermission('lockers', 'delete')) {
     jsonErr('ບໍ່ມີສິດລົບຂໍ້ມູນ', 403);
 }
+if (in_array($action, ['assign', 'release', 'toggle_status']) && !hasPermission('lockers', 'edit')) {
+    jsonErr('ບໍ່ມີສິດແກ້ໄຂຂໍ້ມູນລັອກເກີ', 403);
+}
 
 function clean($conn, $value)
 {

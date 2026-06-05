@@ -32,6 +32,9 @@ function jsonErr($message, $code = 400)
 if (!hasPermission('checkin', 'view')) {
     jsonErr('ບໍ່ມີສິດເຂົ້າເຖິງ', 403);
 }
+if ($action === 'checkin' && !hasPermission('checkin', 'add')) {
+    jsonErr('ບໍ່ມີສິດເຊັກອິນເຂົ້າໃຊ້ບໍລິການ', 403);
+}
 
 function clean($conn, $value)
 {
@@ -171,6 +174,45 @@ if ($action === 'checkin') {
         'checkin_time' => date('Y-m-d H:i:s'),
         'member_name' => $member['fname'] . ' ' . $member['lname']
     ]);
+}
+
+// 3. ລົບປະຫວັດການເຊັກອິນ (Delete checkin log)
+if ($action === 'delete') {
+    if (!hasPermission('checkin', 'delete')) {
+        jsonErr('ບໍ່ມີສິດລົບປະຫວັດການເຊັກອິນ', 403);
+    }
+    
+    $checkinId = clean($conn, $_POST['checkin_id'] ?? '');
+    if ($checkinId === '') {
+        jsonErr('ລະຫັດປະຫວັດການເຊັກອິນບໍ່ຖືກຕ້ອງ');
+    }
+    
+    // Fetch info for logging before deleting
+    $infoSql = "SELECT c.*, m.fname, m.lname, m.member_code FROM checkins c LEFT JOIN members m ON c.member_id = m.member_id WHERE c.checkin_id = ? LIMIT 1";
+    $stmtInfo = mysqli_prepare($conn, $infoSql);
+    mysqli_stmt_bind_param($stmtInfo, 'i', $checkinId);
+    mysqli_stmt_execute($stmtInfo);
+    $resInfo = mysqli_stmt_get_result($stmtInfo);
+    $checkinInfo = mysqli_fetch_assoc($resInfo);
+    mysqli_stmt_close($stmtInfo);
+    
+    if (!$checkinInfo) {
+        jsonErr('ບໍ່ພົບຂໍ້ມູນປະຫວັດການເຊັກອິນ');
+    }
+    
+    // Delete log
+    $delSql = "DELETE FROM checkins WHERE checkin_id = ?";
+    $stmtDel = mysqli_prepare($conn, $delSql);
+    mysqli_stmt_bind_param($stmtDel, 'i', $checkinId);
+    
+    if (!mysqli_stmt_execute($stmtDel)) {
+        jsonErr('ລົບປະຫວັດການເຊັກອິນບໍ່ສຳເລັດ: ' . mysqli_error($conn), 500);
+    }
+    mysqli_stmt_close($stmtDel);
+    
+    logActivity($pdo, "ລົບປະຫວັດການເຊັກອິນ", "ສະມາຊິກ: {$checkinInfo['fname']} {$checkinInfo['lname']} (ລະຫັດ: {$checkinInfo['member_code']}), ເວລາ: {$checkinInfo['checkin_time']}");
+    
+    jsonOk('ລົບປະຫວັດການເຊັກອິນສຳເລັດແລ້ວ');
 }
 
 jsonErr('ຄຳສັ່ງບໍ່ຖືກຕ້ອງ');

@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -100,13 +100,15 @@ if ($result) {
                             <th class="text-center">ໄລຍະເວລາ (ວັນ)</th>
                             <th class="text-end" style="min-width: 150px;">ລາຄາ</th>
                             <th>ລາຍລະອຽດແພັກເກດ</th>
+                            <?php if (hasPermission('packages', 'edit') || hasPermission('packages', 'delete')): ?>
                             <th class="text-center" style="width: 150px;">ຈັດການ</th>
+                            <?php endif; ?>
                         </tr>
                     </thead>
                     <tbody id="packageTableBody">
                         <?php if (empty($packages)): ?>
                             <tr>
-                                <td colspan="5" class="text-center py-5 text-muted">
+                                <td colspan="<?= (hasPermission('packages', 'edit') || hasPermission('packages', 'delete')) ? 5 : 4 ?>" class="text-center py-5 text-muted">
                                     <i class="fas fa-tags fa-2x mb-3 d-block"></i>
                                     ຍັງບໍ່ມີຂໍ້ມູນແພັກເກດ
                                 </td>
@@ -118,6 +120,7 @@ if ($result) {
                                     <td class="text-center"><span class="badge bg-light text-dark border"><?= $p['duration_days'] ?> ມື້</span></td>
                                     <td class="text-end fw-bold text-success"><?= formatCurrency($p['price']) ?></td>
                                     <td class="text-muted small"><?= htmlspecialchars($p['description']) ?></td>
+                                    <?php if (hasPermission('packages', 'edit') || hasPermission('packages', 'delete')): ?>
                                     <td class="text-center">
                                         <div class="d-flex justify-content-center gap-1">
                                             <?php if (hasPermission('packages', 'edit')): ?>
@@ -132,6 +135,7 @@ if ($result) {
                                             <?php endif; ?>
                                         </div>
                                     </td>
+                                    <?php endif; ?>
                                 </tr>
                             <?php endforeach; ?>
                         <?php endif; ?>

@@ -188,10 +188,10 @@ $gymSettings = getSystemSettings($conn);
             border-radius: 4px;
             line-height: 1.3;
         }
-        .receipt-header { text-align: center; margin-bottom: 8px; }
-        .receipt-logo { font-size: 16px; font-weight: bold; margin: 0 0 2px 0; color: #111; }
-        .receipt-address { font-size: 9px; color: #666; margin: 0 0 4px 0; }
-        .receipt-title { font-size: 12px; font-weight: bold; margin: 6px 0; text-transform: uppercase; color: #28a745; }
+        .receipt-header { text-align: center; margin-bottom: 12px; }
+        .receipt-logo { font-size: 15px; font-weight: bold; margin: 4px 0 6px 0; color: #111; }
+        .receipt-address { font-size: 9.5px; color: #555; margin: 0 0 8px 0; }
+        .receipt-title { font-size: 13px; font-weight: bold; margin: 8px 0 6px 0; text-transform: uppercase; color: #28a745; }
         .receipt-divider { border-top: 1px dashed #000; margin: 8px 0; }
         .receipt-meta { font-size: 9.5px; margin-bottom: 6px; }
         .receipt-meta div { margin-bottom: 3px; }
@@ -408,30 +408,8 @@ $gymSettings = getSystemSettings($conn);
     </div>
 </div>
 
-<!-- ===== Receipt Modal ===== -->
-<div class="modal fade" id="receiptModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-sm" role="document">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow:hidden;">
-            <div class="modal-header py-3" style="background:linear-gradient(90deg,#28a745,#20c997);">
-                <h5 class="modal-title fw-bold text-white">
-                    <i class="fas fa-file-invoice me-2"></i> ໃບບິນຮັບເງິນ
-                </h5>
-                <button type="button" class="close border-0 bg-transparent text-white" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true" class="h3">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body p-3" id="receiptPrintArea"></div>
-            <div class="modal-footer" style="background:#f8f9fa; border-bottom-left-radius:16px; border-bottom-right-radius:16px;">
-                <button class="btn btn-outline-secondary flex-fill rounded-pill" data-dismiss="modal" style="margin-right: 8px;">
-                    <i class="fas fa-times me-1"></i> ປິດ
-                </button>
-                <button class="btn btn-primary flex-fill rounded-pill fw-bold" onclick="printReceipt()">
-                    <i class="fas fa-print me-1"></i> ພິມໃບບິນ
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
+<!-- ===== Receipt Print Area (Hidden) ===== -->
+<div id="receiptPrintArea" style="display:none;"></div>
 
 <script>
 let cart = [];
@@ -738,9 +716,10 @@ function loadReceipt(saleId, receivedAmt, changeAmt, payMethod) {
                 let html = `
                     <div class="print-receipt-container">
                         <div class="receipt-header">
-                            <div class="mb-1">
-                                <img src="${gymSettings.logo_path}" alt="${gymSettings.gym_name}" style="max-height: 70px; width: auto; display: inline-block;">
+                            <div style="margin-bottom: 10px;">
+                                <img src="${gymSettings.logo_path}" alt="${gymSettings.gym_name}" style="max-height: 75px; width: auto; display: inline-block;">
                             </div>
+                            <div class="receipt-logo">${gymSettings.gym_name}</div>
                             <p class="receipt-address">${gymSettings.address}</p>
                             <h5 class="receipt-title">ໃບບິນຮັບເງິນ / RECEIPT</h5>
                         </div>
@@ -779,14 +758,9 @@ function loadReceipt(saleId, receivedAmt, changeAmt, payMethod) {
                 `;
 
                 $('#receiptPrintArea').html(html);
-                $('#receiptModal').modal('show');
 
-                // Automatically trigger receipt print once modal is rendered
-                setTimeout(function() {
-                    printReceipt();
-                }, 600);
-
-                $('#receiptModal').off('hidden.bs.modal').on('hidden.bs.modal', function() {
+                // Print directly without showing modal, and reload page on print dialog completion
+                printReceipt(function() {
                     location.reload();
                 });
             }
@@ -794,7 +768,7 @@ function loadReceipt(saleId, receivedAmt, changeAmt, payMethod) {
     });
 }
 
-function printReceipt() {
+function printReceipt(onCompleteCallback) {
     let printContents = document.getElementById('receiptPrintArea').innerHTML;
     
     // Remove any existing print frame
@@ -815,10 +789,10 @@ function printReceipt() {
     iframeDoc.write('@media print { @page { size: 80mm auto; margin: 0; } body { margin: 0; padding: 4mm; } }');
     iframeDoc.write('body { font-family: "Noto Sans Lao", "Noto Sans Lao Looped", Arial, sans-serif; width: 72mm; margin: 0 auto; color: #000; background: #fff; font-size: 11px; line-height: 1.3; }');
     iframeDoc.write('.text-center { text-align: center; } .text-start { text-align: left; } .text-end { text-align: right; }');
-    iframeDoc.write('.receipt-header { text-align: center; margin-bottom: 8px; }');
-    iframeDoc.write('.receipt-logo { font-size: 16px; font-weight: bold; margin: 0 0 2px 0; color: #111; }');
-    iframeDoc.write('.receipt-address { font-size: 9px; color: #666; margin: 0 0 4px 0; }');
-    iframeDoc.write('.receipt-title { font-size: 12px; font-weight: bold; margin: 6px 0; text-transform: uppercase; color: #28a745; }');
+    iframeDoc.write('.receipt-header { text-align: center; margin-bottom: 12px; }');
+    iframeDoc.write('.receipt-logo { font-size: 15px; font-weight: bold; margin: 4px 0 6px 0; color: #111; }');
+    iframeDoc.write('.receipt-address { font-size: 9.5px; color: #555; margin: 0 0 8px 0; }');
+    iframeDoc.write('.receipt-title { font-size: 13px; font-weight: bold; margin: 8px 0 6px 0; text-transform: uppercase; color: #28a745; }');
     iframeDoc.write('.receipt-divider { border-top: 1px dashed #000; margin: 8px 0; }');
     iframeDoc.write('.receipt-meta { font-size: 9.5px; margin-bottom: 6px; } .receipt-meta div { margin-bottom: 3px; }');
     iframeDoc.write('.receipt-table { width: 100%; border-collapse: collapse; margin: 4px 0; }');
@@ -831,6 +805,15 @@ function printReceipt() {
     iframeDoc.write(printContents);
     iframeDoc.write('</body></html>');
     iframeDoc.close();
+    
+    // Register afterprint to execute callback
+    if (onCompleteCallback) {
+        $iframe[0].contentWindow.addEventListener('afterprint', function() {
+            onCompleteCallback();
+        });
+        // Fallback safety reload after 10s if afterprint isn't captured
+        setTimeout(onCompleteCallback, 10000);
+    }
     
     // Wait for fonts/assets to load inside the iframe
     setTimeout(function() {

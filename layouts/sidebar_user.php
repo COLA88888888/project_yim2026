@@ -173,7 +173,7 @@
         <li class="nav-header text-uppercase" style="color: rgba(255,255,255,0.5); font-size: 0.7rem; letter-spacing: 1.5px; padding-top: 20px;">ລາຍງານຂໍ້ມູນ</li>
 
         <!-- ເມນູ: ລາຍງານການເງິນ (dropdown) -->
-        <?php if (hasPermission('subscriptions', 'view')): ?>
+        <?php if (hasPermission('subscriptions', 'view') || hasPermission('daily_checkin', 'view') || hasPermission('sales', 'view') || hasPermission('stock_in', 'view') || hasPermission('expenses', 'view')): ?>
         <li class="nav-item">
           <a href="#" class="nav-link">
             <i class="nav-icon fas fa-chart-line text-primary"></i>
@@ -184,47 +184,59 @@
           </a>
           <ul class="nav nav-treeview">
             <!-- ພາບລວມການເງິນ -->
+            <?php if (hasPermission('subscriptions', 'view') && hasPermission('daily_checkin', 'view') && hasPermission('sales', 'view') && hasPermission('stock_in', 'view') && hasPermission('expenses', 'view')): ?>
             <li class="nav-item">
               <a href="pages/revenue_report.php?tab=overview" target="frame" class="nav-link">
                 <i class="nav-icon fas fa-columns text-primary"></i>
                 <p>ພາບລວມການເງິນ</p>
               </a>
             </li>
+            <?php endif; ?>
             <!-- ຄ່າສະໝັກສະມາຊິກ -->
+            <?php if (hasPermission('subscriptions', 'view')): ?>
             <li class="nav-item">
               <a href="pages/revenue_report.php?tab=subscription" target="frame" class="nav-link">
                 <i class="nav-icon fas fa-file-invoice-dollar text-warning"></i>
                 <p>ຄ່າສະໝັກສະມາຊິກ</p>
               </a>
             </li>
+            <?php endif; ?>
             <!-- ຄ່າລາຍວັນ -->
+            <?php if (hasPermission('daily_checkin', 'view')): ?>
             <li class="nav-item">
               <a href="pages/revenue_report.php?tab=daily" target="frame" class="nav-link">
                 <i class="nav-icon fas fa-user-clock text-info"></i>
                 <p>ຄ່າລາຍວັນລູກຄ້າ</p>
               </a>
             </li>
+            <?php endif; ?>
             <!-- ຍອດຂາຍ POS -->
+            <?php if (hasPermission('sales', 'view')): ?>
             <li class="nav-item">
               <a href="pages/revenue_report.php?tab=pos" target="frame" class="nav-link">
                 <i class="nav-icon fas fa-cash-register text-success"></i>
                 <p>ຍອດຂາຍ POS</p>
               </a>
             </li>
+            <?php endif; ?>
             <!-- ຕົ້ນທຶນນຳເຂົ້າສິນຄ້າ -->
+            <?php if (hasPermission('stock_in', 'view')): ?>
             <li class="nav-item">
               <a href="pages/revenue_report.php?tab=stock_in" target="frame" class="nav-link">
                 <i class="nav-icon fas fa-file-import text-secondary"></i>
                 <p>ຕົ້ນທຶນນຳເຂົ້າສິນຄ້າ</p>
               </a>
             </li>
+            <?php endif; ?>
             <!-- ລາຍຈ່າຍທົ່ວໄປ -->
+            <?php if (hasPermission('expenses', 'view')): ?>
             <li class="nav-item">
               <a href="pages/revenue_report.php?tab=expense" target="frame" class="nav-link">
                 <i class="nav-icon fas fa-minus-circle text-danger"></i>
                 <p>ລາຍຈ່າຍທົ່ວໄປ</p>
               </a>
             </li>
+            <?php endif; ?>
           </ul>
         </li>
         <?php endif; ?>

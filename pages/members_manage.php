@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -143,13 +143,15 @@ if ($result) {
                             <th class="text-center">ເບີໂທລະສັບ</th>
                             <th style="min-width: 200px;">ທີ່ຢູ່</th>
                             <th class="text-center">ສະຖານະ</th>
+                            <?php if (hasPermission('members', 'edit') || hasPermission('members', 'delete')): ?>
                             <th class="text-center" style="width: 150px;">ຈັດການ</th>
+                            <?php endif; ?>
                         </tr>
                     </thead>
                     <tbody id="memberTableBody">
                         <?php if (empty($members)): ?>
                             <tr>
-                                <td colspan="8" class="text-center py-5 text-muted">
+                                <td colspan="<?= (hasPermission('members', 'edit') || hasPermission('members', 'delete')) ? 8 : 7 ?>" class="text-center py-5 text-muted">
                                     <i class="fas fa-users fa-2x mb-3 d-block"></i>
                                     ຍັງບໍ່ມີຂໍ້ມູນສະມາຊິກ
                                 </td>
@@ -179,6 +181,7 @@ if ($result) {
                                             <span class="badge bg-secondary-light text-secondary px-3 py-1.5" style="border-radius: 20px;"><?= htmlspecialchars($m['status']) ?></span>
                                         <?php endif; ?>
                                     </td>
+                                    <?php if (hasPermission('members', 'edit') || hasPermission('members', 'delete')): ?>
                                     <td class="text-center">
                                         <div class="d-flex justify-content-center gap-1">
                                             <?php if (hasPermission('members', 'edit')): ?>
@@ -193,6 +196,7 @@ if ($result) {
                                             <?php endif; ?>
                                         </div>
                                     </td>
+                                    <?php endif; ?>
                                 </tr>
                             <?php endforeach; ?>
                         <?php endif; ?>

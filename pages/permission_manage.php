@@ -8,6 +8,12 @@ if (!isset($_SESSION['checked']) || $_SESSION['checked'] !== 1 || !isset($_SESSI
 }
 require_once '../config/db.php';
 
+// Only Admin (ຜູ້ບໍລິຫານ) has access to permission management
+if (isset($_SESSION['status']) && $_SESSION['status'] !== 'ຜູ້ບໍລິຫານ') {
+    echo "<div class='container mt-5'><div class='alert alert-danger fw-bold text-center p-4' style='border-radius:12px;'>ທ່ານບໍ່ມີສິດເຂົ້າເຖິງໜ້ານີ້</div></div>";
+    exit();
+}
+
 // ດຶງຂໍ້ມູນພະນັກງານທັງໝົດ
 $users = [];
 $sql = "SELECT user_id, fname, lname, gender, dob, tel, address, status, username, remark, permissions FROM users WHERE status = 'ພະນັກງານ' ORDER BY user_id DESC";
@@ -305,9 +311,13 @@ function selectStaff(userId) {
     var row = $('[id="staff-row-' + userId + '"]');
     if (!row.length) { console.warn('Row not found for userId:', userId); return; }
 
-    var rawData = row.attr('data-user');
-    var user;
-    try { user = JSON.parse(rawData); } catch(e) { console.error('JSON parse error:', e, rawData); return; }
+    var user = row.data('user');
+    if (typeof user === 'string') {
+        try { user = JSON.parse(user); } catch(e) { console.error('JSON parse error:', e, user); return; }
+    } else if (!user) {
+        var rawData = row.attr('data-user');
+        try { user = JSON.parse(rawData); } catch(e) { console.error('JSON parse error:', e, rawData); return; }
+    }
 
     // Highlight active row
     $('.staff-row').removeClass('active-row table-primary');

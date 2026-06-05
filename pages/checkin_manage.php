@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -7,6 +7,12 @@ if (!isset($_SESSION['checked']) || $_SESSION['checked'] !== 1 || !isset($_SESSI
     exit();
 }
 require_once '../config/db.php';
+
+// Check permissions
+if (!hasPermission('checkin', 'view')) {
+    echo "<div class='container mt-5'><div class='alert alert-danger fw-bold text-center p-4' style='border-radius:12px;'>ທ່ານບໍ່ມີສິດເຂົ້າເຖິງໜ້ານີ້</div></div>";
+    exit();
+}
 
 // ດຶງປະຫວັດການເຊັກອິນມື້ນີ້
 $checkins = [];
@@ -34,15 +40,12 @@ if ($result) {
     <link rel="stylesheet" href="../assets/css/local-font.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="../bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="../icon/css/all.min.css">
+    <link rel="stylesheet" href="../assets/css/pages/users-manage.css?v=<?php echo time(); ?>">
     <script src="../plugins/jquery/jquery.min.js"></script>
     <script src="../plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="../sweetalert/dist/sweetalert2.all.min.js"></script>
     
     <style>
-        body {
-            font-family: 'Noto Sans Lao Looped', sans-serif;
-            background-color: #f4f6f9;
-        }
         .checkin-container {
             max-width: 100%;
             margin: 0 auto;
@@ -220,7 +223,7 @@ if ($result) {
 
         <!-- Right Side: Today's Check-in List (col-lg-8 col-md-7) -->
         <div class="col-lg-8 col-md-7 mb-4">
-            <div class="card card-custom">
+            <div class="card card-custom shadow-sm border-0" style="border-radius: 16px;">
                 <div class="card-body p-0">
                     <!-- Search & Control Header -->
                     <div class="p-3 border-bottom d-flex flex-wrap justify-content-between align-items-center gap-3">
@@ -229,7 +232,7 @@ if ($result) {
                             <span class="badge bg-success ms-2" id="todayCount"><?= count($checkins) ?> ຄັ້ງ</span>
                             <div class="d-flex align-items-center gap-2 ms-2">
                                 <span class="text-muted small">ສະແດງ:</span>
-                                <select id="pageSizeSelect" class="form-control form-control-sm" style="width: 75px; border-radius: 8px; font-weight: bold; height: 30px; padding: 2px 6px;">
+                                <select id="pageSizeSelect" class="form-control form-control-sm" style="width: 80px; border-radius: 8px; font-weight: bold; height: 32px;">
                                     <option value="10" selected>10</option>
                                     <option value="20">20</option>
                                     <option value="30">30</option>
@@ -253,12 +256,15 @@ if ($result) {
                                     <th class="text-center">ລະຫັດບັດ</th>
                                     <th>ແພັກເກດ</th>
                                     <th class="text-center">ວັນ-ເວລາ ເຊັກອິນ</th>
+                                    <?php if (hasPermission('checkin', 'delete')): ?>
+                                    <th class="text-center" style="width: 100px;">ຈັດການ</th>
+                                    <?php endif; ?>
                                 </tr>
                             </thead>
                             <tbody id="todayCheckinBody">
                                 <?php if (empty($checkins)): ?>
                                     <tr id="emptyCheckinRow">
-                                        <td colspan="5" class="text-center py-5 text-muted">
+                                        <td colspan="<?= hasPermission('checkin', 'delete') ? 6 : 5 ?>" class="text-center py-5 text-muted">
                                             <i class="fas fa-user-clock fa-2x mb-3 d-block text-secondary"></i>
                                             ຍັງບໍ່ມີການເຊັກອິນເຂົ້າໃຊ້ໃນມື້ນີ້
                                         </td>
@@ -281,6 +287,13 @@ if ($result) {
                                                 <span class="d-block fw-bold text-dark" style="font-size:0.9rem;"><?= date('d/m/Y', strtotime($c['checkin_time'])) ?></span>
                                                 <span class="text-muted" style="font-size:0.85rem;"><i class="fas fa-clock fa-xs me-1"></i><?= date('H:i:s', strtotime($c['checkin_time'])) ?></span>
                                             </td>
+                                            <?php if (hasPermission('checkin', 'delete')): ?>
+                                            <td class="text-center">
+                                                <button class="btn btn-danger btn-sm btn-action" onclick="deleteCheckin(<?= $c['checkin_id'] ?>)" title="ລົບປະຫວັດ">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </button>
+                                            </td>
+                                            <?php endif; ?>
                                         </tr>
                                     <?php endforeach; ?>
                                 <?php endif; ?>
@@ -337,8 +350,49 @@ function playBeep(type) {
 }
 
 $(document).ready(function() {
+    const canCheckin = <?= hasPermission('checkin', 'add') ? 'true' : 'false' ?>;
     let currentMember = null;
     let autoHideTimer = null;
+    let lastVerifyRes = null;
+
+    function showMemberPopup(member, sub, checkinRes) {
+        let imgName = member.profile_img || 'default.png';
+        let packageTitle = sub ? sub.package_name : 'ບໍ່ມີແພັກເກດ';
+        let remainingDays = checkinRes.remaining_days;
+        let endDate = sub ? sub.end_date : '-';
+        
+        Swal.fire({
+            title: '<h4 class="fw-bold text-success mb-0"><i class="fas fa-check-circle me-2"></i>ເຊັກອິນເຂົ້າໃຊ້ງານສຳເລັດ</h4>',
+            html: `
+                <div class="text-center py-2">
+                    <img src="../assets/img/members/${imgName}" class="rounded-circle border p-1 shadow-sm mb-3" style="width: 100px; height: 100px; object-fit: cover; border: 2.5px solid #198754 !important;">
+                    <h5 class="fw-bold text-dark mb-1">${member.fname} ${member.lname}</h5>
+                    <code class="text-primary fw-bold mb-3 d-block">${member.member_code}</code>
+                    <div class="p-2.5 bg-light rounded text-start mx-auto" style="max-width: 300px; font-size: 0.9rem;">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-muted">ແພັກເກດ:</span>
+                            <span class="fw-bold text-dark">${packageTitle}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-muted">ວັນໝົດອາຍຸ:</span>
+                            <span class="fw-bold text-dark">${endDate}</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">ມື້ທີ່ເຫຼືອ:</span>
+                            <span class="fw-bold text-info">${remainingDays} ມື້</span>
+                        </div>
+                    </div>
+                </div>
+            `,
+            confirmButtonText: 'ຕົກລົງ',
+            confirmButtonColor: '#198754',
+            timer: 4000,
+            timerProgressBar: true,
+            didClose: () => {
+                $('#searchVal').val('').focus();
+            }
+        });
+    }
 
     function showPlaceholder() {
         $('#memberCard').fadeOut(300, function() {
@@ -367,7 +421,10 @@ $(document).ready(function() {
                 title: 'ກະລຸນາປ້ອນຂໍ້ມູນ',
                 text: 'ກະລຸນາປ້ອນລະຫັດບັດ ຫຼື ເບີໂທລະສັບກ່ອນ',
                 confirmButtonColor: '#007bff',
-                confirmButtonText: 'ຕົກລົງ'
+                confirmButtonText: 'ຕົກລົງ',
+                didClose: () => {
+                    $('#searchVal').focus();
+                }
             });
             return;
         }
@@ -386,6 +443,7 @@ $(document).ready(function() {
                 if (res.success) {
                     currentMember = res.member;
                     let sub = res.subscription;
+                    lastVerifyRes = res;
 
                     // Update UI Card
                     let imgName = currentMember.profile_img || 'default.png';
@@ -414,11 +472,15 @@ $(document).ready(function() {
                     // Update Action Button
                     let actionHtml = '';
                     if (res.is_active) {
-                        if (res.checked_in_today) {
-                            actionHtml = `<div class="alert alert-warning text-center fw-bold mb-0 small"><i class="fas fa-check-double me-1"></i> ເຊັກອິນເຂົ້າໃຊ້ແລ້ວມື້ນີ້</div>
-                                          <button class="btn btn-success checkin-btn w-100 mt-2" onclick="performCheckin(${currentMember.member_id})"><i class="fas fa-sign-in-alt me-1"></i> ເຊັກອິນອີກຄັ້ງ</button>`;
+                        if (canCheckin) {
+                            if (res.checked_in_today) {
+                                actionHtml = `<div class="alert alert-warning text-center fw-bold mb-0 small"><i class="fas fa-check-double me-1"></i> ເຊັກອິນເຂົ້າໃຊ້ແລ້ວມື້ນີ້</div>
+                                              <button class="btn btn-success checkin-btn w-100 mt-2" onclick="performCheckin(${currentMember.member_id})"><i class="fas fa-sign-in-alt me-1"></i> ເຊັກອິນອີກຄັ້ງ</button>`;
+                            } else {
+                                actionHtml = `<button class="btn btn-success checkin-btn w-100" onclick="performCheckin(${currentMember.member_id})"><i class="fas fa-sign-in-alt me-1"></i> ກົດເຊັກອິນເຂົ້າໃຊ້ງານ</button>`;
+                            }
                         } else {
-                            actionHtml = `<button class="btn btn-success checkin-btn w-100" onclick="performCheckin(${currentMember.member_id})"><i class="fas fa-sign-in-alt me-1"></i> ກົດເຊັກອິນເຂົ້າໃຊ້ງານ</button>`;
+                            actionHtml = `<div class="alert alert-warning text-center fw-bold mb-0 small"><i class="fas fa-exclamation-circle me-1"></i> ທ່ານບໍ່ມີສິດບັນທຶກການເຊັກອິນ</div>`;
                         }
                     } else {
                         playBeep('error');
@@ -430,8 +492,51 @@ $(document).ready(function() {
                     showMemberCard();
 
                     // If active and not checked in today, auto checkin for fast scan!
-                    if (res.is_active && !res.checked_in_today) {
+                    if (res.is_active && !res.checked_in_today && canCheckin) {
                         performCheckin(currentMember.member_id);
+                    } else if (res.is_active && res.checked_in_today) {
+                        // Already checked in today - pop up warning
+                        Swal.fire({
+                            title: '<h4 class="fw-bold text-warning mb-0"><i class="fas fa-exclamation-triangle me-2"></i>ເຊັກອິນແລ້ວມື້ນີ້</h4>',
+                            html: `
+                                <div class="text-center py-2">
+                                    <img src="../assets/img/members/${imgName}" class="rounded-circle border p-1 shadow-sm mb-3" style="width: 100px; height: 100px; object-fit: cover; border: 2.5px solid #ffc107 !important;">
+                                    <h5 class="fw-bold text-dark mb-1">${currentMember.fname} ${currentMember.lname}</h5>
+                                    <code class="text-primary fw-bold mb-3 d-block">${currentMember.member_code}</code>
+                                    <div class="alert alert-warning fw-bold py-2 px-3 small mb-0">ໄດ້ເຊັກອິນເຂົ້າໃຊ້ງານແລ້ວມື້ນີ້</div>
+                                </div>
+                            `,
+                            confirmButtonText: 'ຕົກລົງ',
+                            confirmButtonColor: '#ffc107',
+                            timer: 3500,
+                            timerProgressBar: true,
+                            didClose: () => {
+                                $('#searchVal').val('').focus();
+                            }
+                        });
+                        autoHideTimer = setTimeout(showPlaceholder, 5000);
+                    } else if (!res.is_active) {
+                        // Inactive or expired - pop up error
+                        playBeep('error');
+                        Swal.fire({
+                            title: '<h4 class="fw-bold text-danger mb-0"><i class="fas fa-times-circle me-2"></i>ບໍ່ສາມາດເຊັກອິນໄດ້</h4>',
+                            html: `
+                                <div class="text-center py-2">
+                                    <img src="../assets/img/members/${imgName}" class="rounded-circle border p-1 shadow-sm mb-3" style="width: 100px; height: 100px; object-fit: cover; border: 2.5px solid #dc3545 !important;">
+                                    <h5 class="fw-bold text-dark mb-1">${currentMember.fname} ${currentMember.lname}</h5>
+                                    <code class="text-primary fw-bold mb-3 d-block">${currentMember.member_code}</code>
+                                    <div class="alert alert-danger fw-bold py-2 px-3 small mb-0">${res.status_msg || 'ແພັກເກດໝົດອາຍຸ ຫຼື ບໍ່ພົບຂໍ້ມູນການສະໝັກ'}</div>
+                                </div>
+                            `,
+                            confirmButtonText: 'ຕົກລົງ',
+                            confirmButtonColor: '#dc3545',
+                            timer: 4000,
+                            timerProgressBar: true,
+                            didClose: () => {
+                                $('#searchVal').val('').focus();
+                            }
+                        });
+                        autoHideTimer = setTimeout(showPlaceholder, 5000);
                     }
                 }
             },
@@ -445,7 +550,10 @@ $(document).ready(function() {
                     icon: 'error',
                     title: 'ຜິດພາດ',
                     text: msg,
-                    confirmButtonColor: '#007bff'
+                    confirmButtonColor: '#007bff',
+                    didClose: () => {
+                        $('#searchVal').val('').focus();
+                    }
                 });
                 showPlaceholder();
             }
@@ -480,12 +588,14 @@ $(document).ready(function() {
             }
         });
         
+        let hasDeletePerm = <?= hasPermission('checkin', 'delete') ? 'true' : 'false' ?>;
+        let colspanVal = hasDeletePerm ? 6 : 5;
         $('#todayCount').text(filteredRows.length + ' ຄັ້ງ');
         
         if (filteredRows.length === 0 && $('.checkin-row').length > 0) {
             if ($('#emptySearchResult').length === 0) {
                 $('#todayCheckinBody').append(
-                    `<tr id="emptySearchResult"><td colspan="5" class="text-center py-4 text-muted"><i class="fas fa-search me-2"></i>ບໍ່ພົບຂໍ້ມູນການເຊັກອິນ</td></tr>`
+                    `<tr id="emptySearchResult"><td colspan="${colspanVal}" class="text-center py-4 text-muted"><i class="fas fa-search me-2"></i>ບໍ່ພົບຂໍ້ມູນການເຊັກອິນ</td></tr>`
                 );
             }
         } else {
@@ -536,12 +646,26 @@ $(document).ready(function() {
             startPage = Math.max(1, endPage - 4);
         }
         
+        if (startPage > 1) {
+            controlsHtml += `<li class="page-item"><a class="page-link" href="javascript:void(0)" data-page="1">1</a></li>`;
+            if (startPage > 2) {
+                controlsHtml += `<li class="page-item disabled"><a class="page-link" href="javascript:void(0)">...</a></li>`;
+            }
+        }
+        
         for (var p = startPage; p <= endPage; p++) {
             if (p === currentPage) {
                 controlsHtml += `<li class="page-item active"><a class="page-link" href="javascript:void(0)">${p}</a></li>`;
             } else {
                 controlsHtml += `<li class="page-item"><a class="page-link" href="javascript:void(0)" data-page="${p}">${p}</a></li>`;
             }
+        }
+        
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) {
+                controlsHtml += `<li class="page-item disabled"><a class="page-link" href="javascript:void(0)">...</a></li>`;
+            }
+            controlsHtml += `<li class="page-item"><a class="page-link" href="javascript:void(0)" data-page="${totalPages}">${totalPages}</a></li>`;
         }
         
         if (currentPage === totalPages) {
@@ -567,6 +691,27 @@ $(document).ready(function() {
     updateFilteredRows();
     showPage(1);
 
+    // Keep input focused automatically
+    $('#searchVal').focus();
+
+    $(document).on('click', function(e) {
+        if (!$(e.target).is('input, select, textarea, button, a, option, .swal2-confirm, .swal2-cancel') && 
+            !Swal.isVisible() && 
+            $('.modal.show').length === 0) {
+            $('#searchVal').focus();
+        }
+    });
+
+    $(document).on('keydown', function(e) {
+        if (!$(e.target).is('input, select, textarea, button') && 
+            !Swal.isVisible() && 
+            $('.modal.show').length === 0) {
+            if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                $('#searchVal').focus();
+            }
+        }
+    });
+
     // Make functions globally accessible
 
     window.performCheckin = function(memberId) {
@@ -581,19 +726,23 @@ $(document).ready(function() {
                 if (res.success) {
                     playBeep('success');
                     
-                    // Show a non-blocking toast alert instead of a hard modal
-                    const Toast = Swal.mixin({
-                        toast: true,
-                        position: 'top-end',
-                        showConfirmButton: false,
-                        timer: 2000,
-                        timerProgressBar: true
-                    });
-                    
-                    Toast.fire({
-                        icon: 'success',
-                        title: 'ເຊັກອິນສຳເລັດ: ' + res.member_name
-                    });
+                    if (currentMember && lastVerifyRes) {
+                        let sub = lastVerifyRes.subscription;
+                        showMemberPopup(currentMember, sub, lastVerifyRes);
+                    } else {
+                        // Fallback toast
+                        const Toast = Swal.mixin({
+                            toast: true,
+                            position: 'top-end',
+                            showConfirmButton: false,
+                            timer: 2000,
+                            timerProgressBar: true
+                        });
+                        Toast.fire({
+                            icon: 'success',
+                            title: 'ເຊັກອິນສຳເລັດ: ' + res.member_name
+                        });
+                    }
                     
                     // Clear input search
                     $('#searchVal').val('').focus();
@@ -615,7 +764,10 @@ $(document).ready(function() {
                     icon: 'error',
                     title: 'ຜິດພາດ',
                     text: msg,
-                    confirmButtonColor: '#007bff'
+                    confirmButtonColor: '#007bff',
+                    didClose: () => {
+                        $('#searchVal').val('').focus();
+                    }
                 });
                 showPlaceholder();
             }
@@ -627,14 +779,94 @@ $(document).ready(function() {
             url: window.location.href,
             type: 'GET',
             success: function(html) {
-                // Parse newly loaded list
+                // Parse newly loaded list and badge
                 let newTableBody = $(html).find('#todayCheckinBody').html();
+                let newCountHtml = $(html).find('#todayCount').html();
                 
                 $('#todayCheckinBody').html(newTableBody);
+                $('#todayCount').html(newCountHtml);
                 
                 // Re-initialize pagination with new rows!
                 updateFilteredRows();
                 showPage(1);
+
+                // Flash first row with a subtle green highlight
+                let firstRow = $('#todayCheckinBody tr.checkin-row').first();
+                if (firstRow.length > 0 && !firstRow.find('#emptyCheckinRow').length) {
+                    firstRow.css('background-color', '#d1e7dd');
+                    setTimeout(function() {
+                        firstRow.css('transition', 'background-color 1.5s ease');
+                        firstRow.css('background-color', '');
+                    }, 2000);
+                }
+            }
+        });
+    };
+
+    window.deleteCheckin = function(checkinId) {
+        if (!checkinId) return;
+        
+        Swal.fire({
+            title: 'ຢືນຢັນການລົບປະຫວັດ',
+            text: "ທ່ານຕ້ອງການລົບປະຫວັດການເຊັກອິນນີ້ແທ້ບໍ່?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'ຕົກລົງ',
+            cancelButtonText: 'ຍົກເລີກ',
+            didClose: () => {
+                $('#searchVal').focus();
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: '../api/checkin_api.php',
+                    type: 'POST',
+                    data: { action: 'delete', checkin_id: checkinId },
+                    dataType: 'json',
+                    success: function(res) {
+                        if (res.success) {
+                            const Toast = Swal.mixin({
+                                toast: true,
+                                position: 'top-end',
+                                showConfirmButton: false,
+                                timer: 2000,
+                                timerProgressBar: true
+                            });
+                            Toast.fire({
+                                icon: 'success',
+                                title: 'ລົບປະຫວັດການເຊັກອິນສຳເລັດແລ້ວ'
+                            });
+                            reloadTodayCheckins();
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'ຜິດພາດ',
+                                text: res.message || 'ບໍ່ສາມາດລົບປະຫວັດໄດ້',
+                                confirmButtonColor: '#007bff',
+                                didClose: () => {
+                                    $('#searchVal').focus();
+                                }
+                            });
+                        }
+                    },
+                    error: function(xhr) {
+                        let msg = 'ບໍ່ສາມາດລົບປະຫວັດໄດ້';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            msg = xhr.responseJSON.message;
+                        }
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'ຜິດພາດ',
+                            text: msg,
+                            confirmButtonColor: '#007bff',
+                            didClose: () => {
+                                $('#searchVal').focus();
+                            }
+                        });
+                    }
+                });
             }
         });
     };

@@ -9,8 +9,14 @@ if (!isset($_SESSION['checked']) || $_SESSION['checked'] !== 1 || !isset($_SESSI
 require_once '../config/db.php';
 
 // Check permissions
-if (!hasPermission('subscriptions', 'view')) {
-    echo "<div class='container mt-5'><div class='alert alert-danger'>ທ່ານບໍ່ມີສິດເຂົ້າເຖິງໜ້ານີ້</div></div>";
+$hasSub = hasPermission('subscriptions', 'view');
+$hasDaily = hasPermission('daily_checkin', 'view');
+$hasSales = hasPermission('sales', 'view');
+$hasStock = hasPermission('stock_in', 'view');
+$hasExp = hasPermission('expenses', 'view');
+
+if (!$hasSub && !$hasDaily && !$hasSales && !$hasStock && !$hasExp) {
+    echo "<div class='container mt-5'><div class='alert alert-danger fw-bold text-center p-4' style='border-radius:12px;'>ທ່ານບໍ່ມີສິດເຂົ້າເຖິງໜ້ານີ້</div></div>";
     exit();
 }
 
@@ -20,6 +26,30 @@ $activeTab = $_GET['tab'] ?? 'overview';
 if (!in_array($activeTab, ['overview', 'subscription', 'daily', 'pos', 'stock_in', 'expense'])) {
     $activeTab = 'overview';
 }
+
+// Enforce tab-level permission constraints and fallback
+if ($activeTab === 'overview') {
+    if (!($hasSub && $hasDaily && $hasSales && $hasStock && $hasExp)) {
+        if ($hasSub) $activeTab = 'subscription';
+        elseif ($hasDaily) $activeTab = 'daily';
+        elseif ($hasSales) $activeTab = 'pos';
+        elseif ($hasStock) $activeTab = 'stock_in';
+        elseif ($hasExp) $activeTab = 'expense';
+    }
+} else {
+    $ok = false;
+    if ($activeTab === 'subscription' && $hasSub) $ok = true;
+    elseif ($activeTab === 'daily' && $hasDaily) $ok = true;
+    elseif ($activeTab === 'pos' && $hasSales) $ok = true;
+    elseif ($activeTab === 'stock_in' && $hasStock) $ok = true;
+    elseif ($activeTab === 'expense' && $hasExp) $ok = true;
+    
+    if (!$ok) {
+        echo "<div class='container mt-5'><div class='alert alert-danger fw-bold text-center p-4' style='border-radius:12px;'>ທ່ານບໍ່ມີສິດເຂົ້າເຖິງຂໍ້ມູນໃນໜ້ານີ້</div></div>";
+        exit();
+    }
+}
+
 
 // 1. Build Where Clauses for all data models depending on the date filters
 $whereClauseSub = "";

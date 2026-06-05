@@ -1,8 +1,13 @@
 <?php
+ini_set('display_errors', '1');
+ini_set('display_startup_errors', '1');
+error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING); // Show only error-level messages to prevent notice/warning clutter
+
 $server = "localhost";
 $username = "root";
 $password = "";
 $database = "db_gym2026";
+
 
 $conn = mysqli_connect($server, $username, $password, $database);
 mysqli_set_charset($conn, "utf8");
@@ -61,14 +66,19 @@ if (!function_exists('logActivity')) {
 // === Permission Helper Functions ===
 if (!function_exists('hasPermission')) {
     function hasPermission($module, $action = 'view') {
+        // ຖ້າບໍ່ມີການເຂົ້າສູ່ລະບົບ
+        if (!isset($_SESSION['user_id'])) {
+            return false;
+        }
+
         // ຜູ້ບໍລິຫານມີສິດທຸກຢ່າງ
         if (isset($_SESSION['status']) && $_SESSION['status'] === 'ຜູ້ບໍລິຫານ') {
             return true;
         }
         
-        // ຖ້າບໍ່ມີການເຂົ້າສູ່ລະບົບ ຫຼື ບໍ່ມີສິດທິທີ່ກຳນົດໄວ້
-        if (!isset($_SESSION['permissions'])) {
-            return false;
+        // ຖ້າບໍ່ມີສິດທິທີ່ກຳນົດໄວ້ (ບໍ່ກຳນົດ) -> ໃຫ້ເຮັດໄດ້ທັງໝົດ
+        if (!isset($_SESSION['permissions']) || empty($_SESSION['permissions']) || $_SESSION['permissions'] === '[]' || $_SESSION['permissions'] === '{}') {
+            return true;
         }
         
         $perm_str = $_SESSION['permissions'];
@@ -87,14 +97,15 @@ if (!function_exists('hasPermission')) {
                 }
             }
         } catch (Exception $e) {
+            return true; // ຖ້າມີຂໍ້ຜິດພາດ ໃຫ້ຖືວ່າບໍ່ກຳນົດ -> ໃຫ້ເຮັດໄດ້ທັງໝົດ
+        }
+        
+        // ຖ້າບໍ່ມີການກຳນົດສິດທິຂອງໂມດູນນີ້
+        if (!isset($perms[$module])) {
             return false;
         }
         
-        if (isset($perms[$module])) {
-            return !empty($perms[$module][$action]);
-        }
-        
-        return false;
+        return !empty($perms[$module][$action]);
     }
 }
 

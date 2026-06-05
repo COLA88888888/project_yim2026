@@ -315,3 +315,186 @@
     font-family: 'Noto Sans Lao Looped', sans-serif;
 }
 
+/* ===== Welcome Card Custom Styles ===== */
+.welcome-container-custom {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 120px);
+    padding: 20px;
+}
+.welcome-card-premium {
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.06), 0 5px 15px rgba(0,0,0,0.02);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    width: 100%;
+    max-width: 500px;
+    overflow: hidden;
+    animation: slideUpWelcome 0.6s cubic-bezier(0.25, 1, 0.5, 1) both;
+}
+@keyframes slideUpWelcome {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.welcome-card-header-gradient {
+    background: linear-gradient(135deg, #244886 0%, #3a6fb3 100%);
+    height: 120px;
+    position: relative;
+    display: flex;
+    justify-content: center;
+}
+.welcome-avatar-wrapper {
+    position: absolute;
+    bottom: -50px;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    border: 5px solid #ffffff;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+    background-color: #ffffff;
+    overflow: hidden;
+}
+.welcome-avatar {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.welcome-card-body {
+    padding: 70px 30px 40px 30px;
+    text-align: center;
+}
+.welcome-greeting {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #1a202c;
+    margin-bottom: 6px;
+    font-family: 'Noto Sans Lao Looped', sans-serif;
+}
+.welcome-text {
+    font-size: 0.9rem;
+    color: #718096;
+    margin-bottom: 24px;
+    font-family: 'Noto Sans Lao Looped', sans-serif;
+}
+.welcome-clock-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f7fafc;
+    padding: 10px 20px;
+    border-radius: 12px;
+    border: 1px solid #edf2f7;
+    margin-bottom: 24px;
+    font-family: 'Noto Sans Lao Looped', sans-serif;
+}
+.clock-item {
+    display: flex;
+    align-items: center;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #4a5568;
+}
+.welcome-info-grid {
+    border-top: 1px dashed #e2e8f0;
+    border-bottom: 1px dashed #e2e8f0;
+    padding: 16px 0;
+    margin-bottom: 24px;
+    font-family: 'Noto Sans Lao Looped', sans-serif;
+}
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.88rem;
+}
+.info-label {
+    color: #718096;
+}
+.info-value {
+    color: #2d3748;
+}
+.welcome-shortcuts {
+    text-align: left;
+    font-family: 'Noto Sans Lao Looped', sans-serif;
+}
+.shortcuts-title {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #718096;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.shortcuts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+.shortcut-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    background-color: #f7fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    color: #4a5568;
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-decoration: none !important;
+    transition: all 0.2s ease;
+}
+.shortcut-btn:hover {
+    background-color: #edf2f7;
+    color: #2b6cb0;
+    border-color: #cbd5e0;
+}
+.shortcut-btn.btn-active {
+    background-color: rgba(36, 72, 134, 0.08);
+    color: #244886;
+    border-color: rgba(36, 72, 134, 0.2);
+}
+@media (max-width: 576px) {
+    .welcome-container-custom {
+        min-height: calc(100vh - 100px);
+        padding: 10px;
+    }
+    .welcome-card-premium {
+        border-radius: 16px;
+    }
+    .welcome-card-body {
+        padding: 60px 20px 30px 20px;
+    }
+    .welcome-greeting {
+        font-size: 1.25rem;
+    }
+    .welcome-text {
+        font-size: 0.82rem;
+        margin-bottom: 20px;
+    }
+    .welcome-clock-wrapper {
+        padding: 8px 12px;
+        margin-bottom: 20px;
+    }
+    .clock-item {
+        font-size: 0.8rem;
+    }
+    .welcome-info-grid {
+        padding: 12px 0;
+        margin-bottom: 20px;
+    }
+    .info-row {
+        font-size: 0.8rem;
+    }
+    .shortcuts-grid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+    .shortcut-btn {
+        padding: 8px;
+        font-size: 0.78rem;
+    }
+}
+
+

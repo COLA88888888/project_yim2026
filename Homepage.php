@@ -20,9 +20,13 @@ for ($i = 6; $i >= 0; $i--) {
     
     // ນັບຈຳນວນຄົນເຊັກອິນໃນວັນນີ້
     $sql = "SELECT COUNT(*) FROM checkins WHERE DATE(checkin_time) = '$date'";
-    $res = mysqli_query($conn, $sql);
-    $row = mysqli_fetch_row($res);
-    $checkin_counts[] = (int)($row[0] ?? 0);
+    $res = $conn ? mysqli_query($conn, $sql) : false;
+    $count = 0;
+    if ($res) {
+        $row = mysqli_fetch_row($res);
+        $count = (int)($row[0] ?? 0);
+    }
+    $checkin_counts[] = $count;
 }
 
 // ດຶງສະຖິຕິແພັກເກດຍອດນິຍົມ (Doughnut Chart)
@@ -51,12 +55,23 @@ require_once 'layouts/header.php';
 <link rel="stylesheet" href="assets/css/pages/dashboard.css?v=<?php echo time(); ?>">
 <link rel="stylesheet" href="assets/css/pages/homepage-custom.css?v=<?php echo time(); ?>">
 
+<?php
+$has_any_card = hasPermission('dashboard', 'view') ||
+                hasPermission('members', 'view') || 
+                hasPermission('checkin', 'view') || 
+                hasPermission('daily_checkin', 'view') || 
+                hasPermission('subscriptions', 'view') || 
+                hasPermission('equipment', 'view');
+?>
+
 <div class="dashboard-page">
 
+  <?php if ($has_any_card): ?>
   <!-- Row of 4 cards as requested -->
   <!-- Row of 6 cards for segregated tracking -->
   <div class="stat-cards-row-custom">
     <!-- Card 1: Total Members -->
+    <?php if (hasPermission('dashboard', 'view') || hasPermission('members', 'view')): ?>
     <a href="pages/members_manage.php" class="stat-card-custom gc-blue">
       <div class="stat-card-top-custom">
         <div>
@@ -69,8 +84,10 @@ require_once 'layouts/header.php';
         <i class="fas fa-user-check"></i> ສະມາຊິກທີ່ເຄື່ອນໄຫວ: <?= $stats['active_members'] ?> ຄົນ
       </div>
     </a>
+    <?php endif; ?>
 
     <!-- Card 2: Member Check-ins Today -->
+    <?php if (hasPermission('dashboard', 'view') || hasPermission('checkin', 'view')): ?>
     <a href="pages/checkin_manage.php" class="stat-card-custom gc-green">
       <div class="stat-card-top-custom">
         <div>
@@ -80,11 +97,13 @@ require_once 'layouts/header.php';
         <div class="stat-card-icon-custom"><i class="fas fa-id-card"></i></div>
       </div>
       <div class="stat-card-footer-custom">
-        <i class="fas fa-clock"></i> ການເຊັກອິນເຂົ້າໃຊ້ໃນມື້ນີ້
+        <i class="fas fa-clock"></i> การເຊັກອິນເຂົ້າໃຊ້ໃນມື້ນີ້
       </div>
     </a>
+    <?php endif; ?>
 
     <!-- Card 3: Daily Customers Today -->
+    <?php if (hasPermission('dashboard', 'view') || hasPermission('daily_checkin', 'view')): ?>
     <a href="pages/daily_checkin.php" class="stat-card-custom gc-cyan">
       <div class="stat-card-top-custom">
         <div>
@@ -97,8 +116,10 @@ require_once 'layouts/header.php';
         <i class="fas fa-users-cog"></i> ບັນທຶກການເຊັກອິນລາຍວັນ
       </div>
     </a>
+    <?php endif; ?>
 
     <!-- Card 4: Member Subscription Revenue Month -->
+    <?php if (hasPermission('dashboard', 'view') || hasPermission('subscriptions', 'view')): ?>
     <a href="pages/revenue_report.php?tab=subscription" class="stat-card-custom gc-indigo">
       <div class="stat-card-top-custom">
         <div>
@@ -114,8 +135,10 @@ require_once 'layouts/header.php';
         <i class="fas fa-calendar-day"></i> ມື້ນີ້: <?= formatCurrency($stats['sub_revenue_today']) ?> (ສົດ: <?= number_format($stats['sub_today_cash']) ?> | ໂອນ: <?= number_format($stats['sub_today_transfer']) ?>)
       </div>
     </a>
+    <?php endif; ?>
 
     <!-- Card 5: Daily Customer Revenue Month -->
+    <?php if (hasPermission('dashboard', 'view') || hasPermission('daily_checkin', 'view')): ?>
     <a href="pages/revenue_report.php?tab=daily" class="stat-card-custom gc-pink">
       <div class="stat-card-top-custom">
         <div>
@@ -131,8 +154,10 @@ require_once 'layouts/header.php';
         <i class="fas fa-calendar-day"></i> ມື້ນີ້: <?= formatCurrency($stats['daily_revenue_today']) ?> (ສົດ: <?= number_format($stats['daily_today_cash']) ?> | ໂອນ: <?= number_format($stats['daily_today_transfer']) ?>)
       </div>
     </a>
+    <?php endif; ?>
 
     <!-- Card 6: Broken Equipment -->
+    <?php if (hasPermission('dashboard', 'view') || hasPermission('equipment', 'view')): ?>
     <a href="pages/equipment_manage.php" class="stat-card-custom gc-red">
       <div class="stat-card-top-custom">
         <div>
@@ -142,17 +167,24 @@ require_once 'layouts/header.php';
         <div class="stat-card-icon-custom"><i class="fas fa-dumbbell"></i></div>
       </div>
       <div class="stat-card-footer-custom">
-        <i class="fas fa-tools"></i> ທັງໝົດ: <?= $stats['total_equipment'] ?> (ດີ: <?= $stats['good_equipment'] ?>)
+        <i class="fas fa-tools"></i> ทັງໝົດ: <?= $stats['total_equipment'] ?> (ດີ: <?= $stats['good_equipment'] ?>)
       </div>
     </a>
+    <?php endif; ?>
   </div>
-
-
 
   <!-- Charts Section -->
   <div class="row mt-4">
+    <?php 
+    $show_checkin_chart = hasPermission('dashboard', 'view') || hasPermission('checkin', 'view');
+    $show_package_chart = hasPermission('dashboard', 'view') || hasPermission('subscriptions', 'view');
+    $left_col_class = $show_package_chart ? 'col-lg-8' : 'col-lg-12';
+    $right_col_class = $show_checkin_chart ? 'col-lg-4' : 'col-lg-12';
+    ?>
+
     <!-- Left Column: Check-in statistics -->
-    <div class="col-lg-8 mb-4">
+    <?php if ($show_checkin_chart): ?>
+    <div class="<?= $left_col_class ?> mb-4">
       <div class="card chart-card-custom h-100">
         <div class="card-header-custom d-flex justify-content-between align-items-center">
           <h5 class="chart-card-title"><i class="fas fa-chart-line text-primary mr-2"></i> ສະຖິຕິການເຂົ້າໃຊ້ບໍລິການ (7 ວັນຫຼ້າສຸດ)</h5>
@@ -164,9 +196,11 @@ require_once 'layouts/header.php';
         </div>
       </div>
     </div>
+    <?php endif; ?>
 
     <!-- Right Column: Popular packages -->
-    <div class="col-lg-4 mb-4">
+    <?php if ($show_package_chart): ?>
+    <div class="<?= $right_col_class ?> mb-4">
       <div class="card chart-card-custom h-100">
         <div class="card-header-custom">
           <h5 class="chart-card-title"><i class="fas fa-chart-pie text-success mr-2"></i> ແພັກເກດຍອດນິຍົມ</h5>
@@ -194,10 +228,82 @@ require_once 'layouts/header.php';
         </div>
       </div>
     </div>
+    <?php endif; ?>
   </div>
-
+  <?php else: ?>
+    <?php
+    // Fetch current staff user details for the Welcome Card
+    $session_user_id = mysqli_real_escape_string($conn, $_SESSION['user_id']);
+    $user_q = mysqli_query($conn, "SELECT fname, lname, status, tel, profile_img FROM users WHERE user_id = '$session_user_id' LIMIT 1");
+    $user_data = $user_q ? mysqli_fetch_assoc($user_q) : null;
+    $display_name = $user_data ? trim($user_data['fname'] . ' ' . $user_data['lname']) : 'ພະນັກງານ';
+    $profile_img = $user_data && $user_data['profile_img'] ? $user_data['profile_img'] : 'default.png';
+    $profile_img_path = 'assets/img/users/' . $profile_img;
+    if (!file_exists(__DIR__ . '/' . $profile_img_path) || empty($user_data['profile_img'])) {
+        $profile_img_path = 'assets/img/users/default.png';
+    }
+    $status = $user_data && $user_data['status'] ? $user_data['status'] : 'ພະນັກງານ';
+    $tel = $user_data && $user_data['tel'] ? $user_data['tel'] : '-';
+    ?>
+    <!-- Glassmorphic Welcome Card -->
+    <div class="welcome-container-custom">
+        <div class="welcome-card-premium">
+            <div class="welcome-card-header-gradient">
+                <div class="welcome-avatar-wrapper">
+                    <img src="<?= htmlspecialchars($profile_img_path) ?>" alt="Avatar" class="welcome-avatar">
+                </div>
+            </div>
+            <div class="welcome-card-body">
+                <h3 class="welcome-greeting">ສະບາຍດີ, <?= htmlspecialchars($display_name) ?>!</h3>
+                <p class="welcome-text">ຍິນດີຕ້ອນຮັບເຂົ້າສູ່ລະບົບບໍລິຫານຈັດການຍິມ & ຟິດເນັດ</p>
+                
+                <div class="welcome-clock-wrapper">
+                    <div class="clock-item">
+                        <i class="far fa-calendar-alt text-primary mr-2"></i>
+                        <span><?= date('d/m/Y') ?></span>
+                    </div>
+                    <div class="clock-item ml-4">
+                        <i class="far fa-clock text-success mr-2"></i>
+                        <span id="liveClock">00:00:00</span>
+                    </div>
+                </div>
+                
+                <div class="welcome-info-grid">
+                    <div class="info-row">
+                        <span class="info-label">ສະຖານະ:</span>
+                        <span class="info-value badge bg-primary text-white" style="font-size:0.85rem; padding: 4px 12px;"><?= htmlspecialchars($status) ?></span>
+                    </div>
+                    <div class="info-row mt-2">
+                        <span class="info-label">ເບີໂທລະສັບ:</span>
+                        <span class="info-value text-dark fw-bold"><?= htmlspecialchars($tel) ?></span>
+                    </div>
+                </div>
+                
+                <div class="welcome-shortcuts">
+                    <h6 class="shortcuts-title">ເມນູທີ່ທ່ານສາມາດເຂົ້າເຖິງໄດ້:</h6>
+                    <div class="shortcuts-grid">
+                        <a href="Homepage.php" class="shortcut-btn btn-active"><i class="fas fa-chart-line mr-2"></i>ດາດສ໌ບອດ</a>
+                        <?php if (hasPermission('checkin', 'view')): ?>
+                            <a href="pages/checkin_manage.php" class="shortcut-btn"><i class="fas fa-id-card mr-2 text-success"></i>ເຊັກອິນເຂົ້າໃຊ້</a>
+                        <?php endif; ?>
+                        <?php if (hasPermission('subscriptions', 'view')): ?>
+                            <a href="pages/subscriptions_manage.php" class="shortcut-btn"><i class="fas fa-file-invoice-dollar mr-2 text-warning"></i>ລົງທະບຽນແພັກເກດ</a>
+                        <?php endif; ?>
+                        <?php if (hasPermission('members', 'view')): ?>
+                            <a href="pages/members_manage.php" class="shortcut-btn"><i class="fas fa-users mr-2 text-primary"></i>ຂໍ້ມູນສະມາຊິກ</a>
+                        <?php endif; ?>
+                        <?php if (hasPermission('daily_checkin', 'view')): ?>
+                            <a href="pages/daily_checkin.php" class="shortcut-btn"><i class="fas fa-user-plus mr-2 text-info"></i>ເຊັກອິນລາຍວັນ</a>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+  <?php endif; ?>
 
 </div>
+
 
 <script src="plugins/chart.js/Chart.min.js"></script>
 
@@ -214,6 +320,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     // 1. Check-in Line Chart
+    <?php if (hasPermission('dashboard', 'view') || hasPermission('checkin', 'view')): ?>
     const checkinLabels = <?php echo json_encode($checkin_labels); ?>;
     const checkinData = <?php echo json_encode($checkin_counts); ?>;
     
@@ -253,8 +360,10 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         }
     });
+    <?php endif; ?>
 
     // 2. Package Doughnut Chart
+    <?php if (hasPermission('dashboard', 'view') || hasPermission('subscriptions', 'view')): ?>
     const packageLabels = <?php echo json_encode($package_labels); ?>;
     const packageData = <?php echo json_encode($package_counts); ?>;
     
@@ -288,6 +397,7 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         }
     });
+    <?php endif; ?>
 
     // Intercept clicks on links for smooth exit transitions
     const dashboardPage = document.querySelector('.dashboard-page');
@@ -308,8 +418,20 @@ document.addEventListener("DOMContentLoaded", function() {
             }, 300);
         });
     });
+
+    // 3. Live Clock for Welcome Card
+    function updateClock() {
+        const now = new Date();
+        const pad = (n) => String(n).padStart(2, '0');
+        const timeStr = pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds());
+        const clockEl = document.getElementById('liveClock');
+        if (clockEl) clockEl.textContent = timeStr;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
 });
 </script>
+
 
 <?php
 require_once 'layouts/footer.php';
