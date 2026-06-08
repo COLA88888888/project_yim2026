@@ -12,9 +12,9 @@ if (!hasPermission('daily_checkin', 'view')) {
 }
 
 // Fetch today's records server-side for initial render
-$today = date('Y-m-d');
+$today = $_GET['date'] ?? date('Y-m-d');
 $rows = [];
-$res = mysqli_query($conn, "SELECT * FROM daily_checkins WHERE checkin_date = '$today' ORDER BY id DESC");
+$res = mysqli_query($conn, "SELECT * FROM daily_checkins WHERE checkin_date = '$today' ORDER BY created_at DESC, id DESC");
 if ($res) while ($row = mysqli_fetch_assoc($res)) $rows[] = $row;
 
 $total_revenue = 0; $male_count = 0; $female_count = 0;
@@ -155,7 +155,7 @@ foreach ($rows as $r) {
                         <div class="mb-4">
                             <label class="form-label fw-bold">ວັນທີ</label>
                             <input type="date" name="checkin_date" id="checkin_date" class="form-control"
-                                   value="<?= date('Y-m-d') ?>" style="height:44px;font-weight:600;">
+                                   value="<?= htmlspecialchars($today) ?>" style="height:44px;font-weight:600;">
                         </div>
 
                         <button type="submit" class="btn btn-info text-white fw-bold w-100 rounded-pill py-2" id="submitBtn" style="font-size:1.05rem;">
@@ -437,7 +437,7 @@ $(document).ready(function() {
     // Re-run stats when date changes
     $('#checkin_date').on('change', function() {
         refreshStats();
-        location.reload();
+        window.location.href = 'daily_checkin.php?date=' + $(this).val();
     });
 });
 

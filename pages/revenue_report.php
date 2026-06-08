@@ -87,7 +87,7 @@ $subRes = mysqli_query($conn, "SELECT ms.*, mb.fname, mb.lname, mb.member_code, 
                                LEFT JOIN members mb ON ms.member_id = mb.member_id 
                                LEFT JOIN packages p ON ms.package_id = p.package_id 
                                $whereClauseSub 
-                               ORDER BY ms.membership_id DESC");
+                               ORDER BY ms.created_at DESC, ms.membership_id DESC");
 if ($subRes) {
     while ($row = mysqli_fetch_assoc($subRes)) {
         $subscriptionsList[] = $row;
@@ -102,7 +102,7 @@ $dailyRes = mysqli_query($conn, "SELECT d.*, u.fname AS staff_fname, u.lname AS 
                                  FROM daily_checkins d 
                                  LEFT JOIN users u ON d.user_id = u.user_id 
                                  $whereClauseDaily 
-                                 ORDER BY d.id DESC");
+                                 ORDER BY d.created_at DESC, d.id DESC");
 if ($dailyRes) {
     while ($row = mysqli_fetch_assoc($dailyRes)) {
         $dailyList[] = $row;
@@ -122,7 +122,7 @@ $salesRes = mysqli_query($conn, "SELECT s.*, u.fname AS staff_fname, u.lname AS 
                                  LEFT JOIN products p ON sd.product_id = p.product_id
                                  $whereClauseSales 
                                  GROUP BY s.sale_id
-                                 ORDER BY s.sale_id DESC");
+                                 ORDER BY s.sale_date DESC, s.sale_id DESC");
 if ($salesRes) {
     while ($row = mysqli_fetch_assoc($salesRes)) {
         $salesList[] = $row;
@@ -139,7 +139,7 @@ $stockRes = mysqli_query($conn, "SELECT st.*, u.fname AS staff_fname, u.lname AS
                                  FROM stock_in st 
                                  LEFT JOIN users u ON st.user_id = u.user_id 
                                  $whereClauseStock 
-                                 ORDER BY st.stock_in_id DESC");
+                                 ORDER BY st.stock_in_date DESC, st.stock_in_id DESC");
 if ($stockRes) {
     while ($row = mysqli_fetch_assoc($stockRes)) {
         $stockList[] = $row;

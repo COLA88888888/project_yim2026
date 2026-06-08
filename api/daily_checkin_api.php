@@ -94,7 +94,7 @@ if ($action === 'list') {
 
     $rows = [];
     $res = mysqli_query($conn,
-        "SELECT * FROM daily_checkins WHERE checkin_date = '$date' ORDER BY id DESC"
+        "SELECT * FROM daily_checkins WHERE checkin_date = '$date' ORDER BY created_at DESC, id DESC"
     );
     if ($res) {
         while ($row = mysqli_fetch_assoc($res)) $rows[] = $row;

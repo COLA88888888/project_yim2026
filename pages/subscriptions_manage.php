@@ -20,7 +20,7 @@ $sql = "SELECT ms.*, mb.fname, mb.lname, mb.member_code, p.package_name, p.durat
         FROM memberships ms
         LEFT JOIN members mb ON ms.member_id = mb.member_id
         LEFT JOIN packages p ON ms.package_id = p.package_id
-        ORDER BY ms.membership_id DESC";
+        ORDER BY ms.created_at DESC, ms.membership_id DESC";
 $result = mysqli_query($conn, $sql);
 if ($result) {
     while ($row = mysqli_fetch_assoc($result)) {

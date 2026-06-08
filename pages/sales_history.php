@@ -18,7 +18,7 @@ $sales = [];
 $sql = "SELECT s.*, u.fname as staff_fname, u.lname as staff_lname 
         FROM sales s 
         LEFT JOIN users u ON s.user_id = u.user_id 
-        ORDER BY s.sale_id DESC";
+        ORDER BY s.sale_date DESC, s.sale_id DESC";
 $result = mysqli_query($conn, $sql);
 if ($result) {
     while ($row = mysqli_fetch_assoc($result)) {

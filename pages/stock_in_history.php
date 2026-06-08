@@ -18,7 +18,7 @@ $imports = [];
 $sql = "SELECT s.*, u.fname as staff_fname, u.lname as staff_lname 
         FROM stock_in s 
         LEFT JOIN users u ON s.user_id = u.user_id 
-        ORDER BY s.stock_in_id DESC";
+        ORDER BY s.stock_in_date DESC, s.stock_in_id DESC";
 $result = mysqli_query($conn, $sql);
 if ($result) {
     while ($row = mysqli_fetch_assoc($result)) {
