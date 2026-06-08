@@ -235,7 +235,11 @@ $(document).ready(function() {
                         timer: 2000,
                         showConfirmButton: false
                     }).then(() => {
-                        location.reload();
+                        if (window.top) {
+                            window.top.location.reload();
+                        } else {
+                            location.reload();
+                        }
                     });
                 } else {
                     Swal.fire({ icon: 'error', title: 'ຜິດພາດ', text: res.message });

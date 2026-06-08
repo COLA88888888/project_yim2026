@@ -97,7 +97,7 @@ $has_any_card = hasPermission('dashboard', 'view') ||
         <div class="stat-card-icon-custom"><i class="fas fa-id-card"></i></div>
       </div>
       <div class="stat-card-footer-custom">
-        <i class="fas fa-clock"></i> การເຊັກອິນເຂົ້າໃຊ້ໃນມື້ນີ້
+        <i class="fas fa-clock"></i> ການເຊັກອິນເຂົ້າໃຊ້ໃນມື້ນີ້
       </div>
     </a>
     <?php endif; ?>
@@ -167,7 +167,7 @@ $has_any_card = hasPermission('dashboard', 'view') ||
         <div class="stat-card-icon-custom"><i class="fas fa-dumbbell"></i></div>
       </div>
       <div class="stat-card-footer-custom">
-        <i class="fas fa-tools"></i> ทັງໝົດ: <?= $stats['total_equipment'] ?> (ດີ: <?= $stats['good_equipment'] ?>)
+        <i class="fas fa-tools"></i> ທັງໝົດ: <?= $stats['total_equipment'] ?> (ດີ: <?= $stats['good_equipment'] ?>)
       </div>
     </a>
     <?php endif; ?>

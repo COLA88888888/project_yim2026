@@ -6,7 +6,7 @@ if (!isset($_SESSION['checked']) || $_SESSION['checked'] !== 1 || !isset($_SESSI
 }
 require_once '../config/db.php';
 
-if (!hasPermission('equipment', 'view')) {
+if (!hasPermission('report_equipment', 'view')) {
     echo "<div class='container mt-5'><div class='alert alert-danger'>ທ່ານບໍ່ມີສິດເຂົ້າເຖິງໜ້ານີ້</div></div>";
     exit();
 }

@@ -112,9 +112,9 @@ if ($resCat) {
             <div class="table-responsive">
                 <table class="table table-custom table-hover align-middle">
                     <thead>
-                        <tr>
-                            <th style="width: 80px;" class="text-center">ຮູບ</th>
+                        <tr>                          
                             <th>ລະຫັດສິນຄ້າ</th>
+                            <th style="width: 80px;" class="text-center">ຮູບ</th>
                             <th>ຊື່ສິນຄ້າ</th>
                             <th>ປະເພດສິນຄ້າ</th>
                             <th class="text-end">ຕົ້ນທຶນ</th>
@@ -136,6 +136,7 @@ if ($resCat) {
                         <?php else: ?>
                             <?php foreach ($products as $p): ?>
                                 <tr class="product-row">
+                                    <td class="fw-bold"><code class="text-primary"><?= htmlspecialchars($p['product_code']) ?></code></td>
                                     <td class="text-center">
                                         <?php if (!empty($p['image']) && file_exists('../uploads/products/' . $p['image'])): ?>
                                             <img src="../uploads/products/<?= htmlspecialchars($p['image']) ?>" alt="product" class="img-thumbnail rounded-circle" style="width: 45px; height: 45px; object-fit: cover; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">
@@ -145,7 +146,6 @@ if ($resCat) {
                                             </div>
                                         <?php endif; ?>
                                     </td>
-                                    <td class="fw-bold"><code class="text-primary"><?= htmlspecialchars($p['product_code']) ?></code></td>
                                     <td class="fw-bold text-dark"><?= htmlspecialchars($p['product_name']) ?></td>
                                     <td><span class="badge bg-light text-dark border"><?= htmlspecialchars($p['category_name']) ?> (<?= htmlspecialchars($p['category_code']) ?>)</span></td>
                                     <td class="text-end text-muted small"><?= formatCurrency($p['cost_price']) ?></td>

@@ -1,11 +1,15 @@
-﻿<?php
+<?php
 session_start();
 if (isset($_SESSION['checked'])) {
     header("Location: menu_admin.php");
     exit();
 }
 require_once 'config/db.php';
-$bct_logo = 'assets/img/logo/gym_logo.png?v=' . time();
+$settings = getSystemSettings($conn);
+$gym_name = $settings['gym_name'] ?? 'ລະບົບບໍລິຫານຈັດການຍິມ & ຟິດເນັດ';
+$raw_logo = $settings['logo_path'] ?? 'assets/img/logo/gym_logo.png';
+$bct_logo = (strpos($raw_logo, '../') === 0) ? substr($raw_logo, 3) : $raw_logo;
+$bct_logo .= '?v=' . time();
 $bct_bg = 'assets/img/logo/gym_bg.png?v=' . time();
 ?>
 <!DOCTYPE html>
@@ -13,7 +17,7 @@ $bct_bg = 'assets/img/logo/gym_bg.png?v=' . time();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ລະບົບບໍລິຫານຈັດການຍິມ & ຟິດເນັດ (Gym & Fitness System)</title>
+    <title><?php echo htmlspecialchars($gym_name); ?> (Gym & Fitness System)</title>
     <link rel="stylesheet" href="plugins/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="plugins/fontawesome-free/css/all.min.css">
 
@@ -39,7 +43,7 @@ $bct_bg = 'assets/img/logo/gym_bg.png?v=' . time();
                 <img src="<?php echo $bct_logo; ?>" alt="Logo">
             </div>
             <div class="login-header">
-                <h3>ລະບົບບໍລິຫານຈັດການຍິມ & ຟິດເນັດ <br>
+                <h3><?php echo htmlspecialchars($gym_name); ?> <br>
                     <h5>Gym & Fitness Management System</h5>
                 </h3>
             </div>
@@ -76,7 +80,7 @@ $bct_bg = 'assets/img/logo/gym_bg.png?v=' . time();
     </div>
 
     <div class="footer-info">
-         ລະບົບບໍລິຫານຈັດການຍິມ & ຟິດເນັດ<br>
+         <?php echo htmlspecialchars($gym_name); ?><br>
          &copy; 2026 ພັດທະນາໂດຍ: ທ. ໄຊຍາ ຈັນທະສອນ ນັກສຶກສາ ປີ 3 ວິທະຍາໄລ ບີຊີທີ
     </div>
 

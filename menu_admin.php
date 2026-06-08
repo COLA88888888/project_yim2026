@@ -23,8 +23,11 @@ if (!isset($_SESSION['checked']) || $_SESSION['checked'] !== 1 || !isset($_SESSI
 
 require_once 'config/db.php';
 
-$site_name = 'ລະບົບບໍລິຫານຈັດການຍິມ & ຟິດເນັດ';
-$site_logo = 'assets/img/logo/gym_logo.png?v=' . time();
+$settings = getSystemSettings($conn);
+$site_name = $settings['gym_name'] ?? 'ລະບົບບໍລິຫານຈັດການຍິມ & ຟິດເນັດ';
+$raw_logo = $settings['logo_path'] ?? 'assets/img/logo/gym_logo.png';
+$site_logo = (strpos($raw_logo, '../') === 0) ? substr($raw_logo, 3) : $raw_logo;
+$site_logo .= '?v=' . time();
 $display_name = trim(($_SESSION['fname'] ?? '') . ' ' . ($_SESSION['lname'] ?? ''));
 if ($display_name === '') {
     $display_name = 'ຜູ້ໃຊ້';

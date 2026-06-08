@@ -9,16 +9,16 @@ if (!isset($_SESSION['checked']) || $_SESSION['checked'] !== 1 || !isset($_SESSI
 require_once '../config/db.php';
 
 // Check permissions
-$hasSub = hasPermission('subscriptions', 'view');
-$hasDaily = hasPermission('daily_checkin', 'view');
-$hasSales = hasPermission('sales', 'view');
-$hasStock = hasPermission('stock_in', 'view');
-$hasExp = hasPermission('expenses', 'view');
-
-if (!$hasSub && !$hasDaily && !$hasSales && !$hasStock && !$hasExp) {
+if (!hasPermission('report_finance', 'view')) {
     echo "<div class='container mt-5'><div class='alert alert-danger fw-bold text-center p-4' style='border-radius:12px;'>ທ່ານບໍ່ມີສິດເຂົ້າເຖິງໜ້ານີ້</div></div>";
     exit();
 }
+
+$hasSub = true;
+$hasDaily = true;
+$hasSales = true;
+$hasStock = true;
+$hasExp = true;
 
 $startDate = $_GET['start_date'] ?? '';
 $endDate = $_GET['end_date'] ?? '';

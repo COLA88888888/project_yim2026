@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 session_start();
 
 // ກວດສອບວ່າເຂົ້າສູ່ລະບົບແລ້ວບໍ່
@@ -13,8 +13,11 @@ exit();
 
 require_once 'config/db.php';
 
-$site_name = 'ລະບົບບໍລິຫານຈັດການຍິມ & ຟິດເນັດ';
-$site_logo = 'assets/img/logo/gym_logo.png?v=' . time();
+$settings = getSystemSettings($conn);
+$site_name = $settings['gym_name'] ?? 'ລະບົບບໍລິຫານຈັດການຍິມ & ຟິດເນັດ';
+$raw_logo = $settings['logo_path'] ?? 'assets/img/logo/gym_logo.png';
+$site_logo = (strpos($raw_logo, '../') === 0) ? substr($raw_logo, 3) : $raw_logo;
+$site_logo .= '?v=' . time();
 $hotel_logo = $site_logo;
 $hotel_name = $site_name;
 

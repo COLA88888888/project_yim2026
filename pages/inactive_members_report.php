@@ -6,7 +6,7 @@ if (!isset($_SESSION['checked']) || $_SESSION['checked'] !== 1 || !isset($_SESSI
 }
 require_once '../config/db.php';
 
-if (!hasPermission('members', 'view')) {
+if (!hasPermission('report_inactive_members', 'view')) {
     echo "<script>window.top.location.href = '../index.php?expired=1';</script>";
     exit();
 }
@@ -288,7 +288,7 @@ $never_count = count($never_checkin);
 
     <!-- ===== Quick Filter Buttons ===== -->
     <div class="filter-strip no-print">
-        <span class="text-muted small fw-bold me-1">ໄລຍະໜັກທີ: </span>
+        <span class="text-muted small fw-bold me-1">ໄລຍະເວລາ: </span>
         <a href="?days=7"  class="filter-btn <?= $days_threshold == 7  ? 'active' : '' ?>"><i class="fas fa-clock me-1"></i> 7 ວັນ</a>
         <a href="?days=14" class="filter-btn <?= $days_threshold == 14 ? 'active' : '' ?>"><i class="fas fa-clock me-1"></i> 14 ວັນ</a>
         <a href="?days=21" class="filter-btn <?= $days_threshold == 21 ? 'active' : '' ?>"><i class="fas fa-clock me-1"></i> 21 ວັນ</a>

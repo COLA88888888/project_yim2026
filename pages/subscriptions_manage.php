@@ -264,7 +264,7 @@ $gymSettings = getSystemSettings($conn);
 <div id="printArea" style="display: none;">
     <div class="print-receipt-container">
         <div class="receipt-header">
-            <div class="mb-1">
+            <div class="receipt-logo-container">
                 <img src="<?= htmlspecialchars($gymSettings['logo_path']) ?>" alt="<?= htmlspecialchars($gymSettings['gym_name']) ?>" style="max-height: 70px; width: auto; display: inline-block;">
             </div>
             <p class="receipt-address"><?= htmlspecialchars($gymSettings['address']) ?></p>
@@ -439,7 +439,7 @@ $(document).ready(function() {
                         cancelButtonText: 'ປິດ'
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            printReceipt(res.membership_id);
+                            printReceipt(res.membership_id, true);
                         } else {
                             location.reload();
                         }
@@ -632,7 +632,7 @@ function deleteSubscription(membershipId) {
     });
 }
 
-function printReceipt(membershipId) {
+function printReceipt(membershipId, isNew = false) {
     if (!membershipId) return;
 
     $.ajax({
@@ -662,45 +662,52 @@ function printReceipt(membershipId) {
                 $('#printPaymentMethod').text(s.payment_method);
                 $('#printTotal').text(priceFormatted);
 
-                // Print sequence
+                // Print sequence using a hidden iframe (same reliable method as sales.php)
                 let printContent = document.getElementById('printArea').innerHTML;
                 
-                // Open new window to print beautifully without sidebar/navbar interferance
-                let printWindow = window.open('', '_blank', 'height=600,width=380');
-                printWindow.document.write('<html><head><title>Print Receipt</title>');
-                // Set base href to resolve local relative font files
-                printWindow.document.write('<base href="' + window.location.origin + window.location.pathname + '">');
-                printWindow.document.write('<link rel="stylesheet" href="../assets/css/local-font.css">');
-                printWindow.document.write('<style>');
-                printWindow.document.write('@media print { @page { size: 80mm auto; margin: 0; } body { margin: 0; padding: 4mm; } }');
-                printWindow.document.write('body { font-family: "Noto Sans Lao", "Noto Sans Lao Looped", Arial, sans-serif; width: 72mm; margin: 0 auto; color: #000; background: #fff; font-size: 11px; line-height: 1.3; }');
-                printWindow.document.write('.text-center { text-align: center; } .text-start { text-align: left; } .text-end { text-align: right; }');
-                printWindow.document.write('.receipt-header { text-align: center; margin-bottom: 8px; }');
-                printWindow.document.write('.receipt-logo { font-size: 16px; font-weight: bold; margin: 0 0 2px 0; color: #111; }');
-                printWindow.document.write('.receipt-address { font-size: 9px; color: #666; margin: 0 0 4px 0; }');
-                printWindow.document.write('.receipt-title { font-size: 12px; font-weight: bold; margin: 6px 0; text-transform: uppercase; color: #28a745; }');
-                printWindow.document.write('.receipt-divider { border-top: 1px dashed #000; margin: 8px 0; }');
-                printWindow.document.write('.receipt-meta { font-size: 9.5px; margin-bottom: 6px; } .receipt-meta table { width: 100%; } .receipt-meta td { padding: 2px 0; }');
-                printWindow.document.write('.receipt-table { width: 100%; border-collapse: collapse; margin: 4px 0; }');
-                printWindow.document.write('.receipt-table th { font-weight: bold; border-bottom: 1px solid #000; padding: 4px 0; font-size: 10px; }');
-                printWindow.document.write('.receipt-table td { padding: 5px 0; font-size: 10.5px; vertical-align: top; }');
-                printWindow.document.write('.receipt-total-section { font-size: 11px; margin: 6px 0; } .receipt-total-row { display: flex; justify-content: space-between; padding: 2px 0; }');
-                printWindow.document.write('.receipt-total-row.grand-total { font-size: 13px; font-weight: bold; margin-top: 4px; border-top: 1px dashed #000; padding-top: 4px; }');
-                printWindow.document.write('.receipt-footer { text-align: center; margin-top: 12px; font-size: 9.5px; font-weight: bold; }');
-                printWindow.document.write('</style>');
-                printWindow.document.write('</head><body>');
-                printWindow.document.write(printContent);
-                printWindow.document.write('</body></html>');
-                printWindow.document.close();
+                // Remove any existing print frame
+                $('#receiptPrintFrame').remove();
                 
-                // Delay slightly for font loading inside iframe window
+                // Create a hidden iframe
+                let $iframe = $('<iframe id="receiptPrintFrame" style="position: absolute; width: 0; height: 0; border: none;"></iframe>');
+                $('body').append($iframe);
+                
+                let iframeDoc = $iframe[0].contentDocument || $iframe[0].contentWindow.document;
+                
+                iframeDoc.open();
+                iframeDoc.write('<html><head><title>Print Receipt</title>');
+                // Set base href to resolve local relative font files
+                iframeDoc.write('<base href="' + window.location.origin + window.location.pathname + '">');
+                iframeDoc.write('<link rel="stylesheet" href="../assets/css/local-font.css">');
+                iframeDoc.write('<style>');
+                iframeDoc.write('@media print { @page { size: 80mm auto; margin: 0; } body { margin: 0; padding: 4mm; } }');
+                iframeDoc.write('body { font-family: "Noto Sans Lao", "Noto Sans Lao Looped", Arial, sans-serif; width: 72mm; margin: 0 auto; color: #000; background: #fff; font-size: 11px; line-height: 1.3; }');
+                iframeDoc.write('.text-center { text-align: center; } .text-start { text-align: left; } .text-end { text-align: right; }');
+                iframeDoc.write('.receipt-header { text-align: center; margin-bottom: 15px; }');
+                iframeDoc.write('.receipt-logo-container { margin-bottom: 12px; }');
+                iframeDoc.write('.receipt-logo { font-size: 16px; font-weight: bold; margin: 0 0 4px 0; color: #111; }');
+                iframeDoc.write('.receipt-address { font-size: 9.5px; color: #555; margin: 0 0 6px 0; line-height: 1.4; }');
+                iframeDoc.write('.receipt-title { font-size: 13px; font-weight: bold; margin: 10px 0; text-transform: uppercase; color: #28a745; letter-spacing: 0.5px; }');
+                iframeDoc.write('.receipt-divider { border-top: 1px dashed #000; margin: 12px 0; }');
+                iframeDoc.write('.receipt-meta { font-size: 10px; margin-bottom: 10px; } .receipt-meta table { width: 100%; } .receipt-meta td { padding: 3px 0; }');
+                iframeDoc.write('.receipt-table { width: 100%; border-collapse: collapse; margin: 8px 0; }');
+                iframeDoc.write('.receipt-table th { font-weight: bold; border-bottom: 1px solid #000; padding: 6px 0; font-size: 10.5px; }');
+                iframeDoc.write('.receipt-table td { padding: 8px 0; font-size: 11px; vertical-align: top; line-height: 1.4; }');
+                iframeDoc.write('.receipt-total-section { font-size: 11px; margin: 8px 0; } .receipt-total-row { display: flex; justify-content: space-between; padding: 4px 0; }');
+                iframeDoc.write('.receipt-total-row.grand-total { font-size: 13.5px; font-weight: bold; margin-top: 8px; border-top: 1px dashed #000; padding-top: 8px; }');
+                iframeDoc.write('.receipt-footer { text-align: center; margin-top: 20px; font-size: 10px; font-weight: bold; line-height: 1.4; }');
+                iframeDoc.write('</style>');
+                iframeDoc.write('</head><body>');
+                iframeDoc.write(printContent);
+                iframeDoc.write('</body></html>');
+                iframeDoc.close();
+                
+                // Wait for fonts/assets to load inside the iframe
                 setTimeout(function() {
-                    printWindow.focus();
-                    printWindow.print();
-                    printWindow.close();
+                    $iframe[0].contentWindow.focus();
+                    $iframe[0].contentWindow.print();
                     
-                    // Reload if printing newly registered one, to update table list
-                    if (window.location.search.indexOf('new=1') === -1) {
+                    if (isNew) {
                         location.reload();
                     }
                 }, 500);
