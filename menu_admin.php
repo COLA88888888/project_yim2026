@@ -161,7 +161,34 @@ $profile_img_path = 'assets/img/users/' . $profile_img;
   <!-- Content Wrapper. Contains page content -->
   <div class="content-wrapper">
 	<?php 
-    $iframe_src = 'Homepage.php'; 
+    $iframe_src = 'Homepage.php'; // Default fallback
+    if (!hasPermission('dashboard', 'view')) {
+        $menu_mapping = [
+            'checkin' => 'pages/checkin_manage.php',
+            'subscriptions' => 'pages/subscriptions_manage.php',
+            'daily_checkin' => 'pages/daily_checkin.php',
+            'members' => 'pages/members_manage.php',
+            'packages' => 'pages/packages_manage.php',
+            'equipment' => 'pages/equipment_manage.php',
+            'lockers' => 'pages/lockers_manage.php',
+            'expenses' => 'pages/expenses.php',
+            'sales' => 'pages/sales.php',
+            'sales_history' => 'pages/sales_history.php',
+            'stock_in' => 'pages/stock_in.php',
+            'products' => 'pages/products.php',
+            'product_categories' => 'pages/product_categories.php',
+            'report_finance' => 'pages/revenue_report.php',
+            'report_inactive_members' => 'pages/inactive_members_report.php',
+            'report_equipment' => 'pages/equipment_good.php'
+        ];
+
+        foreach ($menu_mapping as $module => $page) {
+            if (hasPermission($module, 'view')) {
+                $iframe_src = $page;
+                break;
+            }
+        }
+    }
   ?>
 	<iframe width="100%" height="100%" frameborder="0" name="frame" src="<?php echo $iframe_src; ?>"></iframe>
   </div>
@@ -184,10 +211,17 @@ $profile_img_path = 'assets/img/users/' . $profile_img;
     
     // Clear active on full page load, then highlight based on iframe src
     sessionStorage.removeItem('activeMenu');
-    // Default: highlight ດາດສ໌ບອດ
+    // Default: highlight first loaded page
+    var defaultSrc = '<?php echo $iframe_src; ?>';
     $navLinks.each(function() {
-      if ($(this).attr('href') === 'Homepage.php') {
+      if ($(this).attr('href') === defaultSrc) {
         $(this).addClass('active');
+        // If it's a sub-menu, expand it
+        var $parentLi = $(this).closest('.nav-treeview').closest('.nav-item');
+        if ($parentLi.length) {
+          $parentLi.children('.nav-link').addClass('active');
+          $parentLi.addClass('menu-open');
+        }
       }
     });
 

@@ -56,12 +56,7 @@ require_once 'layouts/header.php';
 <link rel="stylesheet" href="assets/css/pages/homepage-custom.css?v=<?php echo time(); ?>">
 
 <?php
-$has_any_card = hasPermission('dashboard', 'view') ||
-                hasPermission('members', 'view') || 
-                hasPermission('checkin', 'view') || 
-                hasPermission('daily_checkin', 'view') || 
-                hasPermission('subscriptions', 'view') || 
-                hasPermission('equipment', 'view');
+$has_any_card = hasPermission('dashboard', 'view');
 ?>
 
 <div class="dashboard-page">
@@ -282,7 +277,9 @@ $has_any_card = hasPermission('dashboard', 'view') ||
                 <div class="welcome-shortcuts">
                     <h6 class="shortcuts-title">ເມນູທີ່ທ່ານສາມາດເຂົ້າເຖິງໄດ້:</h6>
                     <div class="shortcuts-grid">
-                        <a href="Homepage.php" class="shortcut-btn btn-active"><i class="fas fa-chart-line mr-2"></i>ດາດສ໌ບອດ</a>
+                        <?php if (hasPermission('dashboard', 'view')): ?>
+                            <a href="Homepage.php" class="shortcut-btn btn-active"><i class="fas fa-chart-line mr-2"></i>ດາດສ໌ບອດ</a>
+                        <?php endif; ?>
                         <?php if (hasPermission('checkin', 'view')): ?>
                             <a href="pages/checkin_manage.php" class="shortcut-btn"><i class="fas fa-id-card mr-2 text-success"></i>ເຊັກອິນເຂົ້າໃຊ້</a>
                         <?php endif; ?>
