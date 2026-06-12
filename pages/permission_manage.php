@@ -607,6 +607,7 @@ $(document).ready(function() {
 <style>
 /* Pagination Styles */
 .staff-row.cursor-pointer {
+    cursor: pointer !important;
     transition: all 0.2s ease;
 }
 .staff-row.cursor-pointer:hover {

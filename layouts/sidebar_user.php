@@ -20,12 +20,14 @@
         <li class="nav-header text-uppercase" style="color: rgba(255,255,255,0.6); font-size: 0.75rem; letter-spacing: 1px;">ໜ້າຫຼັກ</li>
         
         <!-- ເມນູ: ດາດສ໌ບອດ -->
+        <?php if (hasPermission('dashboard', 'view')): ?>
         <li class="nav-item">
           <a href="Homepage.php" target="frame" class="nav-link active">
             <i class="nav-icon fas fa-chart-line"></i>
             <p>ດາດສ໌ບອດ</p>
           </a>
         </li>
+        <?php endif; ?>
 
         <!-- ຫົວຂໍ້: ການບໍລິການຍິມ -->
         <li class="nav-header text-uppercase" style="color: rgba(255,255,255,0.5); font-size: 0.7rem; letter-spacing: 1.5px; padding-top: 20px;">ບໍລິການຍິມ</li>
