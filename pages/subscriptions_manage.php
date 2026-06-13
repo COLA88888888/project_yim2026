@@ -216,13 +216,12 @@ $gymSettings = getSystemSettings($conn);
                 
                 <div class="modal-body p-4">
                     <div class="mb-3">
-                        <label class="form-label fw-bold">ເລືອກສະມາຊິກ</label>
-                        <select name="member_id" id="member_id" class="form-control" style="height: 45px;">
-                            <option value="">-- ເລືອກສະມາຊິກ --</option>
-                            <?php foreach ($members as $m): ?>
-                                <option value="<?= $m['member_id'] ?>"><?= htmlspecialchars($m['fname'] . ' ' . $m['lname']) ?> (<?= htmlspecialchars($m['member_code']) ?>)</option>
-                            <?php endforeach; ?>
-                        </select>
+                        <label class="form-label fw-bold">ລະຫັດສະມາຊິກ</label>
+                        <input type="text" id="member_code_search" class="form-control" placeholder="ປ້ອນ ຫຼື ສະແກນລະຫັດສະມາຊິກ..." style="height: 45px;" autocomplete="off">
+                        <input type="hidden" name="member_id" id="member_id">
+                        <div id="member_display_info" class="mt-2 px-3 py-2 rounded border small bg-light">
+                            <span class="text-muted"><i class="fas fa-info-circle me-1"></i> ປ້ອນລະຫັດສະມາຊິກເພື່ອສະແດງຂໍ້ມູນ</span>
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold">ເລືອກແພັກເກດ</label>
@@ -332,6 +331,8 @@ $gymSettings = getSystemSettings($conn);
 </div>
 
 <script>
+const activeMembers = <?= json_encode($members) ?>;
+
 // Function to format number with commas
 function formatNumberWithCommas(value) {
     value = value.replace(/\D/g, "");
@@ -359,6 +360,90 @@ $(document).on('keypress', '.price-input', function(e) {
 });
 
 $(document).ready(function() {
+    // Lookup member by code (both local check and API fallback)
+    function lookupMember(code) {
+        code = code.trim();
+        if (code === '') {
+            $('#member_id').val('');
+            $('#member_display_info').html('<span class="text-muted"><i class="fas fa-info-circle me-1"></i> ປ້ອນລະຫັດສະມາຊິກເພື່ອສະແດງຂໍ້ມູນ</span>')
+                .removeClass('border-success border-danger bg-success-light bg-danger-light text-success text-danger');
+            return;
+        }
+
+        // Local search first
+        let member = activeMembers.find(m => m.member_code.toLowerCase() === code.toLowerCase());
+        if (member) {
+            $('#member_id').val(member.member_id);
+            $('#member_display_info').html(`
+                <div class="d-flex align-items-center text-success">
+                    <i class="fas fa-check-circle me-2"></i>
+                    <div>
+                        <strong>ຊື່ສະມາຊິກ:</strong> ${member.fname} ${member.lname} 
+                        <span class="badge bg-success ms-2">${member.member_code}</span>
+                    </div>
+                </div>
+            `).addClass('border-success bg-success-light').removeClass('border-danger bg-danger-light text-danger');
+            return;
+        }
+
+        // API fallback search
+        $.ajax({
+            url: '../api/member_api.php',
+            type: 'GET',
+            data: { action: 'get', member_code: code },
+            dataType: 'json',
+            success: function(res) {
+                if (res.success && res.member) {
+                    let m = res.member;
+                    if (m.status === 'Inactive') {
+                        $('#member_id').val('');
+                        $('#member_display_info').html(`
+                            <div class="d-flex align-items-center text-danger">
+                                <i class="fas fa-times-circle me-2"></i>
+                                <div>
+                                    <strong>ສະມາຊິກ:</strong> ${m.fname} ${m.lname} (ລະຫັດຖືກລະງັບ / Inactive)
+                                </div>
+                            </div>
+                        `).addClass('border-danger bg-danger-light').removeClass('border-success bg-success-light text-success');
+                    } else {
+                        $('#member_id').val(m.member_id);
+                        $('#member_display_info').html(`
+                            <div class="d-flex align-items-center text-success">
+                                <i class="fas fa-check-circle me-2"></i>
+                                <div>
+                                    <strong>ຊື່ສະມາຊິກ:</strong> ${m.fname} ${m.lname} 
+                                    <span class="badge bg-success ms-2">${m.member_code}</span>
+                                </div>
+                            </div>
+                        `).addClass('border-success bg-success-light').removeClass('border-danger bg-danger-light text-danger');
+                    }
+                } else {
+                    $('#member_id').val('');
+                    $('#member_display_info').html(`
+                        <div class="d-flex align-items-center text-danger">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <div>ບໍ່ພົບຂໍ້ມູນລະຫັດສະມາຊິກນີ້</div>
+                        </div>
+                    `).addClass('border-danger bg-danger-light').removeClass('border-success bg-success-light text-success');
+                }
+            },
+            error: function() {
+                $('#member_id').val('');
+                $('#member_display_info').html(`
+                    <div class="d-flex align-items-center text-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <div>ບໍ່ພົບຂໍ້ມູນລະຫັດສະມາຊິກນີ້</div>
+                    </div>
+                `).addClass('border-danger bg-danger-light').removeClass('border-success bg-success-light text-success');
+            }
+        });
+    }
+
+    // Input events for searching
+    $('#member_code_search').on('input change', function() {
+        lookupMember($(this).val());
+    });
+
     // Dropdown change auto fill price
     $('#package_id').on('change', function() {
         let selected = $(this).find('option:selected');
@@ -582,6 +667,10 @@ $(document).ready(function() {
 
 function openCreateModal() {
     $('#subForm')[0].reset();
+    $('#member_code_search').val('');
+    $('#member_id').val('');
+    $('#member_display_info').html('<span class="text-muted"><i class="fas fa-info-circle me-1"></i> ປ້ອນລະຫັດສະມາຊິກເພື່ອສະແດງຂໍ້ມູນ</span>')
+        .removeClass('border-success border-danger bg-success-light bg-danger-light text-success text-danger');
     $('#start_date').val(new Date().toISOString().substring(0, 10));
     $('#subModal').modal('show');
 }
